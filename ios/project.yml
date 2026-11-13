@@ -1,0 +1,290 @@
+# XcodeGen spec. The .xcodeproj is generated, not committed:
+#   cd ios && xcodegen generate
+# Identifiers and the placeholder brand name live in Config/Shared.xcconfig.
+name: CouplesApp
+
+options:
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  defaultConfig: Release
+
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTS_MACCATALYST: false
+    SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: false
+    SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: false
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: true
+    LOCALIZATION_PREFERS_STRING_CATALOGS: true
+    SWIFT_EMIT_LOC_STRINGS: true
+    GENERATE_INFOPLIST_FILE: false
+
+packages:
+  Core:
+    path: Packages/Core
+  DesignSystem:
+    path: Packages/DesignSystem
+  Backend:
+    path: Packages/Backend
+  Blocking:
+    path: Packages/Blocking
+  QRCode:
+    path: Packages/QRCode
+  Purchases:
+    path: Packages/Purchases
+  Features:
+    path: Packages/Features
+
+# Info.plist keys every target carries so shared code can find the App Group.
+x-shared-info: &sharedInfo
+  CFBundleShortVersionString: $(MARKETING_VERSION)
+  CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+  AppGroupID: $(APP_GROUP_ID)
+  AppURLScheme: $(URL_SCHEME)
+
+targets:
+  CouplesApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID)
+        PRODUCT_NAME: CouplesApp
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    info:
+      path: App/Info.plist
+      properties:
+        <<: *sharedInfo
+        CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        AppWebsiteDomain: $(ASSOCIATED_DOMAIN)
+        KeychainGroupID: $(KEYCHAIN_GROUP_ID)
+        SupabaseScheme: $(SUPABASE_SCHEME)
+        SupabaseHost: $(SUPABASE_HOST)
+        SupabaseAnonKey: $(SUPABASE_ANON_KEY)
+        RevenueCatAPIKey: $(REVENUECAT_API_KEY)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIBackgroundModes:
+          - remote-notification
+        NSSupportsLiveActivities: true
+        NSCameraUsageDescription: Scan your partner's code to unlock time together.
+        ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes:
+          - CFBundleURLName: $(APP_BUNDLE_ID)
+            CFBundleURLSchemes:
+              - $(URL_SCHEME)
+    entitlements:
+      path: App/CouplesApp.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)$(KEYCHAIN_GROUP_ID)
+        aps-environment: development
+        com.apple.developer.applesignin:
+          - Default
+        com.apple.developer.associated-domains:
+          - applinks:$(ASSOCIATED_DOMAIN)
+        com.apple.developer.usernotifications.time-sensitive: true
+    dependencies:
+      - package: Core
+      - package: DesignSystem
+      - package: Backend
+      - package: Blocking
+      - package: QRCode
+      - package: Purchases
+      - package: Features
+        product: OnboardingFeature
+      - package: Features
+        product: PairingFeature
+      - package: Features
+        product: HomeFeature
+      - package: Features
+        product: UnlockFeature
+      - package: Features
+        product: MinutesFeature
+      - package: Features
+        product: ChallengesFeature
+      - package: Features
+        product: KudosFeature
+      - package: Features
+        product: ReportsFeature
+      - package: Features
+        product: ScheduleFeature
+      - package: Features
+        product: SettingsFeature
+      - target: MonitorExtension
+      - target: ShieldConfigExtension
+      - target: ShieldActionExtension
+      - target: ReportExtension
+      - target: WidgetsExtension
+
+  MonitorExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Extensions/Monitor
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).monitor
+    info:
+      path: Extensions/Monitor/Info.plist
+      properties:
+        <<: *sharedInfo
+        CFBundleDisplayName: $(APP_DISPLAY_NAME) Monitor
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).DeviceActivityMonitorExtension
+    entitlements:
+      path: Extensions/Monitor/Monitor.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    dependencies:
+      - package: Core
+      - package: Blocking
+
+  ShieldConfigExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Extensions/ShieldConfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).shieldconfig
+    info:
+      path: Extensions/ShieldConfig/Info.plist
+      properties:
+        <<: *sharedInfo
+        CFBundleDisplayName: $(APP_DISPLAY_NAME) Shield
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.shield-configuration-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldConfigurationExtension
+    entitlements:
+      path: Extensions/ShieldConfig/ShieldConfig.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    dependencies:
+      - package: Core
+      - package: Blocking
+
+  ShieldActionExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Extensions/ShieldAction
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).shieldaction
+    info:
+      path: Extensions/ShieldAction/Info.plist
+      properties:
+        <<: *sharedInfo
+        CFBundleDisplayName: $(APP_DISPLAY_NAME) Shield Action
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettings.shield-action-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShieldActionExtension
+    entitlements:
+      path: Extensions/ShieldAction/ShieldAction.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    dependencies:
+      - package: Core
+      - package: Blocking
+
+  ReportExtension:
+    type: extensionkit-extension
+    platform: iOS
+    sources:
+      - path: Extensions/Report
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).report
+    info:
+      path: Extensions/Report/Info.plist
+      properties:
+        <<: *sharedInfo
+        CFBundleDisplayName: $(APP_DISPLAY_NAME) Report
+        EXAppExtensionAttributes:
+          EXExtensionPointIdentifier: com.apple.deviceactivityui.report-extension
+    entitlements:
+      path: Extensions/Report/Report.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    dependencies:
+      - package: Core
+      - package: DesignSystem
+
+  WidgetsExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Extensions/Widgets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).widgets
+    info:
+      path: Extensions/Widgets/Info.plist
+      properties:
+        <<: *sharedInfo
+        CFBundleDisplayName: $(APP_DISPLAY_NAME)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Extensions/Widgets/Widgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    dependencies:
+      - package: Core
+      - package: DesignSystem
+
+schemes:
+  CouplesApp:
+    build:
+      targets:
+        CouplesApp: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - package: Core/CoreTests
+        - package: DesignSystem/DesignSystemTests
+        - package: Backend/BackendTests
+        - package: Blocking/BlockingTests
+        - package: QRCode/QRCodeTests
+        - package: Purchases/PurchasesTests
+        - package: Features/OnboardingFeatureTests
+        - package: Features/PairingFeatureTests
+        - package: Features/HomeFeatureTests
+        - package: Features/UnlockFeatureTests
+        - package: Features/MinutesFeatureTests
+        - package: Features/ChallengesFeatureTests
+        - package: Features/KudosFeatureTests
+        - package: Features/ReportsFeatureTests
+        - package: Features/ScheduleFeatureTests
+        - package: Features/SettingsFeatureTests
+    archive:
+      config: Release

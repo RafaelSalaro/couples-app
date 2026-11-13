@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "root.tagline" : {
+      "comment" : "Philosophy line on the placeholder root screen",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not about control. About being here, together."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

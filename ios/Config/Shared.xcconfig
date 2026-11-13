@@ -1,0 +1,22 @@
+// Single place for identifiers and the placeholder brand name.
+// The app name and company are not final (docs/02-decisions-log.md P22).
+// Change them here only; never hard-code them elsewhere.
+
+BUNDLE_ID_PREFIX = com.example
+APP_BUNDLE_ID = $(BUNDLE_ID_PREFIX).couplesapp
+APP_GROUP_ID = group.$(APP_BUNDLE_ID)
+KEYCHAIN_GROUP_ID = $(APP_BUNDLE_ID)
+APP_DISPLAY_NAME = Couples App
+ASSOCIATED_DOMAIN = example.com
+URL_SCHEME = couplesapp
+
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+
+// Local secrets (Supabase URL and anon key, RevenueCat key). Not in git.
+// Copy Secrets.xcconfig.example to Secrets.xcconfig.local and fill it in.
+SUPABASE_HOST = 127.0.0.1:54321
+SUPABASE_SCHEME = http
+SUPABASE_ANON_KEY =
+REVENUECAT_API_KEY =
+#include? "Secrets.xcconfig.local"

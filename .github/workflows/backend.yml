@@ -1,0 +1,46 @@
+name: Backend
+on:
+  push:
+    branches: [main]
+    paths: ["supabase/**", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["supabase/**", ".github/workflows/backend.yml"]
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Start local database
+        run: supabase db start
+      - name: Apply migrations and seed
+        run: supabase db reset
+      - name: Database tests (pgTAP)
+        run: |
+          if ls supabase/tests/*.sql >/dev/null 2>&1 || ls supabase/tests/**/*.sql >/dev/null 2>&1; then
+            supabase test db
+          else
+            echo "No database tests yet."
+          fi
+  functions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Edge Function tests
+        working-directory: supabase/functions
+        run: |
+          if find . -name "*_test.ts" -o -name "*.test.ts" | grep -q .; then
+            deno test --allow-all
+          else
+            echo "No function tests yet."
+          fi

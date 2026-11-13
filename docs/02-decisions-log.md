@@ -57,6 +57,14 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 | B7 | Interface: modern, polished animations and haptics, SwiftUI native | Decided |
 | B8 | Brand colors and identity per `10-brand-and-design-system.md` | Decided |
 
+## Engineering
+
+| # | Decision | Status |
+|---|---|---|
+| E1 | The Xcode project is generated with XcodeGen from `ios/project.yml` and not committed, so parallel work never conflicts in the project file. XcodeGen is a developer tool, not an app dependency | Assumed |
+| E2 | Until the company and name are final, placeholders are: bundle prefix `com.example` (app ID `com.example.couplesapp`), display name "Couples App", domain `example.com`. All three are set only in `ios/Config/Shared.xcconfig` | Assumed |
+| E3 | Feature modules are named `<Name>Feature` (for example `ScheduleFeature`) to avoid clashing with model type names | Assumed |
+
 ## Verified technical facts (checked 2026-11-13)
 
 | # | Fact | Consequence | Source |
@@ -79,3 +87,4 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 
 - 2026-11-13 — Initial log created from planning conversations of 2026-11-10 to 2026-11-13.
 - 2026-11-13 — Founder confirmed O3–O8: all unlock methods free; emergency rules; custom challenge approval; unlock lengths; neutral partner status; prices, emphasized as one price for both partners.
+- 2026-11-13 — WP-1: added engineering decisions E1–E3 (XcodeGen, placeholder identifiers, feature module naming).
