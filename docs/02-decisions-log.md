@@ -66,6 +66,8 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 | E1 | The Xcode project is generated with XcodeGen from `ios/project.yml` and not committed, so parallel work never conflicts in the project file. XcodeGen is a developer tool, not an app dependency | Assumed |
 | E2 | Until the company and name are final, placeholders are: bundle prefix `com.example` (app ID `com.example.couplesapp`), display name "Couples App", domain `example.com`. All three are set only in `ios/Config/Shared.xcconfig` | Assumed |
 | E3 | Feature modules are named `<Name>Feature` (for example `ScheduleFeature`) to avoid clashing with model type names | Assumed |
+| E4 | Snapshot tests use a small in-repo helper (`SnapshotSupport` in the DesignSystem package) instead of a third-party library, to keep the dependency list at `supabase-swift` and RevenueCat. Reference images are compared only on the iOS major version they were recorded on | Assumed |
+| E5 | Colors are defined in code as light/dark token pairs (`ColorToken`) rather than an asset catalog, so the same values serve SwiftUI, UIKit and the Screen Time extensions and can be contrast-tested. Fraunces and Instrument Sans are bundled as variable font files (SIL Open Font License, license files included); fonts are assets, not code dependencies | Assumed |
 
 ## Verified technical facts (checked 2026-11-13)
 
@@ -91,3 +93,4 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 - 2026-11-13 — Founder confirmed O3–O8: all unlock methods free; emergency rules; custom challenge approval; unlock lengths; neutral partner status; prices, emphasized as one price for both partners.
 - 2026-11-13 — WP-1: added engineering decisions E1–E3 (XcodeGen, placeholder identifiers, feature module naming).
 - 2026-11-13 — Founder confirmed O11 (weekly report email off by default, P24) and O1 (minimum age 18+, App Store rating 12+, P25).
+- 2026-11-13 — WP-2: added engineering decisions E4–E5 (in-repo snapshot helper; color tokens in code and bundled fonts).
