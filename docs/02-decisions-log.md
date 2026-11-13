@@ -28,6 +28,8 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 | P20 | Accountability codes delivered by push and email only, never SMS | Decided |
 | P21 | Content stays PG to simplify store approval | Decided |
 | P22 | App name not decided; build with a placeholder | Decided |
+| P24 | Weekly report email is off by default; the report arrives by push and in-app, and email is an opt-in in Settings (was O11) | Decided |
+| P25 | Minimum user age is 18+ in the terms; App Store age rating 12+ (was O1) | Decided |
 | P23 | Partner sees a neutral status ("Protected time is off on Ana's phone") if Screen Time permission is revoked | Decided |
 
 ## Monetization
@@ -88,3 +90,4 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 - 2026-11-13 — Initial log created from planning conversations of 2026-11-10 to 2026-11-13.
 - 2026-11-13 — Founder confirmed O3–O8: all unlock methods free; emergency rules; custom challenge approval; unlock lengths; neutral partner status; prices, emphasized as one price for both partners.
 - 2026-11-13 — WP-1: added engineering decisions E1–E3 (XcodeGen, placeholder identifiers, feature module naming).
+- 2026-11-13 — Founder confirmed O11 (weekly report email off by default, P24) and O1 (minimum age 18+, App Store rating 12+, P25).

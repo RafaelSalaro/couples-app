@@ -21,7 +21,7 @@
 
 | # | Question | Recommendation | Needed by |
 |---|---|---|---|
-| O1 | Minimum user age | 18+ in the terms (couples app, simpler privacy obligations); App Store age rating 12+ | Before terms are drafted |
+| O1 | ~~Minimum user age~~ | **Resolved 2026-11-13: 18+ in the terms; App Store age rating 12+** | — |
 | O2 | Does the LLC already exist? Which state? | If not, form it now; it is on the critical path | Today |
 | O3 | ~~Are all three unlock methods free?~~ | **Resolved 2026-11-13: yes, all free** | — |
 | O4 | ~~Prices~~ | **Resolved: $39.99/yr and $119.99 lifetime, one price for both partners**; still test willingness to pay in the beta survey | — |
@@ -31,5 +31,5 @@
 | O8 | ~~Unlock lengths~~ | **Resolved: 15/30/60 free, any 15-minute step premium** | — |
 | O9 | Final app name | Shortlist: Linger (trademark check pending), Our Hours, Fica; decide after USPTO search | Before App Store listing and logo |
 | O10 | Domain to buy now | A neutral domain that can redirect later, or the front-runner name's domain if available | This week |
-| O11 | Weekly report email on by default? | Off by default (push only); opt-in email | Before WP-10 |
+| O11 | ~~Weekly report email on by default?~~ | **Resolved 2026-11-13: off by default (push only); opt-in email** | — |
 | O12 | Beta couples: who? | Friends/family first, then waitlist | Phase 5 |
