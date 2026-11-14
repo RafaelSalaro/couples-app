@@ -1,0 +1,47 @@
+---
+// Soft call to action used at the end of pages and guides. Links to the two
+// product pages (docs/09 §5: every guide links to /how-it-works and /pricing).
+import WaitlistForm from './WaitlistForm.astro';
+import StoreButtons from './StoreButtons.astro';
+import { site, price } from '../config/site';
+
+interface Props {
+  source: string;
+  title?: string;
+}
+
+const { source, title = 'Less scrolling. More us.' } = Astro.props;
+---
+
+<section class="section section--dusk">
+  <div class="wrap cta">
+    <div>
+      <h2>{title}</h2>
+      <p class="lede">
+        {site.name} pauses the apps you choose during protected time and gives you warm ways to unlock time together.
+        Both of you have the same powers, always. See <a href="/how-it-works/">how it works</a> and the
+        <a href="/pricing/">pricing</a>: one price covers both of you, {price.yearly} a year.
+      </p>
+    </div>
+    <div>
+      {site.launched ? <StoreButtons /> : <WaitlistForm source={source} id={`cta-${source}`} />}
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+  }
+  @media (min-width: 860px) {
+    .cta {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7);
+    }
+  }
+  .cta .lede a {
+    color: inherit;
+  }
+</style>

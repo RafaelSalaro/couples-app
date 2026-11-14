@@ -2,6 +2,17 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-13 — W2 Full website and first guides
+
+- All pages of `09-website-and-seo.md` §3: `/how-it-works/`, `/pricing/` (free vs premium table from spec §12; every price says it covers both partners), `/guides/`, `/about/`, `/support/` (help, contact, account deletion steps), `/safety/` (safety by design, how to step away, US helplines), `/press/`, plus the token routes `/i/<token>` and `/approve/<token>`. Privacy and terms are still the W1 placeholders until the legal drafts land.
+- Six cornerstone guides (1,400–1,900 words each) as a content collection: phone-free date ideas, phubbing, evening routine for couples, pausing social media at night on iPhone, screen time agreements for couples, the science of attention and relationships. Each has an author line and date, a brand-style illustration, an FAQ block, a soft call to action and links to `/how-it-works/` and `/pricing/`.
+- The science and phubbing guides cite seven published papers; titles, journals, volumes and pages were checked against Crossref on 2026-11-13. The summaries of findings are ours and should be read once by the founder against the papers.
+- Structured data on every page (`Organization`, `WebSite`, `BreadcrumbList`; `MobileApplication` with offers on home and pricing; `FAQPage` on home, how it works, pricing, support and guides; `Article` on guides; `ItemList` on the guides index). No ratings or reviews are marked up because none exist.
+- `scripts/check-site.mjs` now also checks guide links, heading order, glued inline text and `Article` fields. Astro's HTML compression is off because it dropped spaces before links.
+- Verified locally: build clean, 20 pages (16 indexable, all in the sitemap), 0 SEO errors; `astro check` 0 errors; Lighthouse 100 / 100 / 100 / 100 on 12 pages, mobile and desktop (home, how it works, pricing, guides index, two guides, about, support, safety, privacy, terms, press); mobile LCP 0.6–0.8 s.
+- **Open:** Search Console and Bing verification need the live domain. The founder's story on `/about/` is left out until the founder writes it (`web/src/data/founder-story.ts`). Press screenshots wait for the app. The web approval page has no backend yet (E-entry in the decisions log). The iPhone steps in the how-to guide should be checked on a device. The guide about pausing social media avoids the word "block" (brand vocabulary) although people search for it: a founder call on SEO versus voice.
+- Helpline numbers on `/safety/` were checked on 2026-11-13 and need re-checking before launch.
+
 ## 2026-11-13 — Challenge library content
 
 - `content/challenges/library.json`: 72 PG premium challenges for couples in the brand voice, 18 per category (together, solo kindness, offline fun, movement), each with title, short description, minute value (5–45) and shared or individual. None repeats the 5 free presets.

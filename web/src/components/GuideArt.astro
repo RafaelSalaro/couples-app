@@ -1,0 +1,49 @@
+---
+// Guide illustration: flat shapes from the two-circle motif in brand colors (docs/10 §9).
+// Each guide gets its own arrangement, derived from its slug, so no stock imagery is needed.
+interface Props {
+  seed: string;
+  compact?: boolean;
+}
+
+const { seed, compact = false } = Astro.props;
+let hash = 2166136261;
+for (const char of seed) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619) >>> 0;
+const pick = (range: number, shift: number) => ((hash >>> shift) % range);
+
+const overlap = 34 + pick(30, 3);
+const radius = 62 + pick(18, 8);
+const tilt = pick(50, 13) - 25;
+const cx = 300;
+const cy = 110;
+const dx = radius - overlap / 2;
+const dots = Array.from({ length: 5 }, (_, i) => ({
+  x: 60 + ((hash >>> (i * 5)) % 480),
+  y: 24 + ((hash >>> (i * 3 + 7)) % 172),
+  r: 4 + ((hash >>> (i * 2 + 1)) % 9),
+  tone: i % 3,
+}));
+const tones = ['var(--sage)', 'var(--glow)', 'var(--hearth)'];
+---
+
+<svg class:list={['art', { 'art--compact': compact }]} viewBox="0 0 600 220" role="presentation" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+  <rect width="600" height="220" fill="var(--surface-sunken)"></rect>
+  {dots.map((dot) => <circle cx={dot.x} cy={dot.y} r={dot.r} fill={tones[dot.tone]} opacity="0.35" />)}
+  <g transform={`rotate(${tilt} ${cx} ${cy})`}>
+    <circle cx={cx - dx} cy={cy} r={radius} fill="var(--hearth)"></circle>
+    <circle cx={cx + dx} cy={cy} r={radius} fill="var(--glow)" opacity="0.88"></circle>
+  </g>
+</svg>
+
+<style>
+  .art {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 600 / 220;
+    border-radius: var(--radius-l);
+  }
+  .art--compact {
+    aspect-ratio: 600 / 260;
+    border-radius: var(--radius-s);
+  }
+</style>

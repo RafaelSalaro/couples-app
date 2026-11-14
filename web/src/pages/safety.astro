@@ -1,0 +1,178 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../config/site';
+import { safetyResources } from '../data/safety-resources';
+
+// docs/03-feature-spec.md §16.
+const design = [
+  { icon: 'scale', title: 'Identical powers', text: 'Both partners can do exactly the same things. There is no admin role, and no setting gives one person authority over the other.' },
+  { icon: 'door-open', title: 'Unpair instantly, on your own', text: 'Either partner can unpair at any time from Settings with one confirmation. The other person is not asked and cannot stop it.' },
+  { icon: 'eye-off', title: 'No watching', text: 'The app shares no location, no list of apps, no messages, no browsing and no Screen Time usage. Partners see only minutes, requests, challenges, kudos and the shared streak.' },
+  { icon: 'life-buoy', title: 'Emergency unlock, always', text: 'Fifteen minutes with no approval, even with zero minutes and even without a partner. Phone calls, Messages and Maps are best left out of protected time entirely.' },
+  { icon: 'smartphone', title: 'Your phone, your choices', text: 'Each person chooses their own paused apps on their own phone and gives Apple’s Screen Time permission themselves. Nobody can set it up on your behalf from another device.' },
+  { icon: 'sparkles', title: 'No punishment', text: 'Nothing is taken away and nobody is shamed. The only thing that can end is a streak, and a new one starts the same day.' },
+];
+---
+
+<Base
+  title="Safety by design"
+  description={`How ${site.name} is designed so it cannot be used to control a partner, how to unpair on your own, and where to find relationship-safety support.`}
+  og="safety"
+  breadcrumbs={[{ name: 'Safety', path: '/safety/' }]}
+>
+  <section class="page-head">
+    <div class="wrap">
+      <h1>Safety by design</h1>
+      <p class="lede">
+        An app that pauses apps for couples has to be built so that it cannot become a tool for control. Here is how
+        {site.name} is designed, and where to turn if something feels wrong.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="grid grid--3">
+      {
+        design.map((item) => (
+          <div class="card item">
+            <Icon name={item.icon} />
+            <h2>{item.title}</h2>
+            <p>{item.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>What a healthy use looks like</h2>
+      <p>
+        {site.name} is for two people who both want more time together and choose it freely. It should feel like a
+        shared project. You both set it up, you both can change it, and either of you can stop.
+      </p>
+
+      <h2>Signs something is not right</h2>
+      <ul>
+        <li>You were pressured to install the app or to pair.</li>
+        <li>You feel you cannot say no to a request, or cannot ask for time without an argument.</li>
+        <li>Your partner insists on choosing your paused apps or your schedule for you.</li>
+        <li>You are afraid of how your partner would react if you unpaired.</li>
+        <li>The app is one of several ways your partner checks on you or limits who you talk to.</li>
+      </ul>
+      <p>
+        None of that is what this app is for. You can leave it at any moment, and you do not owe anyone an explanation.
+      </p>
+
+      <h2>How to step away</h2>
+      <ol>
+        <li><strong>Unpair:</strong> in the app, open Settings, go to your partner and choose Unpair. It is immediate.</li>
+        <li><strong>Turn off protected time:</strong> once unpaired, your schedule is yours alone to change or switch off.</li>
+        <li>
+          <strong>Remove Screen Time access:</strong> in your iPhone's Settings, under Screen Time, you can remove the
+          app's access at any time.
+        </li>
+        <li><strong>Delete your account:</strong> see the steps on our <a href="/support/#delete-account">support page</a>.</li>
+      </ol>
+      <p>
+        When you unpair, your partner receives a short, neutral notification that the pairing ended. If that
+        notification could put you at risk, please talk to one of the services below first. They can help you plan.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="resources">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>People who can help</h2>
+        <p class="lede">
+          If you are in immediate danger, call your local emergency number (911 in the United States). The services
+          below are free and confidential.
+        </p>
+      </div>
+      <div class="grid grid--2">
+        {
+          safetyResources.map((resource) => (
+            <div class="card item">
+              <h3>{resource.name}</h3>
+              <p>{resource.description}</p>
+              <ul class="contact">
+                {resource.phone && (
+                  <li>
+                    <Icon name="phone" size={20} />
+                    <a href={resource.phone.href}>{resource.phone.label}</a>
+                  </li>
+                )}
+                {resource.text && (
+                  <li>
+                    <Icon name="message-circle" size={20} />
+                    {resource.text}
+                  </li>
+                )}
+                <li>
+                  <Icon name="link" size={20} />
+                  <a href={resource.url} rel="noopener noreferrer">{resource.urlLabel}</a>
+                </li>
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+      <p class="outside">
+        Outside the United States, search for a domestic abuse helpline in your country, or ask a doctor or local
+        support service. If someone may be checking your device, consider using a phone or computer they cannot access.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap prose">
+      <h2>Tell us</h2>
+      <p>
+        If any part of {site.name} feels controlling, or you see a way it could be misused, we want to hear about it:
+        <a href={`mailto:${site.supportEmail}?subject=Safety`}>{site.supportEmail}</a>.
+      </p>
+      <p>
+        {site.name} is a tool for spending time together. It is not a counseling service and cannot respond to
+        emergencies.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .item {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+  .item h2 {
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+  .item > :global(.icon) {
+    color: var(--sage);
+  }
+  .contact {
+    display: grid;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding: 0;
+    list-style: none;
+    color: var(--ink);
+  }
+  .contact li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 32px;
+  }
+  .outside {
+    margin-top: var(--space-5);
+    max-width: 680px;
+    color: var(--ink-muted);
+  }
+</style>

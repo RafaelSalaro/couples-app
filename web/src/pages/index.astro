@@ -197,7 +197,10 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
         One of you pays, both of you get premium. That is {site.pricing.perPersonYearly}. Pairing, protected time and
         every way to unlock are free. Or pay {price.lifetimeForBoth}.
       </p>
-      <!-- pricing-link -->
+      <p class="pricing-teaser__links">
+        <a class="button button--quiet" href="/pricing/">See what's included</a>
+        <a class="button button--quiet" href="/how-it-works/">How it works</a>
+      </p>
     </div>
   </section>
 
@@ -461,6 +464,14 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
   .pricing-teaser .lede {
     max-width: 620px;
     margin-inline: auto;
+  }
+
+  .pricing-teaser__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
   }
 
   .final {

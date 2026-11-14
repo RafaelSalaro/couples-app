@@ -58,7 +58,7 @@ export const pricingFaq: FaqItem[] = [
   {
     question: 'What is in the free version?',
     answer:
-      'Pairing, protected time with one schedule, all three ways to unlock plus the emergency unlock, earned minutes, 5 preset challenges, this week’s summary report, and widgets. Free stays free.',
+      'Pairing, protected time with one schedule, all three ways to unlock plus the emergency unlock, earned minutes, 5 preset challenges, this week’s summary report, and widgets.',
   },
   {
     question: 'How does the free trial work?',

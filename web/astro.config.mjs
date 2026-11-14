@@ -16,6 +16,9 @@ const privatePaths = ['/invite/', '/approve-request/', '/waitlist/confirmed/', '
 export default defineConfig({
   site: `https://${domain}`,
   output: 'static',
+  // Astro's HTML compression drops the space at a line break before an inline element
+  // ("see<a>"), so it stays off; Cloudflare compresses responses anyway.
+  compressHTML: false,
   trailingSlash: 'always',
   build: { format: 'directory', inlineStylesheets: 'always' },
   integrations: [

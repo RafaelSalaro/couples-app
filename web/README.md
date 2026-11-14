@@ -54,6 +54,21 @@ sends no email and must never be deployed.
 - `public/_headers` sets the JSON content type for the association file and no-index, no-referrer
   and no-store on token routes.
 
+## Guides
+
+One Markdown file per guide in `src/content/guides/` (schema in `src/content.config.ts`): title,
+description, lede, published date, cluster, FAQ and optional sources. Guides must not name the app
+or state prices in the body; the layout adds the call to action and the links to `/how-it-works/`
+and `/pricing/`. Set `draft: true` to keep a guide out of the build. Publishing a draft: remove
+`draft`, set `published` to the day it goes live, and run `npm run build`.
+
+## Web approval page
+
+`/approve/<token>` is served by `/approve-request/`. Its backend does not exist yet. When
+`PUBLIC_APPROVE_ENDPOINT` is set, the page posts `{token, approve}` to it and expects
+`{ok, data}` or `{ok: false, error: {code}}` with codes `expired` and `invalid`. Without it the
+page explains how to use the 6-digit code from the email.
+
 ## Deploying to Cloudflare Pages
 
 Project root `web`, build command `npm run build`, output directory `dist`, Node 22 or later.

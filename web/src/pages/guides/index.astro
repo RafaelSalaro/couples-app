@@ -1,0 +1,81 @@
+---
+import Base from '../../layouts/Base.astro';
+import GuideArt from '../../components/GuideArt.astro';
+import CallToAction from '../../components/CallToAction.astro';
+import { absoluteUrl } from '../../config/site';
+import { publishedGuides, clusterLabel, readingMinutes } from '../../lib/guides';
+
+const guides = await publishedGuides();
+const listSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: guides.map((guide, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: guide.data.title,
+    url: absoluteUrl(`/guides/${guide.id}/`),
+  })),
+};
+---
+
+<Base
+  title="Guides for couples: less scrolling, more us"
+  description="Practical guides for couples on phones and connection: phone-free date ideas, evening routines, screen time agreements, phubbing and what the research says."
+  og="guides"
+  breadcrumbs={[{ name: 'Guides', path: '/guides/' }]}
+  schema={[listSchema]}
+>
+  <section class="page-head">
+    <div class="wrap">
+      <h1>Guides</h1>
+      <p class="lede">
+        Practical, kind and free of guilt. Ideas and how-tos for couples who want a little less scrolling and a little
+        more of each other.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap guides">
+    <div class="grid grid--2">
+      {
+        guides.map((guide) => (
+          <a class="card guide" href={`/guides/${guide.id}/`}>
+            <GuideArt seed={guide.id} compact />
+            <span class="chip chip--sage">{clusterLabel[guide.data.cluster]}</span>
+            <h2>{guide.data.title}</h2>
+            <p>{guide.data.lede}</p>
+            <span class="guide__meta">{readingMinutes(guide.body)} min read</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <CallToAction source="guides" />
+</Base>
+
+<style>
+  .guides {
+    padding-bottom: var(--space-7);
+  }
+  .guide {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    align-content: start;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 250ms var(--ease-out);
+  }
+  .guide:hover {
+    transform: translateY(-2px);
+  }
+  .guide h2 {
+    font-size: 1.5rem;
+  }
+  .guide__meta {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+</style>

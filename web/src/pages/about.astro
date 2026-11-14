@@ -1,0 +1,123 @@
+---
+// The philosophy, and the founder's story. The story is the founder's to write:
+// put it in src/data/founder-story.ts and it appears here. Nothing is invented.
+import Base from '../layouts/Base.astro';
+import CallToAction from '../components/CallToAction.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../config/site';
+import { founderStory } from '../data/founder-story';
+
+const promises = [
+  { icon: 'scale', title: 'Everything is mutual', text: 'Both partners have identical powers. There is no admin and no "main" account.' },
+  { icon: 'door-open', title: 'Leaving is always possible', text: 'Either of you can unpair at any time, instantly, without the other agreeing and without giving a reason.' },
+  { icon: 'eye-off', title: 'Your phone stays yours', text: 'Your partner never sees which apps you paused, what you do in them, your messages or where you are.' },
+  { icon: 'sparkles', title: 'Celebrate, never scold', text: 'No red screens, no guilt, no shaming. A missed day simply means a new streak starts today.' },
+  { icon: 'life-buoy', title: 'A way out, always', text: 'An emergency unlock is there whenever you need it, with no approval from anyone.' },
+];
+---
+
+<Base
+  title="About: why we are building this"
+  description={`${site.name} is built on one idea: it is not about control, it is about being intentional and really connecting. Here is what that means in practice.`}
+  og="about"
+  breadcrumbs={[{ name: 'About', path: '/about/' }]}
+>
+  <section class="page-head">
+    <div class="wrap">
+      <h1>Not about control. About being here, together.</h1>
+      <p class="lede">
+        That sentence decides everything we build: every feature, every word and every color in {site.name}.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="prose">
+      <h2>The evening we all know</h2>
+      <p>
+        Two people on a couch. Two phones. An hour goes by, and then another. Nobody chose it, and nobody feels great
+        about it afterwards.
+      </p>
+      <p>
+        Apps that help with screen time usually treat this as one person's willpower problem. You set a limit, you tap
+        "ignore", and a few weeks later the app is gone. Apps for couples help you talk more, but they leave the phone
+        itself alone.
+      </p>
+      <p>
+        We think the answer sits between the two. Putting the phone down is much easier when someone you love is doing
+        it with you, and much nicer when what you get in return is each other.
+      </p>
+
+      <h2>What we are building</h2>
+      <p>
+        {site.name} lets a couple agree on protected time, when the apps each of you chose are paused. When you want one
+        of them, you turn to each other: scan a code in person, ask and hear "Go for it", or spend minutes you earned by
+        cooking together, taking a walk or leaving a note. Your partner can also send kudos, a few minutes given simply
+        because they noticed you.
+      </p>
+      <p>
+        See <a href="/how-it-works/">how it works</a> for the details.
+      </p>
+
+      <h2>The worry we take seriously</h2>
+      <p>
+        An app that pauses apps for couples could become a way for one person to control another. That is the opposite
+        of what we want, so the product is designed against it from the first screen.
+      </p>
+    </div>
+
+    <div class="grid grid--3 promises">
+      {
+        promises.map((item) => (
+          <div class="card">
+            <Icon name={item.icon} />
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="prose">
+      <p>
+        If something in the app ever feels controlling to you, we want to know. Write to
+        <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>. And if you are worried about your relationship,
+        our <a href="/safety/">safety page</a> lists people who can help.
+      </p>
+
+      {
+        founderStory.length > 0 && (
+          <>
+            <h2>The founder's story</h2>
+            {founderStory.map((paragraph) => <p>{paragraph}</p>)}
+          </>
+        )
+      }
+
+      <h2>Who is behind it</h2>
+      <p>
+        {site.name} is made by {site.company}. We do not sell data or show ads, and the app does not use third-party
+        analytics.
+      </p>
+    </div>
+  </section>
+
+  <CallToAction source="about" />
+</Base>
+
+<style>
+  .promises {
+    margin-block: var(--space-6);
+  }
+  .promises .card {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+  .promises :global(.icon) {
+    color: var(--hearth);
+  }
+  .wrap {
+    margin-bottom: var(--space-7);
+  }
+</style>

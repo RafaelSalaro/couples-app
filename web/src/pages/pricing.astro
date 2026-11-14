@@ -1,0 +1,208 @@
+---
+import Base from '../layouts/Base.astro';
+import Faq from '../components/Faq.astro';
+import Icon from '../components/Icon.astro';
+import CallToAction from '../components/CallToAction.astro';
+import { site, price } from '../config/site';
+import { pricingFaq } from '../data/faq';
+import { appSchema, faqSchema } from '../lib/schema';
+
+// docs/03-feature-spec.md §12.
+const rows: { feature: string; free: string; premium: string }[] = [
+  { feature: 'Pairing, protected time, default schedule', free: 'Yes', premium: 'Yes' },
+  { feature: 'Schedules', free: '1', premium: 'Up to 3' },
+  { feature: 'Scan, ask your partner, emergency unlock', free: 'Yes', premium: 'Yes' },
+  { feature: 'Earned minutes', free: 'Yes', premium: 'Yes' },
+  { feature: 'Challenges', free: '5 preset', premium: 'Full library and your own' },
+  { feature: 'Kudos', free: 'Not included', premium: 'Yes' },
+  { feature: 'Reports', free: 'This week, summary', premium: 'Full history, charts, highlights' },
+  { feature: 'Widgets and Lock Screen countdown', free: 'Yes', premium: 'Yes' },
+  { feature: 'Unlock lengths', free: '15, 30 or 60 minutes', premium: 'Any length in 15-minute steps' },
+];
+
+const freeList = [
+  'Pairing and protected time',
+  'All three ways to unlock',
+  'Emergency unlock, always',
+  'Earned minutes and 5 challenges',
+  'This week’s summary report',
+];
+const premiumList = [
+  'Everything in Free, for both of you',
+  'Full challenge library, plus your own',
+  'Kudos: minutes just because',
+  'Full reports with history and highlights',
+  'Up to 3 schedules and flexible unlock lengths',
+];
+---
+
+<Base
+  title="Pricing: one price for both of you"
+  description={`${site.name} is free to start. Premium is ${price.yearlyForBoth} or ${price.lifetimeForBoth}: one of you pays and both partners are covered.`}
+  og="pricing"
+  breadcrumbs={[{ name: 'Pricing', path: '/pricing/' }]}
+  schema={[appSchema(), faqSchema(pricingFaq)]}
+>
+  <section class="page-head">
+    <div class="wrap">
+      <h1>One price for both of you</h1>
+      <p class="lede">
+        One of you pays, both of you get premium. Every price on this page covers the couple. For the yearly plan that
+        is {site.pricing.perPersonYearly} per year.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap plans">
+    <div class="grid grid--3">
+      <div class="card plan">
+        <h2>Free</h2>
+        <p class="plan__price"><span class="numeral">$0</span></p>
+        <p class="plan__note">For both of you. No trial needed.</p>
+        <ul>
+          {freeList.map((item) => <li><Icon name="check" size={20} />{item}</li>)}
+        </ul>
+      </div>
+
+      <div class="card plan plan--featured">
+        <span class="chip chip--glow">{site.pricing.trialDays}-day free trial</span>
+        <h2>Premium yearly</h2>
+        <p class="plan__price"><span class="numeral">{price.yearly}</span> a year for both of you</p>
+        <p class="plan__note">One subscription covers both partners. That is {site.pricing.perPersonYearly}.</p>
+        <ul>
+          {premiumList.map((item) => <li><Icon name="check" size={20} />{item}</li>)}
+        </ul>
+      </div>
+
+      <div class="card plan">
+        <h2>Premium lifetime</h2>
+        <p class="plan__price"><span class="numeral">{price.lifetime}</span> once for both of you</p>
+        <p class="plan__note">One purchase covers both partners. No renewals.</p>
+        <ul>
+          <li><Icon name="check" size={20} />Everything in Premium yearly</li>
+          <li><Icon name="check" size={20} />Pay once, keep it</li>
+        </ul>
+      </div>
+    </div>
+    <p class="plans__small">
+      Prices in US dollars; prices in other countries are set in the App Store. Purchases are made in the app through
+      Apple. The yearly plan renews each year until you cancel in your Apple subscription settings.
+    </p>
+  </section>
+
+  <section class="section" id="compare">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Free and premium, side by side</h2>
+        <p class="lede">Everything that keeps the app fair and safe is in the free version.</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Feature</th>
+              <th scope="col">Free</th>
+              <th scope="col">Premium, for both of you</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((row) => (
+                <tr>
+                  <th scope="row">{row.feature}</th>
+                  <td>{row.free}</td>
+                  <td>{row.premium}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="faq">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <h2>Questions about pricing</h2>
+      </div>
+      <Faq items={pricingFaq} />
+    </div>
+  </section>
+
+  <CallToAction source="pricing" title="Start free, together." />
+</Base>
+
+<style>
+  .plans {
+    padding-bottom: var(--space-6);
+  }
+  .plan {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    justify-items: start;
+  }
+  .plan--featured {
+    border-color: var(--glow);
+    border-width: 2px;
+  }
+  .plan h2 {
+    font-size: 1.5rem;
+  }
+  .plan__price {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .plan__price .numeral {
+    display: block;
+    font-size: 44px;
+    line-height: 1.1;
+  }
+  .plan__note {
+    font-size: 15px;
+  }
+  .plan ul {
+    display: grid;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding: 0;
+    list-style: none;
+  }
+  .plan li {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+  }
+  .plan li :global(.icon) {
+    margin-top: 3px;
+    color: var(--sage);
+  }
+  .plans__small {
+    margin-top: var(--space-5);
+    max-width: 720px;
+    font-size: 15px;
+    color: var(--ink-muted);
+  }
+  table {
+    width: 100%;
+    min-width: 480px;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  thead th {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  tbody th {
+    font-weight: 500;
+  }
+</style>

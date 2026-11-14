@@ -1,0 +1,165 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import GuideArt from '../../components/GuideArt.astro';
+import Faq from '../../components/Faq.astro';
+import CallToAction from '../../components/CallToAction.astro';
+import { site } from '../../config/site';
+import { articleSchema, faqSchema } from '../../lib/schema';
+import { publishedGuides, clusterLabel, readingMinutes, formatDate, type Guide } from '../../lib/guides';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const guides = await publishedGuides();
+  return guides.map((guide) => ({
+    params: { slug: guide.id },
+    props: { guide, related: guides.filter((other) => other.id !== guide.id).slice(0, 3) },
+  }));
+};
+
+const { guide, related } = Astro.props as { guide: Guide; related: Guide[] };
+const { Content } = await render(guide);
+const { data } = guide;
+const path = `/guides/${guide.id}/`;
+---
+
+<Base
+  title={data.title}
+  description={data.description}
+  og={`guide-${guide.id}`}
+  ogType="article"
+  breadcrumbs={[
+    { name: 'Guides', path: '/guides/' },
+    { name: data.title, path },
+  ]}
+  schema={[
+    articleSchema({ title: data.title, description: data.description, path, published: data.published, updated: data.updated, og: `guide-${guide.id}` }),
+    faqSchema(data.faq),
+  ]}
+>
+  <article>
+    <header class="wrap guide-head">
+      <span class="chip chip--sage">{clusterLabel[data.cluster]}</span>
+      <h1>{data.title}</h1>
+      <p class="lede">{data.lede}</p>
+      <p class="guide-meta">
+        By the {site.name} team ·
+        <time datetime={data.published.toISOString().slice(0, 10)}>{formatDate(data.published)}</time>
+        {data.updated && <> · Updated <time datetime={data.updated.toISOString().slice(0, 10)}>{formatDate(data.updated)}</time></>}
+        · {readingMinutes(guide.body)} min read
+      </p>
+      <GuideArt seed={guide.id} />
+    </header>
+
+    <div class="wrap">
+      <div class="prose guide-body">
+        <Content />
+
+        {
+          data.sources.length > 0 && (
+            <section class="sources">
+              <h2 id="sources">Sources</h2>
+              <ol>
+                {data.sources.map((source) => (
+                  <li>
+                    {source.citation}
+                    {source.url && (
+                      <>
+                        {' '}
+                        <a href={source.url} rel="noopener">
+                          Link
+                        </a>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )
+        }
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head section-head--center">
+          <h2>Questions people ask</h2>
+        </div>
+        <Faq items={data.faq} />
+      </div>
+    </section>
+  </article>
+
+  <CallToAction source={`guide-${guide.id}`} />
+
+  {
+    related.length > 0 && (
+      <section class="section">
+        <div class="wrap">
+          <h2 class="related-title">Keep reading</h2>
+          <div class="grid grid--3">
+            {related.map((other) => (
+              <a class="card related" href={`/guides/${other.id}/`}>
+                <span class="chip chip--sage">{clusterLabel[other.data.cluster]}</span>
+                <h3>{other.data.title}</h3>
+                <p>{other.data.lede}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .guide-head {
+    max-width: 800px;
+    padding-block: var(--space-6) var(--space-6);
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+  }
+  .guide-head .lede {
+    margin-top: 0;
+  }
+  .guide-meta {
+    font-size: 15px;
+    color: var(--ink-muted);
+  }
+  .guide-body {
+    margin-inline: auto;
+  }
+  .guide-body :global(h2) {
+    scroll-margin-top: 96px;
+  }
+  .sources {
+    margin-top: var(--space-7);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+  .sources h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: var(--ink);
+  }
+  .sources ol {
+    margin-top: var(--space-3);
+  }
+  .related-title {
+    margin-bottom: var(--space-5);
+  }
+  .related {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    align-content: start;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 250ms var(--ease-out);
+  }
+  .related:hover {
+    transform: translateY(-2px);
+  }
+</style>

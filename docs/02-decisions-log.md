@@ -70,6 +70,7 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 | E5 | Colors are defined in code as light/dark token pairs (`ColorToken`) rather than an asset catalog, so the same values serve SwiftUI, UIKit and the Screen Time extensions and can be contrast-tested. Fraunces and Instrument Sans are bundled as variable font files (SIL Open Font License, license files included); fonts are assets, not code dependencies | Assumed |
 | E6 | Website: the brand name, company, domain, prices and launch state live only in `web/src/config/site.ts` (overridable by environment variables, same placeholders as E2); the build fails if a page hard-codes them. The site stays fully static: `/i/<token>` and `/approve/<token>` are served by fixed pages through Cloudflare Pages rewrites (`web/public/_redirects`), and the invite page never reads or sends the token | Assumed |
 | E7 | Website loads nothing from third parties: Fraunces and Instrument Sans are self-hosted (Fontsource packages, SIL Open Font License), Open Graph images are generated at build time, and the build fails on any external script, style, font or image. Cloudflare Web Analytics (named in `09-website-and-seo.md` §2) is **not** embedded, because `CLAUDE.md` rules out third-party analytics; whether to turn it on is a founder decision | Assumed |
+| E8 | Website guides never name the app or state a price in their body text (the name is not final); the page layout adds the call to action, links and prices from the site config. Guides are Markdown files in `web/src/content/guides/`; `draft: true` keeps one out of the build. The web approval page (`/approve/<token>`) is built ahead of its backend: it posts `{token, approve}` to `PUBLIC_APPROVE_ENDPOINT` and, until that exists, explains the 6-digit code. The endpoint contract is a proposal for the backend lane, not a decided API | Assumed |
 
 ## Verified technical facts (checked 2026-11-13)
 
@@ -97,3 +98,4 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 - 2026-11-13 — Founder confirmed O11 (weekly report email off by default, P24) and O1 (minimum age 18+, App Store rating 12+, P25).
 - 2026-11-13 — WP-2: added engineering decisions E4–E5 (in-repo snapshot helper; color tokens in code and bundled fonts).
 - 2026-11-13 — W1: added engineering decisions E6–E7 (website config and static token routes; no third-party resources on the website).
+- 2026-11-13 — W2: added engineering decision E8 (guides are name-free Markdown; web approval page built ahead of its backend).

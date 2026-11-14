@@ -1,0 +1,124 @@
+---
+// Web approval for partners without the app (docs/09 §3, docs/08 §1): the page behind
+// https://<domain>/approve/<token>, the signed one-time link in the request email.
+// public/_redirects serves this page for every /approve/* address.
+//
+// The backend for this page does not exist yet. The page is ready for it: it posts
+// {token, approve} to PUBLIC_APPROVE_ENDPOINT and expects the usual
+// {ok, data} | {ok:false, error:{code}} shape (codes: expired, invalid). Until the endpoint
+// is configured, the page explains how to use the 6-digit code from the same email.
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import { site } from '../config/site';
+---
+
+<Base title="Your partner is asking" description="Answer your partner's request for a little time." noindex bare>
+  <section class="section">
+    <div class="wrap approve" data-approve data-endpoint={site.approveEndpoint}>
+      <a href="/" aria-label={`${site.name} home`}><Logo /></a>
+      <h1>Your partner is asking for a little time</h1>
+      <p class="lede">
+        They'd like to open their paused apps for a while. The details are in the email you received. Either answer is a
+        good one.
+      </p>
+
+      <div class="approve__actions" data-actions hidden>
+        <button class="button" type="button" data-answer="true">Go for it</button>
+        <button class="button button--quiet" type="button" data-answer="false">Let's wait</button>
+      </div>
+
+      <p class="approve__status" role="status" aria-live="polite" data-status></p>
+
+      <div class="card" data-fallback>
+        <h2>Prefer to answer another way?</h2>
+        <p>
+          The email also has a 6-digit code. Tell it to your partner, in person or in a message, and they can type it in
+          to unlock. If you'd rather wait, you don't need to do anything: the request ends on its own after 5 minutes.
+        </p>
+      </div>
+      <noscript><p>The buttons need JavaScript. You can use the 6-digit code from the email instead.</p></noscript>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .approve {
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+    max-width: 640px;
+  }
+  .approve .lede {
+    margin-top: 0;
+  }
+  .approve__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
+  .approve__actions[hidden] {
+    display: none;
+  }
+  .approve__status {
+    min-height: 1.6em;
+    font-weight: 500;
+  }
+  .card h2 {
+    font-size: 1.25rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    letter-spacing: 0;
+    margin-bottom: var(--space-2);
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-approve]');
+  if (root) {
+    const endpoint = root.dataset.endpoint ?? '';
+    const actions = root.querySelector<HTMLElement>('[data-actions]')!;
+    const status = root.querySelector<HTMLElement>('[data-status]')!;
+    const token = decodeURIComponent(location.pathname.split('/').filter(Boolean)[1] ?? '');
+    const copy = {
+      approved: 'Done. Their apps are open now. That was kind of you.',
+      waiting: "Okay. They'll see a gentle \"let's wait\".",
+      expired: 'This request has already ended. If they still need time, they can ask again.',
+      trouble: "We couldn't send your answer just now. You can try again, or share the 6-digit code from the email.",
+    };
+
+    if (endpoint && token) {
+      actions.hidden = false;
+      for (const button of actions.querySelectorAll<HTMLButtonElement>('button')) {
+        button.addEventListener('click', async () => {
+          const approve = button.dataset.answer === 'true';
+          actions.querySelectorAll('button').forEach((b) => (b.disabled = true));
+          status.textContent = 'One moment…';
+          try {
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token, approve }),
+            });
+            const body = await response.json().catch(() => null);
+            if (response.ok && body?.ok) {
+              status.textContent = approve ? copy.approved : copy.waiting;
+              actions.hidden = true;
+              return;
+            }
+            const code = body?.error?.code;
+            if (code === 'expired' || code === 'invalid') {
+              status.textContent = copy.expired;
+              actions.hidden = true;
+              return;
+            }
+            throw new Error('unexpected response');
+          } catch {
+            status.textContent = copy.trouble;
+            actions.querySelectorAll('button').forEach((b) => (b.disabled = false));
+          }
+        });
+      }
+    }
+  }
+</script>

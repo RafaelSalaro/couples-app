@@ -1,0 +1,397 @@
+---
+import Base from '../layouts/Base.astro';
+import HowCards from '../components/HowCards.astro';
+import Faq from '../components/Faq.astro';
+import Icon from '../components/Icon.astro';
+import CallToAction from '../components/CallToAction.astro';
+import { site } from '../config/site';
+import { howFaq } from '../data/faq-pages';
+import { faqSchema } from '../lib/schema';
+
+const setup = [
+  {
+    icon: 'link',
+    title: 'Pair up',
+    text: 'One of you sends an invite: a link, a 6-character code, or a QR code in person. The other accepts and you both confirm. From then on you have exactly the same powers. Either of you can unpair at any time, instantly.',
+  },
+  {
+    icon: 'smartphone',
+    title: 'Choose what to pause',
+    text: 'Each of you picks apps on your own phone, in Apple’s Screen Time picker. We suggest social media. Phone, Messages, Maps and your bank are best left out. Your list stays on your phone. Your partner never sees it, and neither do we.',
+  },
+  {
+    icon: 'moon',
+    title: 'Set protected time',
+    text: 'It starts at 6 PM to 9 AM every day, overnight on purpose, and you can change it. Making it stricter applies right away. Loosening it is something you agree on together.',
+  },
+];
+
+const minutes = [
+  { value: '30', label: 'minutes to start', text: 'Each of you begins with 30 minutes when you pair.' },
+  { value: '7', label: 'days to use them', text: 'Every minute lasts 7 days. A timeline shows what expires when, so they get enjoyed, not hoarded.' },
+  { value: '60', label: 'minutes a day, at most', text: 'You each set your own daily maximum, from 15 to 240 minutes. It starts at 60.' },
+];
+---
+
+<Base
+  title="How it works: three ways to unlock time"
+  description={`How ${site.name} works: pair up, set protected time, and unlock apps together by scanning a code in person, asking your partner, or spending minutes you earned.`}
+  og="how-it-works"
+  breadcrumbs={[{ name: 'How it works', path: '/how-it-works/' }]}
+  schema={[faqSchema(howFaq)]}
+>
+  <section class="page-head">
+    <div class="wrap">
+      <h1>How {site.name} works</h1>
+      <p class="lede">
+        You agree on protected time. During it, the apps you each chose are paused. When you want one, you turn to each
+        other. That's the whole idea.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="setup">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Getting started</span>
+        <h2>Set up in a few minutes</h2>
+      </div>
+      <ol class="grid grid--3 steps">
+        {
+          setup.map((step, index) => (
+            <li class="card">
+              <span class="steps__num numeral">{index + 1}</span>
+              <Icon name={step.icon} />
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="aside">
+        Waiting for your partner to join? Protected time, your schedule and the emergency unlock already work on your own
+        phone.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="pause-screen">
+    <div class="wrap split">
+      <div>
+        <span class="eyebrow">During protected time</span>
+        <h2>A calm pause, not a locked door</h2>
+        <p class="lede">
+          Open a paused app during protected time and you see a quiet screen: how much protected time is left and a
+          gentle nudge, like "Want to do something together?"
+        </p>
+        <p class="body">
+          From there you can ask your partner or choose "Not now". Nothing flashes, nothing scolds. While protected time
+          is on, the app stays on your phone, so the evening you agreed on holds.
+        </p>
+      </div>
+      <div class="pause" role="img" aria-label="The pause screen: Protected time, 2 hours 14 minutes left. Want to do something together? Buttons: Ask Ana, and Not now.">
+        <div aria-hidden="true">
+          <Icon name="moon" size={32} />
+          <strong>Protected time</strong>
+          <span>2h 14m left</span>
+          <em>Want to do something together?</em>
+          <span class="pause__primary">Ask Ana</span>
+          <span class="pause__secondary">Not now</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="unlock">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">Unlocking</span>
+        <h2>Three warm ways to unlock time</h2>
+        <p class="lede">
+          Each time, you choose how long: 15, 30 or 60 minutes. Your paused apps open right away, a countdown shows on
+          your Lock Screen, and protected time resumes on its own. All three ways are free.
+        </p>
+      </div>
+      <HowCards />
+
+      <div class="grid grid--3 details">
+        <div>
+          <h3>Scan: the details</h3>
+          <ul>
+            <li>The code on your partner's phone changes every 30 seconds.</li>
+            <li>It is checked on your phone, so it works with no signal.</li>
+            <li>No minutes spent and no limit on how often.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Ask: the details</h3>
+          <ul>
+            <li>Add a short reason if you like, such as "reply to a client".</li>
+            <li>A request stays open for 5 minutes.</li>
+            <li>If your partner misses the notification, they get an email with a 6-digit code to share with you.</li>
+            <li>"Let's wait" is a fine answer. There are no hard feelings built in.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Earn: the details</h3>
+          <ul>
+            <li>Spend any amount you have, up to your daily maximum.</li>
+            <li>The minutes closest to expiring are used first.</li>
+            <li>No approval needed. You earned them.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="emergency">
+    <div class="wrap emergency">
+      <Icon name="life-buoy" size={40} />
+      <div>
+        <h2>An emergency unlock, always</h2>
+        <p class="lede">
+          Sometimes you just need your phone. The emergency unlock gives you 15 minutes with no approval and no
+          questions, even with zero minutes and even before your partner has joined.
+        </p>
+        <p class="body">
+          You can use it once every 7 days. It borrows 15 minutes that your next earned minutes pay back, and a new
+          streak starts that day. Your partner sees a short, neutral note. That is all.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="minutes">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Minutes</span>
+        <h2>Earned together, spent freely</h2>
+        <p class="lede">
+          Minutes are the only currency. You earn them by showing up for each other and spend them on time in your
+          paused apps. You can always see each other's balance.
+        </p>
+      </div>
+      <div class="grid grid--3">
+        {
+          minutes.map((item) => (
+            <div class="card stat">
+              <span class="numeral stat__value">{item.value}</span>
+              <h3>{item.label}</h3>
+              <p>{item.text}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="grid grid--2 earn">
+        <div class="card">
+          <span class="chip chip--sage">Challenges</span>
+          <h3>Do something, together or for each other</h3>
+          <p>
+            A phone-free dinner. A walk. A note left on the mirror. Tap "Done", your partner confirms with one tap, and
+            the minutes arrive. Shared challenges reward both of you. The free version has 5 challenges, and premium
+            adds a full library plus challenges you write yourselves, with a minute value you both agree on.
+          </p>
+        </div>
+        <div class="card">
+          <span class="chip chip--glow">Kudos · premium</span>
+          <h3>"I noticed you"</h3>
+          <p>
+            Your partner can give you minutes for no reason other than that you made them laugh, or cooked, or listened.
+            It lands as a small celebration: "Ana says you made her laugh · +10 min".
+          </p>
+        </div>
+      </div>
+      <p class="aside">
+        Want a fresh start? Either of you can suggest resetting both balances to the standard amount. It happens only if
+        you both say yes.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="progress">
+    <div class="wrap grid grid--2">
+      <div>
+        <Icon name="flame" size={32} />
+        <h2>A streak for the two of you</h2>
+        <p class="lede">
+          Each day you both keep protected time adds a day to your shared streak, with a little celebration at 3, 7, 14,
+          30, 60 and 100 days. If a day is missed, a new streak starts today. There is nothing else to lose.
+        </p>
+      </div>
+      <div>
+        <Icon name="chart-column" size={32} />
+        <h2>A weekly report, side by side</h2>
+        <p class="lede">
+          Every Sunday evening: minutes earned and spent, challenges done, kudos given, and what you did together. It
+          only counts what the app itself creates. Your own Screen Time numbers stay private on your own phone.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="private">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">Private by design</span>
+        <h2>Equal for both. Private for each.</h2>
+        <p class="lede">
+          Your partner never sees which apps you paused, what you do in them, your messages or where you are. There is
+          no admin. Either of you can unpair at any time. Read more on our <a href="/safety/">safety page</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <h2>Questions about how it works</h2>
+      </div>
+      <Faq items={howFaq} />
+    </div>
+  </section>
+
+  <CallToAction source="how-it-works" title="Ready when you two are." />
+</Base>
+
+<style>
+  .steps {
+    padding: 0;
+    list-style: none;
+  }
+  .steps li {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+  .steps :global(.icon) {
+    color: var(--hearth);
+  }
+  .steps__num {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-5);
+    font-size: 40px;
+    line-height: 1;
+    color: var(--line);
+  }
+  .aside {
+    margin-top: var(--space-5);
+    color: var(--ink-muted);
+    max-width: 640px;
+  }
+  .body {
+    margin-top: var(--space-4);
+    color: var(--ink-muted);
+    max-width: 560px;
+  }
+  .split {
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+  }
+  @media (min-width: 860px) {
+    .split {
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: var(--space-7);
+    }
+  }
+  .pause {
+    max-width: 340px;
+    width: 100%;
+    margin-inline: auto;
+    padding: var(--space-6) var(--space-5);
+    border-radius: var(--radius-l);
+    background: var(--dusk);
+    color: var(--on-dusk);
+    text-align: center;
+  }
+  .pause > div {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: center;
+  }
+  .pause strong {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.75rem;
+  }
+  .pause em {
+    margin-block: var(--space-3);
+    font-style: normal;
+    opacity: 0.85;
+  }
+  .pause__primary,
+  .pause__secondary {
+    display: grid;
+    place-content: center;
+    width: 100%;
+    min-height: 48px;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+  }
+  .pause__primary {
+    /* Hearth (dark value) on Dusk. */
+    background: #e8836a;
+    color: #191513;
+  }
+  .pause__secondary {
+    box-shadow: inset 0 0 0 1px rgba(245, 238, 230, 0.3);
+  }
+  .details {
+    margin-top: var(--space-6);
+  }
+  .details h3 {
+    font-size: 1.0625rem;
+  }
+  .details ul {
+    margin-top: var(--space-2);
+    padding-left: 1.2em;
+    color: var(--ink-muted);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .details li + li {
+    margin-top: var(--space-2);
+  }
+  .emergency {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 820px;
+  }
+  .emergency > :global(.icon) {
+    color: var(--sage);
+    width: 40px;
+    height: 40px;
+  }
+  @media (min-width: 700px) {
+    .emergency {
+      grid-template-columns: auto 1fr;
+      gap: var(--space-5);
+    }
+  }
+  .stat__value {
+    display: block;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--glow-strong);
+    margin-bottom: var(--space-2);
+  }
+  .earn {
+    margin-top: var(--space-5);
+  }
+  .earn .card {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+    align-content: start;
+  }
+  #progress :global(.icon) {
+    width: 32px;
+    height: 32px;
+    color: var(--sage);
+    margin-bottom: var(--space-3);
+  }
+</style>

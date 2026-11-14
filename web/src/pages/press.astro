@@ -1,0 +1,122 @@
+---
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import { site, price } from '../config/site';
+
+const facts = [
+  { label: 'What it is', value: 'A couples app that protects time together' },
+  { label: 'Platforms', value: 'iPhone first (iOS 17 or later). Android to follow.' },
+  { label: 'Status', value: site.launched ? 'Available now' : 'In development. Waitlist open.' },
+  { label: 'Price', value: `Free to start. Premium ${price.yearlyForBoth}, or ${price.lifetimeForBoth}. One purchase covers both partners.` },
+  { label: 'Company', value: site.company },
+  { label: 'Press contact', value: site.pressEmail },
+];
+---
+
+<Base
+  title="Press kit"
+  description={`Press kit for ${site.name}: a short description, key facts, the logo and a press contact. Screenshots will be added before launch.`}
+  og="press"
+  breadcrumbs={[{ name: 'Press', path: '/press/' }]}
+>
+  <section class="page-head">
+    <div class="wrap">
+      <h1>Press kit</h1>
+      <p class="lede">
+        Writing about {site.name}? Here is what you need. For anything else, email
+        <a href={`mailto:${site.pressEmail}`}>{site.pressEmail}</a>.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="prose">
+      <p class="notice">
+        The app name, logo and company details on this page are working placeholders and will change before launch.
+      </p>
+
+      <h2>In one paragraph</h2>
+      <p>
+        {site.name} is a couples app that protects time together. Partners pair their phones and agree on protected
+        time, by default 6 PM to 9 AM, when the apps each of them chose are paused. Either partner can unlock time in
+        three warm ways: scanning the other's rotating QR code in person, asking and getting a "Go for it" by
+        notification or email, or spending minutes earned through shared challenges and spontaneous "kudos" from their
+        partner. Minutes expire after 7 days, so they are used rather than saved up. Everything is mutual and equal: it
+        is not about control, it is about being intentional and really connecting. One subscription covers both
+        partners.
+      </p>
+
+      <h2>In one sentence</h2>
+      <p>{site.name}: {site.tagline} A couples app that pauses distracting apps on a shared schedule and lets partners unlock time together.</p>
+
+      <h2>Key facts</h2>
+      <div class="table-scroll">
+        <table>
+          <tbody>
+            {
+              facts.map((fact) => (
+                <tr>
+                  <th scope="row">{fact.label}</th>
+                  <td>{fact.value}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <h2>What makes it different</h2>
+      <ul>
+        <li><strong>Built for two.</strong> Most screen time apps are for one person. This one is something a couple does together.</li>
+        <li><strong>Equal by design.</strong> Both partners have identical powers. Either can unpair instantly. There is no admin.</li>
+        <li><strong>Private.</strong> Partners never see each other's apps, messages, location or screen time.</li>
+        <li><strong>Celebrates, never scolds.</strong> Time is earned through shared challenges and kudos. Nothing in the app scolds.</li>
+      </ul>
+
+      <h2>Logo</h2>
+      <p>
+        The mark is two overlapping circles: one for each partner, and the overlap is the time together. Please keep
+        clear space around it and do not recolor it.
+      </p>
+      <div class="logos">
+        <div class="logos__tile"><Logo size={40} /></div>
+        <ul>
+          <li><a href="/logo.png" download>Icon, PNG 512 × 512</a></li>
+          <li><a href="/favicon.svg" download>Icon, SVG</a></li>
+        </ul>
+      </div>
+
+      <h2>Screenshots</h2>
+      <p>App screenshots and a short video will be added here before launch. Until then, email us and we'll send what we have.</p>
+
+      <h2>Words we use</h2>
+      <p>
+        We say "protected time" and "paused apps", and "ask your partner". We describe habits and scrolling, and we make
+        no medical claims: {site.name} is not a treatment for any condition.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .wrap {
+    margin-bottom: var(--space-7);
+  }
+  .logos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    align-items: center;
+  }
+  .logos__tile {
+    display: grid;
+    place-content: center;
+    padding: var(--space-6) var(--space-7);
+    border-radius: var(--radius-m);
+    border: 1px solid var(--line);
+    background: var(--surface-raised);
+  }
+  .logos ul {
+    margin: 0;
+  }
+</style>

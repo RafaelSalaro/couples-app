@@ -134,6 +134,10 @@ for (const [path, { html }] of pages) {
     }
   }
 
+  // Words glued to a link or emphasis ("see<a>") mean whitespace was lost in the build.
+  const glued = html.match(/[a-z,.:;]<(a|strong|em) [^>]*>[A-Za-z]|[a-z]<\/(a|strong|em)>[a-z]/);
+  if (glued) fail(path, `missing space around inline element: "${glued[0]}"`);
+
   // Images need explicit dimensions and alt text.
   for (const tag of tags(html, 'img')) {
     if (attr(tag, 'alt') === null) fail(path, `image without alt: ${attr(tag, 'src')}`);
