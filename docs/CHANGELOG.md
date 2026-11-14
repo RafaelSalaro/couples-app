@@ -2,6 +2,13 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-13 — Challenge library content
+
+- `content/challenges/library.json`: 72 PG premium challenges for couples in the brand voice, 18 per category (together, solo kindness, offline fun, movement), each with title, short description, minute value (5–45) and shared or individual. None repeats the 5 free presets.
+- `content/challenges/build-seed.mjs` validates the library (lengths, minute range, categories, duplicate titles against the library and the free presets, brand vocabulary) and generates `supabase/seeds/10_challenge_library.sql` in the format `supabase/README.md` asks for (`tier` premium, re-runnable with `on conflict … do nothing`). Edit the JSON, not the SQL; `--check` fails if the seed is out of date.
+- Verified against the real schema: loaded both seed files in a rolled-back transaction on the local Supabase database; 72 rows inserted, a second run inserted 0, total presets 77.
+- Minute values are editorial suggestions in line with the free presets (5–15 for small individual gestures, 20–30 for shared time, 45 for long outings); adjust in the JSON after beta feedback.
+
 ## 2026-11-13 — W1 Waitlist landing page
 
 - `web/`: Astro static site. One config file (`src/config/site.ts`) holds the name, company, domain, prices and launch state; design tokens from `10-brand-and-design-system.md` as CSS custom properties in light and dark; self-hosted Fraunces and Instrument Sans.
