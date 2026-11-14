@@ -10,11 +10,11 @@
 
 - **Astro** static site, TypeScript, content collections for guides/blog in Markdown.
 - Styling with plain CSS using the design tokens from `10-brand-and-design-system.md` (CSS custom properties, light and dark).
-- Animation: CSS and the View Transitions API first; a small library (Motion One) only where needed. No heavy animation frameworks. Every animation respects `prefers-reduced-motion`.
+- Animation: open choice of techniques (CSS, scroll-driven animations, View Transitions, canvas/WebGL, SVG, or animation libraries installed from npm and bundled with the site). See §10 for the creative direction and guardrails. Every animation respects `prefers-reduced-motion`.
 - **Hosting:** Cloudflare Pages (free), custom domain, HTTPS, automatic preview deploys per branch.
 - **Forms:** waitlist posts to the `waitlist_join` Edge Function; Resend sends double opt-in.
 - **Analytics:** Cloudflare Web Analytics (free, cookieless, no consent banner needed) plus Google Search Console and Bing Webmaster Tools.
-- Performance budget: Lighthouse 95+ on all four scores; Largest Contentful Paint < 2.0 s on mobile; total JavaScript < 50 KB on the home page.
+- Performance budget: see §10 (relaxed from the original 50 KB JavaScript limit to make room for richer motion, while keeping the site fast).
 
 ## 3. Site map
 
@@ -93,3 +93,28 @@ This routine can be automated as a weekly scheduled task that drafts the Search 
 1. Week 1: waitlist landing page (hero, philosophy, how it works, waitlist form), privacy and terms drafts, deep-link files.
 2. Weeks 2–4: full site sections, first 6 guides, Search Console setup.
 3. Before launch: pricing page with real prices, press kit, store badges, support center.
+
+## 10. Visual and motion direction (W3 redesign, decided 2026-11-14)
+
+The first version of the site has the right content and copy. W3 changes how it looks and feels, not what it says.
+
+**Ambition.** The site should feel like a showcase of modern web design: distinctive, polished and memorable, the kind of site people share because it is a pleasure to scroll. Avoid template-looking layouts and generic "SaaS landing page" patterns. The implementer has broad creative latitude in layout, typography treatments, illustration, motion, scroll choreography and transitions. Explore boldly; the guardrails below are the only fixed rules.
+
+**What it should express.** The story of the product: an evening slowly reclaimed from the phone, two people coming back toward each other, warmth returning. The brand motif of two overlapping circles, the Hearth/Glow/Sage/Dusk palette, and the "not about control" philosophy are the raw material. Motion should feel warm, calm and celebratory, never frantic, aggressive or gimmicky.
+
+**Areas to explore (suggestions, not requirements)**
+- Scroll-driven storytelling across the home page, where sections hand off to each other rather than simply appearing.
+- An interactive or animated product demonstration that conveys protected time, the three unlock methods, minutes and kudos.
+- Expressive typography, depth, texture, light and color transitions that respond to scroll (for example the page warming or dimming as the "evening" story unfolds).
+- Smooth page-to-page transitions across the whole site, including guides.
+- Small moments of delight: hover and press states, cursor or touch responses, the waitlist confirmation.
+
+**Light and dark themes.** The site follows the visitor's device setting (decision B10). Both themes are first-class: the dark theme can lean into the "evening/dusk" mood while the light theme feels like warm daylight. Add a visible theme switch (remember the choice per visitor). Check every section in both themes on phone and desktop.
+
+**Guardrails (fixed)**
+- Content, copy, page list, SEO structure, structured data and the waitlist flow stay as they are unless a change is recorded in `02-decisions-log.md`.
+- Brand: colors, fonts and voice from `10-brand-and-design-system.md`; new tints or effects derive from the existing palette.
+- Accessibility: WCAG AA contrast in both themes, full keyboard use, visible focus, readable text at all sizes, and a complete `prefers-reduced-motion` experience (no essential content hidden behind animation).
+- Performance: Lighthouse Performance ≥ 90 on mobile, Accessibility, Best Practices and SEO ≥ 95; Largest Contentful Paint < 2.5 s on a mid-range phone; no layout shift from animations; heavy effects load progressively and degrade gracefully on low-power devices.
+- No third-party requests at runtime (decision E7): any library is installed from npm and bundled.
+- Works on current Safari (iPhone and Mac), Chrome and Firefox, at phone, tablet and desktop widths.

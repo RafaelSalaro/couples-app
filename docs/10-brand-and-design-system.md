@@ -71,6 +71,7 @@ Motif: **two overlapping circles**, one Hearth and one Glow, where the overlap i
 - Celebration moments use Glow; calm states use Sage; protected time uses Dusk.
 - Never shake, flash red or play "denied" sounds.
 - Reduce Motion: replace movement with opacity fades.
+- **Website:** the marketing site may be more expressive than the app (scroll-driven storytelling, transitions, depth and light effects) as long as it keeps the same warm, calm character. See `09-website-and-seo.md` §10.
 
 ## 8. Iconography
 

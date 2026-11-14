@@ -58,6 +58,8 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 | B6 | Build with Claude Code, using Fable 5.2 for the hard parts; bulk of the build targeted before 2026-11-16 | Decided |
 | B7 | Interface: modern, polished animations and haptics, SwiftUI native | Decided |
 | B8 | Brand colors and identity per `10-brand-and-design-system.md` | Decided |
+| B9 | Website redesign (W3): the site must look distinctly modern and showcase ambitious, original visual design, motion and scroll-driven storytelling. Content and copy stay as they are; presentation is open. The implementer has broad creative latitude within the brand, accessibility and performance guardrails in `09-website-and-seo.md` §10 | Decided |
+| B10 | Website theme: the site follows each visitor's device light/dark setting, so a phone in dark mode shows the dark (evening) theme and one in light mode shows the cream theme. This is intended. Both themes must feel equally deliberate and designed, not one as an afterthought, and a visible theme switch lets visitors choose | Decided (switch Assumed) |
 
 ## Engineering
 
@@ -99,3 +101,4 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 - 2026-11-13 — WP-2: added engineering decisions E4–E5 (in-repo snapshot helper; color tokens in code and bundled fonts).
 - 2026-11-13 — W1: added engineering decisions E6–E7 (website config and static token routes; no third-party resources on the website).
 - 2026-11-13 — W2: added engineering decision E8 (guides are name-free Markdown; web approval page built ahead of its backend).
+- 2026-11-14 — Founder review of the deployed site: content approved; added B9 (W3 visual and motion redesign with creative latitude) and B10 (light/dark follows the device by design, both themes must feel intentional, theme switch).

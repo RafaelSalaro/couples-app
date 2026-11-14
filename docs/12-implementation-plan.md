@@ -49,6 +49,7 @@ Each package: read the listed docs first, implement, write tests, meet the Defin
 | 14 | Accessibility, localization readiness, App Store package | 06 §11–12, 07 §7 | Dynamic Type, VoiceOver, Reduce Motion, privacy manifest, review notes, demo accounts | Accessibility audit passes; checklist complete |
 | W1 | Waitlist landing page | 09, 10 | Astro site skeleton, hero, philosophy, how it works, waitlist form, privacy/terms placeholders, deep-link files | Lighthouse ≥ 95; form works end to end |
 | W2 | Full website + first guides | 09 | All pages in 09 §3, structured data, sitemap, 6 guides | Search Console verified; no SEO errors |
+| W3 ★ | Website visual and motion redesign | 09 §10, 10 | Reimagined visuals, motion, scroll storytelling and transitions across the existing site; polished light and dark themes with a theme switch; content unchanged | Guardrails in 09 §10 met in both themes on phone and desktop; reduced-motion experience complete; site builds and existing checks pass |
 
 ## 4. Sprint schedule (Nov 13–16), three parallel lanes
 
