@@ -2,6 +2,18 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — W3 Website visual and motion redesign
+
+Concept, "One evening": the two circles of the logo live as two lights behind every page. On the home page they start far apart and follow the scroll until they overlap at the waitlist, while the page warms from daylight to golden hour (light theme) or from dusk to candlelight (dark theme). Content, copy, page list, structured data and the waitlist flow are unchanged.
+
+- Themes: light and dark are both designed; the site follows the device setting and a switch in the header (a sun that becomes a crescent made of two circles) stores the visitor's choice. The new theme opens as a circle from the switch.
+- Home page: staged hero headline, the philosophy line lights up word by word, the three unlock cards stack like a deck, a light travels through one day in the protected-time panel, the report and kudos cards celebrate when they come into view, and the finale sits where the two lights meet.
+- Whole site: floating glass header (navigation moves to a bottom pill on phones), rounded panels over the sky, page-to-page transitions in which the two lights glide to each page's own resting place, pointer light on cards, button and logo hover states, and a small "circles meet" moment when a waitlist signup succeeds.
+- Reduced motion and no JavaScript: every element shows in its finished state; nothing is hidden behind animation.
+- Verified locally: `npm run build` (20 pages, 0 SEO errors), `astro check` 0 errors, 9 unit tests, the waitlist browser test (all steps), Lighthouse 100/100/100/100 on mobile and desktop for home, how it works, pricing, guides, one guide and about (mobile LCP 0.6–0.8 s, CLS ≤ 0.002), home page JavaScript 5.5 KB. Every page was reviewed in light and dark at phone (390 px) and desktop (1440 px) widths in headless Chrome.
+- Not verified: real Safari and Firefox, and a real mid-range phone. Page transitions between pages need a browser with cross-document view transitions; others navigate normally.
+- Decision E9 recorded.
+
 ## 2026-11-13 — Extra SEO guide drafts (doc 12 §6, item 4)
 
 - Six more guides as drafts (`draft: true`, `plannedWeek` 1–6, 1,300–1,600 words each) in `web/src/content/guides/`: partner always on their phone, phone-free dinner, phones out of the bedroom, 75 conversation starters, weekend digital detox, phone-free morning routine. Drafts are not built, not in the sitemap and not linked.

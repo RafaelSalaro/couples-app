@@ -14,6 +14,7 @@ Astro static site for Cloudflare Pages. See `docs/09-website-and-seo.md` and
 | `npm run check` | Type check (`astro check`) plus the site checks |
 | `npm run mock:waitlist` | Local test double of the `waitlist_join` function on `http://127.0.0.1:8787` |
 | `CHROME_PATH=… npm run test:e2e` | Browser test of the waitlist form against the test double |
+| `CHROME_PATH=… node scripts/shots.mjs <out-dir> [--full] [--at=0,0.5,1] /path/` | Review screenshots of `dist/` in light and dark at phone and desktop widths |
 | `CHROME_PATH=… npm run lighthouse -- / /pricing/` | Lighthouse, mobile and desktop, against `dist/`; fails under 95 |
 
 `CHROME_PATH` is any Chrome or Chromium binary. One way to get one without installing a browser:
