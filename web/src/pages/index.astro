@@ -1,0 +1,480 @@
+---
+import Base from '../layouts/Base.astro';
+import PhoneDemo from '../components/PhoneDemo.astro';
+import WaitlistForm from '../components/WaitlistForm.astro';
+import StoreButtons from '../components/StoreButtons.astro';
+import HowCards from '../components/HowCards.astro';
+import Faq from '../components/Faq.astro';
+import Icon from '../components/Icon.astro';
+import { site, price } from '../config/site';
+import { homeFaq } from '../data/faq';
+import { appSchema, faqSchema } from '../lib/schema';
+
+const never = ['Which apps you paused', 'What you do in any app', 'Your messages', 'Where you are', 'Your screen time'];
+const shared = ['Minutes you each have', 'Requests you send each other', 'Challenges and kudos', 'Your streak together'];
+---
+
+<Base
+  rawTitle
+  title={`${site.name}: ${site.tagline} Protected time for couples`}
+  description={`${site.name} pauses distracting apps on a schedule you share and lets you unlock time together: in person, by asking, or with minutes you earn. Not about control.`}
+  og="home"
+  schema={[appSchema(), faqSchema(homeFaq)]}
+>
+  <section class="hero">
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <span class="chip chip--sage">For couples · iPhone first</span>
+        <h1>{site.tagline}</h1>
+        <p class="lede">
+          {site.name} pauses the apps that pull you away, on a schedule you share, and gives you warm ways to unlock time
+          together. It is not about control. It is about being here, with each other.
+        </p>
+        {
+          site.launched ? (
+            <StoreButtons />
+          ) : (
+            <div class="hero__form">
+              <WaitlistForm source="home-hero" id="hero-waitlist" />
+            </div>
+          )
+        }
+      </div>
+      <div class="hero__demo">
+        <PhoneDemo />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="philosophy">
+    <div class="wrap philosophy">
+      <span class="eyebrow">Our one rule</span>
+      <h2>Not about control. About being intentional and present together.</h2>
+      <div class="grid grid--3 philosophy__points">
+        <div>
+          <Icon name="scale" />
+          <h3>Equal, always</h3>
+          <p>You both have exactly the same powers. There is no admin and no one in charge.</p>
+        </div>
+        <div>
+          <Icon name="door-open" />
+          <h3>Free to leave</h3>
+          <p>Either of you can unpair at any time, instantly. No approval, no questions.</p>
+        </div>
+        <div>
+          <Icon name="sparkles" />
+          <h3>Celebrate, never scold</h3>
+          <p>No red screens and no guilt. Just small rewards for choosing each other.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="how-it-works">
+    <div class="wrap">
+      <div class="section-head section-head--center reveal">
+        <span class="eyebrow">How it works</span>
+        <h2>Three warm ways to unlock time</h2>
+        <p class="lede">
+          During protected time your chosen apps are paused. When you want one, you don't fight a lock. You turn to each
+          other.
+        </p>
+      </div>
+      <HowCards />
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="kudos">
+    <div class="wrap split">
+      <div class="reveal">
+        <span class="eyebrow">The kudos moment</span>
+        <h2>"I noticed you."</h2>
+        <p class="lede">
+          Kudos are minutes your partner gives you just because. You made them laugh. You cooked. You listened. It
+          arrives as a small celebration, and it is the heart of the app.
+        </p>
+      </div>
+      <div class="kudos-card reveal" role="img" aria-label="A notification: Ana says you made her laugh, plus 10 minutes.">
+        <span class="kudos-card__ripple" aria-hidden="true"></span>
+        <div class="kudos-card__body" aria-hidden="true">
+          <span class="kudos-card__avatar">A</span>
+          <div>
+            <strong>Ana says you made her laugh</strong>
+            <span class="chip chip--glow">+10 min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--dusk" id="protected-time">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Protected time</span>
+        <h2>Evenings and mornings, back</h2>
+        <p class="lede">
+          Protected time starts at 6 PM and ends at 9 AM, every day, unless you choose otherwise. Dinner, the couch, the
+          last hour before sleep and the first one after it. Social media waits until morning.
+        </p>
+      </div>
+      <div class="day" role="img" aria-label="A 24 hour day. Protected time runs from 6 PM to 9 AM. Apps are open from 9 AM to 6 PM.">
+        <div class="day__bar" aria-hidden="true">
+          <span class="day__seg day__seg--on" style="flex: 9">Protected</span>
+          <span class="day__seg" style="flex: 9">Open</span>
+          <span class="day__seg day__seg--on" style="flex: 6">Protected</span>
+        </div>
+        <div class="day__ticks" aria-hidden="true">
+          <span style="left: 0%">12 AM</span>
+          <span style="left: 37.5%">9 AM</span>
+          <span style="left: 75%">6 PM</span>
+        </div>
+      </div>
+      <p class="day__note">
+        You each choose which apps to pause, on your own phone. Phone, Messages, Maps and your bank are best left out.
+      </p>
+    </div>
+  </section>
+
+  <section class="section" id="progress">
+    <div class="wrap split">
+      <div class="reveal">
+        <span class="eyebrow">Shared progress</span>
+        <h2>A streak you keep together</h2>
+        <p class="lede">
+          Every day you both keep protected time adds to your streak. Each Sunday a short report shows the week side by
+          side: minutes earned, challenges done, kudos given. If a day is missed, a new streak starts today. That's all.
+        </p>
+      </div>
+      <div class="card report reveal" role="img" aria-label="Example weekly report: a 12 day streak. You earned 85 minutes and Ana earned 70 minutes. 4 challenges done together and 5 kudos given.">
+        <div aria-hidden="true">
+          <div class="report__streak">
+            <span class="numeral report__num">12</span>
+            <span>day streak<br />together</span>
+          </div>
+          <div class="report__bars">
+            <div class="report__bar"><span>You</span><i style="--w: 85%"></i><b>85 min</b></div>
+            <div class="report__bar report__bar--b"><span>Ana</span><i style="--w: 70%"></i><b>70 min</b></div>
+          </div>
+          <div class="report__chips">
+            <span class="chip chip--sage">4 challenges together</span>
+            <span class="chip chip--glow">5 kudos</span>
+          </div>
+          <p class="report__caption">Example report</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="privacy-promise">
+    <div class="wrap">
+      <div class="section-head section-head--center reveal">
+        <span class="eyebrow">Privacy promise</span>
+        <h2>Your partner never sees your apps, messages or location.</h2>
+        <p class="lede">The app shares only what it creates itself. Everything else stays on your phone.</p>
+      </div>
+      <div class="grid grid--2 promise">
+        <div class="card reveal">
+          <h3>Never shared</h3>
+          <ul>
+            {never.map((item) => <li><Icon name="eye-off" size={20} />{item}</li>)}
+          </ul>
+        </div>
+        <div class="card reveal">
+          <h3>Shared between you two</h3>
+          <ul>
+            {shared.map((item) => <li><Icon name="heart-handshake" size={20} />{item}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pricing">
+    <div class="wrap pricing-teaser reveal">
+      <span class="eyebrow">Pricing</span>
+      <h2>One price for both of you: {price.yearly} a year.</h2>
+      <p class="lede">
+        One of you pays, both of you get premium. That is {site.pricing.perPersonYearly}. Pairing, protected time and
+        every way to unlock are free. Or pay {price.lifetimeForBoth}.
+      </p>
+      <!-- pricing-link -->
+    </div>
+  </section>
+
+  <section class="section section--sunken" id="faq">
+    <div class="wrap">
+      <div class="section-head section-head--center">
+        <span class="eyebrow">Questions</span>
+        <h2>Good things to ask</h2>
+      </div>
+      <Faq items={homeFaq} />
+    </div>
+  </section>
+
+  {
+    !site.launched && (
+      <section class="section section--dusk" id="waitlist">
+        <div class="wrap final">
+          <h2>Put the phone down, together.</h2>
+          <p class="lede">Join the waitlist and we'll let you know when {site.name} is ready for the two of you.</p>
+          <WaitlistForm source="home-footer" id="footer-waitlist" />
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .hero {
+    padding-block: clamp(var(--space-6), 6vw, 72px) clamp(var(--space-7), 7vw, 88px);
+  }
+  .hero__grid {
+    display: grid;
+    gap: var(--space-7);
+    align-items: center;
+  }
+  .hero__copy h1 {
+    margin-top: var(--space-4);
+    font-size: clamp(2.75rem, 1.6rem + 5.2vw, 4.5rem);
+    line-height: 1.02;
+  }
+  .hero__form {
+    margin-top: var(--space-6);
+  }
+  @media (min-width: 900px) {
+    .hero__grid {
+      grid-template-columns: 1.15fr 0.85fr;
+    }
+  }
+
+  .philosophy {
+    text-align: center;
+  }
+  .philosophy h2 {
+    max-width: 760px;
+    margin-inline: auto;
+    font-size: clamp(2rem, 1.3rem + 3vw, 3rem);
+  }
+  .philosophy__points {
+    margin-top: var(--space-7);
+    text-align: left;
+  }
+  .philosophy__points > div {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+  .philosophy__points :global(.icon) {
+    color: var(--hearth);
+    width: 28px;
+    height: 28px;
+  }
+  .philosophy__points p {
+    color: var(--ink-muted);
+  }
+
+  .split {
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+  }
+  @media (min-width: 860px) {
+    .split {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7);
+    }
+  }
+
+  .kudos-card {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 220px;
+  }
+  .kudos-card__ripple {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+    opacity: 0.22;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .kudos-card__ripple {
+      animation: ripple 4.8s ease-out infinite;
+    }
+  }
+  @keyframes ripple {
+    0% {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    12% {
+      opacity: 0.4;
+    }
+    25%,
+    100% {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+  }
+  .kudos-card__body {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    width: min(100%, 400px);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-l);
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .kudos-card__body div {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+  }
+  .kudos-card__avatar {
+    flex: none;
+    display: grid;
+    place-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--glow);
+    color: var(--on-glow);
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .day {
+    margin-top: var(--space-6);
+  }
+  .day__bar {
+    display: flex;
+    gap: 4px;
+    height: 56px;
+  }
+  .day__seg {
+    display: grid;
+    place-content: center;
+    border-radius: var(--radius-s);
+    background: rgba(245, 238, 230, 0.1);
+    font-size: 13px;
+    font-weight: 600;
+    overflow: hidden;
+  }
+  .day__seg--on {
+    /* Sage (dark value) on Dusk, with dark text for contrast. */
+    background: #8db596;
+    color: #191513;
+  }
+  .day__ticks {
+    position: relative;
+    height: 28px;
+    margin-top: var(--space-2);
+    font-size: 13px;
+    opacity: 0.85;
+  }
+  .day__ticks span {
+    position: absolute;
+    white-space: nowrap;
+  }
+  .day__note {
+    margin-top: var(--space-4);
+    max-width: 560px;
+    opacity: 0.85;
+  }
+
+  .report {
+    padding: var(--space-6);
+  }
+  .report__streak {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    color: var(--sage);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .report__num {
+    font-size: 64px;
+    line-height: 1;
+  }
+  .report__bars {
+    display: grid;
+    gap: var(--space-3);
+    margin-block: var(--space-5);
+  }
+  .report__bar {
+    display: grid;
+    grid-template-columns: 40px 1fr 64px;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 15px;
+  }
+  .report__bar i {
+    height: 14px;
+    width: var(--w);
+    border-radius: var(--radius-pill);
+    background: var(--partner-a);
+  }
+  .report__bar--b i {
+    background: var(--partner-b);
+  }
+  .report__bar b {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .report__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .report__caption {
+    margin-top: var(--space-4);
+    font-size: 13px;
+    color: var(--ink-muted);
+  }
+
+  .promise ul {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+    padding: 0;
+    list-style: none;
+  }
+  .promise li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .promise :global(.icon) {
+    color: var(--ink-muted);
+  }
+
+  .pricing-teaser {
+    text-align: center;
+  }
+  .pricing-teaser .lede {
+    max-width: 620px;
+    margin-inline: auto;
+  }
+
+  .final {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: var(--space-2);
+  }
+  .final .lede {
+    margin-top: 0;
+    margin-bottom: var(--space-5);
+  }
+  .final :global(.waitlist) {
+    width: 100%;
+    text-align: left;
+  }
+</style>

@@ -1,0 +1,34 @@
+---
+// Two overlapping circles (docs/10 §6): Hearth and Glow, the overlap is the time together.
+import { site } from '../config/site';
+
+interface Props {
+  wordmark?: boolean;
+  size?: number;
+}
+
+const { wordmark = true, size = 28 } = Astro.props;
+---
+
+<span class="logo">
+  <svg viewBox="0 0 44 28" width={(size * 44) / 28} height={size} aria-hidden="true">
+    <circle cx="14" cy="14" r="13" fill="var(--hearth)"></circle>
+    <circle cx="30" cy="14" r="13" fill="var(--glow)" fill-opacity="0.88"></circle>
+  </svg>
+  {wordmark && <span class="logo__word">{site.name}</span>}
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .logo__word {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+</style>

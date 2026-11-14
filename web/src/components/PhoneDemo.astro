@@ -1,0 +1,337 @@
+---
+// Hero illustration: protected time turning into a kudos moment (docs/09 §4.1).
+// CSS only, transform and opacity only. With reduced motion it is a still image.
+---
+
+<div
+  class="phone"
+  role="img"
+  aria-label="A phone during protected time, with 2 hours 14 minutes left. A kudos arrives: Ana says you made her laugh, plus 10 minutes."
+>
+  <div class="phone__screen" aria-hidden="true">
+    <div class="phone__status"><span>8:42</span><span class="phone__island"></span><span>Tue</span></div>
+
+    <div class="kudos">
+      <span class="kudos__avatar">A</span>
+      <span class="kudos__text">
+        <strong>Ana says you made her laugh</strong>
+        <span>+10 min · kudos</span>
+      </span>
+    </div>
+
+    <div class="ring">
+      <svg viewBox="0 0 200 200" width="200" height="200">
+        <circle cx="100" cy="100" r="86" class="ring__track"></circle>
+        <circle cx="100" cy="100" r="86" class="ring__value" pathLength="100" stroke-dasharray="72 100"></circle>
+      </svg>
+      <div class="ring__label">
+        <span class="ring__time">2h 14m</span>
+        <span class="ring__caption">Protected time</span>
+      </div>
+      <span class="burst"></span>
+    </div>
+
+    <div class="balances">
+      <div class="balance">
+        <span class="balance__name">You</span>
+        <span class="balance__value">
+          <span class="balance__before">45</span>
+          <span class="balance__after">55</span>
+        </span>
+        <span class="balance__unit">min</span>
+      </div>
+      <div class="balance balance--b">
+        <span class="balance__name">Ana</span>
+        <span class="balance__value"><span>30</span></span>
+        <span class="balance__unit">min</span>
+      </div>
+    </div>
+
+    <div class="streak">12-day streak together</div>
+  </div>
+</div>
+
+<style>
+  .phone {
+    /* Night colors: the dark-theme values of the tokens, used on Dusk in both themes. */
+    --night-sage: #8db596;
+    --night-glow: #f2b65a;
+    --night-glow-soft: #45351a;
+    --night-hearth: #e8836a;
+    --night-raised: rgba(245, 238, 230, 0.08);
+
+    width: min(100%, 300px);
+    aspect-ratio: 300 / 600;
+    margin-inline: auto;
+    padding: 10px;
+    border-radius: 48px;
+    background: #120f0d;
+    box-shadow: var(--shadow), 0 24px 60px rgba(42, 33, 28, 0.18);
+  }
+  .phone__screen {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 38px;
+    background: var(--dusk);
+    color: var(--on-dusk);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 18px 22px;
+  }
+  .phone__status {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+  .phone__island {
+    width: 76px;
+    height: 22px;
+    border-radius: 999px;
+    background: #120f0d;
+  }
+
+  .ring {
+    position: relative;
+    margin-top: auto;
+    width: 200px;
+    height: 200px;
+  }
+  .ring svg {
+    transform: rotate(-90deg);
+  }
+  .ring__track,
+  .ring__value {
+    fill: none;
+    stroke-width: 12;
+  }
+  .ring__track {
+    stroke: var(--night-raised);
+  }
+  .ring__value {
+    stroke: var(--night-sage);
+    stroke-linecap: round;
+  }
+  .ring__label {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    text-align: center;
+  }
+  .ring__time {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 40px;
+    line-height: 44px;
+    font-variant-numeric: tabular-nums;
+  }
+  .ring__caption {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+  .burst {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--night-glow) 0%, transparent 68%);
+    opacity: 0;
+    transform: scale(0.6);
+    pointer-events: none;
+  }
+
+  .balances {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 22px;
+  }
+  .balance {
+    flex: 1;
+    display: grid;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: var(--night-raised);
+  }
+  .balance__name {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+  .balance__value {
+    position: relative;
+    height: 34px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 30px;
+    line-height: 34px;
+    font-variant-numeric: tabular-nums;
+    color: var(--night-hearth);
+  }
+  .balance--b .balance__value {
+    color: var(--night-glow);
+  }
+  .balance__value span {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  .balance__after {
+    opacity: 0;
+    color: var(--night-glow);
+  }
+  .balance__unit {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+  .streak {
+    margin-top: 14px;
+    margin-bottom: auto;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(141, 181, 150, 0.16);
+    color: var(--night-sage);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .kudos {
+    position: absolute;
+    top: 46px;
+    left: 12px;
+    right: 12px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 18px;
+    background: var(--night-glow-soft);
+    border: 1px solid rgba(242, 182, 90, 0.35);
+    opacity: 0;
+    transform: translateY(-140%);
+  }
+  .kudos__avatar {
+    flex: none;
+    display: grid;
+    place-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--night-glow);
+    color: #191513;
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  .kudos__text {
+    display: grid;
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .kudos__text span {
+    color: var(--night-glow);
+    font-weight: 600;
+  }
+
+  /* One 10 s loop: calm, kudos arrives (450 ms), glow celebrates (1.2 s, once per loop), settles, leaves. */
+  @media (prefers-reduced-motion: no-preference) {
+    .kudos {
+      animation: kudos-in 10s var(--ease-out) infinite;
+    }
+    .burst {
+      animation: burst 10s ease-out infinite;
+    }
+    .balance__before {
+      animation: swap-out 10s ease-out infinite;
+    }
+    .balance__after {
+      animation: swap-in 10s ease-out infinite;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kudos {
+      opacity: 1;
+      transform: none;
+    }
+    .balance__before {
+      opacity: 0;
+    }
+    .balance__after {
+      opacity: 1;
+    }
+  }
+
+  @keyframes kudos-in {
+    0%,
+    28% {
+      opacity: 0;
+      transform: translateY(-140%);
+    }
+    32.5%,
+    86% {
+      opacity: 1;
+      transform: none;
+    }
+    90%,
+    100% {
+      opacity: 0;
+      transform: translateY(-140%);
+    }
+  }
+  @keyframes burst {
+    0%,
+    34% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    38% {
+      opacity: 0.55;
+      transform: scale(1.05);
+    }
+    46%,
+    100% {
+      opacity: 0;
+      transform: scale(1.5);
+    }
+  }
+  @keyframes swap-out {
+    0%,
+    36% {
+      opacity: 1;
+      transform: none;
+    }
+    40%,
+    90% {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    94%,
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes swap-in {
+    0%,
+    36% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    40%,
+    90% {
+      opacity: 1;
+      transform: none;
+    }
+    94%,
+    100% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+</style>

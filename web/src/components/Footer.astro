@@ -1,0 +1,104 @@
+---
+import Logo from './Logo.astro';
+import { footerNav } from '../config/nav';
+import { site } from '../config/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap site-footer__grid">
+    <div class="site-footer__brand">
+      <Logo />
+      <p>{site.tagline}</p>
+      <p class="site-footer__small">Not about control. About being intentional and present together.</p>
+    </div>
+    {
+      footerNav.map((group) => (
+        <nav aria-label={group.title}>
+          <h2>{group.title}</h2>
+          <ul>
+            {group.links.map((link) => (
+              <li>
+                <a href={link.href}>{link.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))
+    }
+  </div>
+  <div class="wrap site-footer__legal">
+    <p>© {year} {site.company}. All rights reserved.</p>
+    <p><a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a></p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-7);
+    padding-block: var(--space-7) var(--space-6);
+    background: var(--surface-sunken);
+    border-top: 1px solid var(--line);
+    font-size: 15px;
+  }
+  .site-footer__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .site-footer__brand {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: var(--space-2);
+    color: var(--ink-muted);
+  }
+  .site-footer__small {
+    max-width: 320px;
+  }
+  @media (min-width: 760px) {
+    .site-footer__grid {
+      grid-template-columns: 2fr repeat(3, 1fr);
+    }
+    .site-footer__brand {
+      grid-column: auto;
+    }
+  }
+  h2 {
+    margin-bottom: var(--space-2);
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  ul {
+    padding: 0;
+    list-style: none;
+  }
+  li a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  li a:hover {
+    text-decoration: underline;
+  }
+  .site-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--line);
+    color: var(--ink-muted);
+  }
+  .site-footer__legal a {
+    color: inherit;
+  }
+</style>

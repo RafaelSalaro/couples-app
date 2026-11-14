@@ -1,0 +1,103 @@
+---
+// Invite landing: the universal-link fallback for https://<domain>/i/<token>
+// (docs/06-ios-app.md §9). If the app is installed, iOS opens it instead of this page.
+// public/_redirects serves this page for every /i/* address. The token stays in the
+// address bar only: this page never reads, stores or sends it.
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import WaitlistForm from '../components/WaitlistForm.astro';
+import { site } from '../config/site';
+
+const available = site.launched && site.appStoreUrl !== '';
+---
+
+<Base
+  title="You're invited"
+  description={`Your partner invited you to pair on ${site.name}.`}
+  noindex
+  bare
+>
+  <section class="section">
+    <div class="wrap invite">
+      <a href="/" aria-label={`${site.name} home`}><Logo /></a>
+      <span class="chip chip--glow">An invite, just for you</span>
+      <h1>Your partner would like to pair with you</h1>
+      <p class="lede">
+        {site.name} protects time for the two of you. You'll both have exactly the same powers, and either of you can
+        unpair at any time.
+      </p>
+
+      {
+        available ? (
+          <>
+            <ol class="steps">
+              <li>
+                <strong>Get the app on your iPhone.</strong>
+                <a class="button" href={site.appStoreUrl}>Download on the App Store</a>
+              </li>
+              <li>
+                <strong>Tap your invite link again.</strong> It opens the app and pairs you. You can also type the
+                6-character code your partner sees in their app.
+              </li>
+            </ol>
+          </>
+        ) : (
+          <div class="card">
+            <h2>Almost ready</h2>
+            <p>
+              {site.name} isn't in the App Store yet. Leave your email and we'll tell you when it is. Your partner can
+              send a fresh invite then.
+            </p>
+            <WaitlistForm source="invite" id="invite-waitlist" />
+          </div>
+        )
+      }
+
+      <p class="invite__small">
+        Invites last 72 hours. If this one has run out, ask your partner for a new one. It only takes them a moment.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .invite {
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+    max-width: 640px;
+  }
+  .invite h1 {
+    margin-top: var(--space-2);
+  }
+  .invite .lede {
+    margin-top: 0;
+  }
+  .card {
+    width: 100%;
+    margin-top: var(--space-4);
+    display: grid;
+    gap: var(--space-3);
+  }
+  .card h2 {
+    font-size: 1.5rem;
+  }
+  .steps {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-4);
+    padding-left: 1.25em;
+  }
+  .steps li > * {
+    display: block;
+  }
+  .steps .button {
+    display: inline-flex;
+    margin-top: var(--space-3);
+  }
+  .invite__small {
+    margin-top: var(--space-4);
+    font-size: 15px;
+    color: var(--ink-muted);
+  }
+</style>

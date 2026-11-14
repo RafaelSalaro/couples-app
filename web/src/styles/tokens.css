@@ -1,0 +1,73 @@
+/* Design tokens from docs/10-brand-and-design-system.md. Do not use raw colors elsewhere. */
+:root {
+  color-scheme: light dark;
+
+  --surface: #fbf6f0;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f2e9de;
+  --line: #e5d8c8;
+  --ink: #2a211c;
+  --ink-muted: #6b5e55;
+  --hearth: #ad472e;
+  --hearth-soft: #f9e4db;
+  --on-hearth: #ffffff;
+  --glow: #e9a23b;
+  --glow-strong: #8f5a0f;
+  --glow-soft: #fcebcb;
+  --on-glow: #2a211c;
+  --sage: #4a6e53;
+  --sage-soft: #e1ebdf;
+  --on-sage: #ffffff;
+  --dusk: #2c2430;
+  --on-dusk: #f5eee6;
+  --danger: #a8322a;
+  --partner-a: var(--hearth);
+  --partner-b: var(--glow);
+
+  --shadow: 0 1px 2px rgba(42, 33, 28, 0.06), 0 8px 24px rgba(42, 33, 28, 0.08);
+
+  --font-display: 'Fraunces Variable', 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-body: 'Instrument Sans Variable', 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --page: 1120px;
+  --prose: 680px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface: #191513;
+    --surface-raised: #231e1b;
+    --surface-sunken: #120f0d;
+    --line: #3a322c;
+    --ink: #f4ede5;
+    --ink-muted: #b6a99e;
+    --hearth: #e8836a;
+    --hearth-soft: #4a2820;
+    --on-hearth: #191513;
+    --glow: #f2b65a;
+    --glow-strong: #f2b65a;
+    --glow-soft: #45351a;
+    --on-glow: #191513;
+    --sage: #8db596;
+    --sage-soft: #22332a;
+    --on-sage: #191513;
+    --dusk: #2a2230;
+    --on-dusk: #f5eee6;
+    --danger: #f0a097;
+    --shadow: none;
+  }
+}

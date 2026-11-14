@@ -1,0 +1,166 @@
+---
+// Waitlist form. Posts JSON to the `waitlist_join` Edge Function
+// (docs/05-data-model-and-api.md §3): {email, source} -> {ok, data} | {ok:false, error:{code, message}}.
+// The endpoint comes from PUBLIC_WAITLIST_ENDPOINT; see web/README.md.
+import { site } from '../config/site';
+
+interface Props {
+  /** Where on the site the form sits; stored as `source` with the signup. */
+  source: string;
+  id?: string;
+}
+
+const { source, id = 'waitlist-form' } = Astro.props;
+---
+
+<form
+  class="waitlist"
+  id={id}
+  novalidate
+  data-waitlist
+  data-endpoint={site.waitlistEndpoint}
+  data-anon-key={site.supabaseAnonKey}
+  data-source={source}
+>
+  <label class="waitlist__label" for={`${id}-email`}>Your email</label>
+  <div class="waitlist__row">
+    <input
+      id={`${id}-email`}
+      name="email"
+      type="email"
+      inputmode="email"
+      autocomplete="email"
+      placeholder="name@email.com"
+      required
+      aria-describedby={`${id}-status ${id}-note`}
+    />
+    <!-- Honeypot: people never see or fill this field. -->
+    <div class="waitlist__trap" aria-hidden="true">
+      <label>Leave this empty <input name="website" type="text" tabindex="-1" autocomplete="off" /></label>
+    </div>
+    <button class="button" type="submit">Join the waitlist</button>
+  </div>
+  <p class="waitlist__status" id={`${id}-status`} role="status" aria-live="polite"></p>
+  <p class="waitlist__note" id={`${id}-note`}>
+    We'll send one email to confirm, then only launch news. Unsubscribe any time.
+    See our <a href="/privacy/">privacy policy</a>.
+  </p>
+  <noscript>
+    <p class="waitlist__note">
+      This form needs JavaScript. You can also email <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a> and
+      we'll add you.
+    </p>
+  </noscript>
+</form>
+
+<style>
+  .waitlist {
+    max-width: 520px;
+  }
+  .waitlist__label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .waitlist__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  input[type='email'] {
+    flex: 1 1 220px;
+    min-height: 48px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface-raised);
+    color: var(--ink);
+    font: inherit;
+  }
+  input[type='email']::placeholder {
+    color: var(--ink-muted);
+  }
+  input[type='email'][aria-invalid='true'] {
+    border-color: var(--hearth);
+  }
+  .waitlist__trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .waitlist__status {
+    min-height: 1.6em;
+    margin-top: var(--space-3);
+    font-weight: 500;
+  }
+  .waitlist__status[data-state='success'] {
+    color: var(--sage);
+  }
+  .waitlist__status[data-state='notice'] {
+    color: var(--ink);
+  }
+  .waitlist__note {
+    margin-top: var(--space-1);
+    font-size: 15px;
+    line-height: 20px;
+    color: var(--ink-muted);
+  }
+  .waitlist__note a {
+    color: inherit;
+  }
+  :global(.section--dusk) .waitlist__note,
+  :global(.section--dusk) .waitlist__status[data-state],
+  :global(.section--dusk) .waitlist__status {
+    color: var(--on-dusk);
+  }
+  :global(.section--dusk) input[type='email'] {
+    border-color: transparent;
+  }
+</style>
+
+<script>
+  import { submitWaitlist, messages } from '../lib/waitlist';
+
+  for (const form of document.querySelectorAll<HTMLFormElement>('form[data-waitlist]')) {
+    const input = form.querySelector<HTMLInputElement>('input[name="email"]')!;
+    const trap = form.querySelector<HTMLInputElement>('input[name="website"]')!;
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const status = form.querySelector<HTMLElement>('[role="status"]')!;
+
+    const show = (state: 'success' | 'notice', text: string) => {
+      status.dataset.state = state;
+      status.textContent = text;
+    };
+
+    input.addEventListener('input', () => input.removeAttribute('aria-invalid'));
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (button.disabled) return;
+      button.disabled = true;
+      show('notice', messages.sending);
+      const result = await submitWaitlist({
+        endpoint: form.dataset.endpoint ?? '',
+        anonKey: form.dataset.anonKey ?? '',
+        email: input.value,
+        source: form.dataset.source ?? 'website',
+        honeypot: trap.value,
+      });
+      button.disabled = false;
+      if (result.ok) {
+        show('success', result.message);
+        form.dataset.done = 'true';
+        input.value = '';
+      } else {
+        show('notice', result.message);
+        if (result.code === 'invalid_email') {
+          input.setAttribute('aria-invalid', 'true');
+          input.focus();
+        }
+      }
+    });
+  }
+</script>

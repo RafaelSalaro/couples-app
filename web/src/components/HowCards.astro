@@ -1,0 +1,198 @@
+---
+// Scan, ask, earn (docs/09 §4.3). Each card has a small looping CSS animation
+// (transform and opacity only) that becomes a still image with reduced motion.
+---
+
+<div class="grid grid--3">
+  <article class="card how reveal">
+    <div class="how__art how__art--scan" aria-hidden="true">
+      <div class="qr">
+        {Array.from({ length: 25 }, (_, i) => <i style={`--d: ${(i * 7) % 5}`} />)}
+      </div>
+      <span class="scanline"></span>
+    </div>
+    <h3>Scan, when you're together</h3>
+    <p>
+      Your partner shows a code that changes every 30 seconds. Scan it and your apps open. It works offline, it's free,
+      and there's no limit, because being in the same room is the point.
+    </p>
+  </article>
+
+  <article class="card how reveal">
+    <div class="how__art how__art--ask" aria-hidden="true">
+      <span class="bubble bubble--a">30 minutes?</span>
+      <span class="bubble bubble--b">Go for it</span>
+    </div>
+    <h3>Ask, when you're apart</h3>
+    <p>
+      Send a quick request, with a reason if you like. Your partner answers "Go for it" or "Let's wait" right from the
+      notification. No answer in 5 minutes? Nothing lost. Try again or use your minutes.
+    </p>
+  </article>
+
+  <article class="card how reveal">
+    <div class="how__art how__art--earn" aria-hidden="true">
+      <span class="earn__task">Phone-free dinner</span>
+      <span class="earn__plus">+20 min each</span>
+    </div>
+    <h3>Earn, by showing up</h3>
+    <p>
+      Cook together, take a walk, write a note. Your partner confirms with a tap and you earn minutes to spend later.
+      Minutes last 7 days, so they get used, not hoarded.
+    </p>
+  </article>
+</div>
+
+<style>
+  .how {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+  .how__art {
+    position: relative;
+    display: grid;
+    place-content: center;
+    height: 150px;
+    margin-bottom: var(--space-3);
+    border-radius: var(--radius-s);
+    background: var(--surface-sunken);
+    overflow: hidden;
+  }
+
+  .qr {
+    display: grid;
+    grid-template-columns: repeat(5, 14px);
+    gap: 4px;
+  }
+  .qr i {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--ink);
+  }
+  .qr i:nth-child(3n + 2) {
+    opacity: 0.25;
+  }
+  .scanline {
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    top: 22px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--hearth);
+  }
+
+  .bubble {
+    padding: 8px 14px;
+    border-radius: 18px;
+    font-size: 15px;
+    font-weight: 600;
+    width: max-content;
+  }
+  .how__art--ask {
+    gap: var(--space-2);
+    justify-items: start;
+    padding-inline: var(--space-5);
+    place-content: center stretch;
+  }
+  .bubble--a {
+    background: var(--hearth);
+    color: var(--on-hearth);
+    border-bottom-left-radius: 6px;
+  }
+  .bubble--b {
+    justify-self: end;
+    background: var(--sage);
+    color: var(--on-sage);
+    border-bottom-right-radius: 6px;
+  }
+
+  .how__art--earn {
+    gap: var(--space-2);
+    justify-items: center;
+  }
+  .earn__task {
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .earn__plus {
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--glow);
+    color: var(--on-glow);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .qr i {
+      animation: qr 3s steps(1) infinite;
+      animation-delay: calc(var(--d) * -0.6s);
+    }
+    .scanline {
+      animation: scan 3s ease-in-out infinite alternate;
+    }
+    .bubble--b {
+      animation: pop 5s var(--ease-out) infinite;
+    }
+    .earn__plus {
+      animation: rise 5s var(--ease-out) infinite;
+    }
+  }
+
+  @keyframes qr {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+  @keyframes scan {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(104px);
+    }
+  }
+  @keyframes pop {
+    0%,
+    30% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    38%,
+    92% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+  }
+  @keyframes rise {
+    0%,
+    30% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    38%,
+    92% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+</style>

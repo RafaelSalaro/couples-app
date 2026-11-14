@@ -1,0 +1,20 @@
+---
+// Shown after launch (SITE_LAUNCHED=true). Before launch the site shows the waitlist form.
+// Official App Store and Google Play badge artwork must replace these text buttons
+// once the listings exist (the badges have their own usage guidelines).
+import { site } from '../config/site';
+---
+
+<div class="stores">
+  {site.appStoreUrl && <a class="button" href={site.appStoreUrl}>Download on the App Store</a>}
+  {site.googlePlayUrl && <a class="button button--quiet" href={site.googlePlayUrl}>Get it on Google Play</a>}
+</div>
+
+<style>
+  .stores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+</style>

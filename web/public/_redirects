@@ -1,0 +1,5 @@
+# Cloudflare Pages rewrites (status 200 = serve the target, keep the URL).
+# The site is static, so token routes are served by one page each and the
+# page reads the token from the address in the browser.
+/i/*        /invite/           200
+/approve/*  /approve-request/  200

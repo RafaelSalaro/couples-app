@@ -1,0 +1,20 @@
+---
+// Landing page after the double opt-in link in the waitlist email is tapped.
+// The `waitlist_join` backend should redirect here once the address is confirmed.
+import Base from '../../layouts/Base.astro';
+import { site } from '../../config/site';
+---
+
+<Base title="You're on the list" description={`Your place on the ${site.name} waitlist is confirmed.`} noindex>
+  <section class="section">
+    <div class="wrap" style="max-width: 640px;">
+      <span class="chip chip--sage">Confirmed</span>
+      <h1 style="margin-top: var(--space-4);">You're on the list</h1>
+      <p class="lede">
+        Thank you. We'll email you when {site.name} is ready for the two of you. Until then, maybe put the phone down and
+        go say hi.
+      </p>
+      <p style="margin-top: var(--space-5);"><a class="button" href="/">Back to home</a></p>
+    </div>
+  </section>
+</Base>

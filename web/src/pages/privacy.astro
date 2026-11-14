@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../config/site';
+---
+
+<Base
+  title="Privacy policy"
+  description={`How ${site.name} handles your information: what we collect, what we never collect, and your choices.`}
+  og="privacy"
+  breadcrumbs={[{ name: 'Privacy', path: '/privacy/' }]}
+>
+  <section class="page-head">
+    <div class="wrap prose">
+      <h1>Privacy policy</h1>
+      <p class="notice">
+        <strong>Placeholder.</strong> The full privacy policy is being drafted and will be reviewed by an attorney before
+        the app launches. This page describes what applies today, to the waitlist.
+      </p>
+      <h2>The waitlist</h2>
+      <p>
+        If you join the waitlist, we store your email address, the page you signed up from, and the time. We send one
+        email asking you to confirm, and after that only news about the launch of {site.name}. We do not sell or share
+        your email address. Every email has an unsubscribe link, and you can ask us to delete your address at any time.
+      </p>
+      <h2>This website</h2>
+      <p>
+        This website does not use advertising or tracking cookies and does not load third-party analytics or ad scripts.
+      </p>
+      <h2>The app, in short</h2>
+      <p>
+        The app is designed so that your partner never sees which apps you pause, what you do in them, your messages or
+        your location, and neither do we. The complete policy will be published here before launch.
+      </p>
+      <h2>Contact</h2>
+      <p>Questions about privacy: <a href={`mailto:${site.privacyEmail}`}>{site.privacyEmail}</a>.</p>
+    </div>
+  </section>
+</Base>

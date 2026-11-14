@@ -1,0 +1,37 @@
+{
+  "name": "couples-app-web",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/check-site.mjs",
+    "preview": "astro preview",
+    "check": "astro check && node scripts/check-site.mjs",
+    "test": "node --test tests/",
+    "mock:waitlist": "node scripts/mock-waitlist.mjs",
+    "test:e2e": "node scripts/e2e-waitlist.mjs",
+    "lighthouse": "node scripts/lighthouse.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.5",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "astro": "^7.4.12"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@fontsource/fraunces": "^5.3.0",
+    "@fontsource/instrument-sans": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/node": "^26.6.6",
+    "lighthouse": "^13.6.0",
+    "lucide-static": "^1.72.0",
+    "puppeteer-core": "^25.17.0",
+    "satori": "^0.63.2",
+    "typescript": "^6.0.3"
+  }
+}

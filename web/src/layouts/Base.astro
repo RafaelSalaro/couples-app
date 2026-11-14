@@ -1,0 +1,116 @@
+---
+import '@fontsource-variable/fraunces/wght.css';
+import '@fontsource-variable/instrument-sans/wght.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site, absoluteUrl } from '../config/site';
+import { organizationSchema, websiteSchema, breadcrumbSchema, type Crumb } from '../lib/schema';
+
+interface Props {
+  /** Page title without the brand name; the brand is appended. */
+  title: string;
+  /** Use the title exactly as given (home page). */
+  rawTitle?: boolean;
+  description: string;
+  /** Slug of the Open Graph image under /og/<slug>.png. */
+  og?: string;
+  noindex?: boolean;
+  /** Extra JSON-LD objects for this page. */
+  schema?: Record<string, unknown>[];
+  /** Breadcrumb trail after "Home". Rendered and marked up. */
+  breadcrumbs?: Crumb[];
+  ogType?: 'website' | 'article';
+  /** Hide header navigation and footer (invite and approval pages). */
+  bare?: boolean;
+}
+
+const {
+  title,
+  rawTitle = false,
+  description,
+  og = 'default',
+  noindex = false,
+  schema = [],
+  breadcrumbs,
+  ogType = 'website',
+  bare = false,
+} = Astro.props;
+
+const fullTitle = rawTitle ? title : `${title} · ${site.name}`;
+const canonical = absoluteUrl(Astro.url.pathname);
+const ogImage = absoluteUrl(`/og/${og}.png`);
+const graphs = [
+  organizationSchema(),
+  websiteSchema(),
+  ...(breadcrumbs ? [breadcrumbSchema(breadcrumbs)] : []),
+  ...schema,
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <link rel="canonical" href={canonical} />}
+    {noindex && <meta name="referrer" content="no-referrer" />}
+    {!noindex && <link rel="alternate" hreflang="en" href={canonical} />}
+    {!noindex && <link rel="alternate" hreflang="x-default" href={canonical} />}
+    <meta name="theme-color" content="#FBF6F0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#191513" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    {
+      graphs.map((graph) => (
+        <script type="application/ld+json" is:inline set:html={JSON.stringify(graph).replace(/</g, '\\u003c')} />
+      ))
+    }
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {!bare && <Header />}
+    <main id="main">
+      {
+        breadcrumbs && (
+          <div class="wrap">
+            <nav class="breadcrumbs" aria-label="Breadcrumb" style="padding-top: var(--space-5); margin-bottom: 0;">
+              <ol>
+                <li>
+                  <a href="/">Home</a>
+                </li>
+                {breadcrumbs.map((crumb, index) => (
+                  <li>
+                    {index === breadcrumbs.length - 1 ? (
+                      <span aria-current="page">{crumb.name}</span>
+                    ) : (
+                      <a href={crumb.path}>{crumb.name}</a>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </div>
+        )
+      }
+      <slot />
+    </main>
+    {!bare && <Footer />}
+  </body>
+</html>

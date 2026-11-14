@@ -68,6 +68,8 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 | E3 | Feature modules are named `<Name>Feature` (for example `ScheduleFeature`) to avoid clashing with model type names | Assumed |
 | E4 | Snapshot tests use a small in-repo helper (`SnapshotSupport` in the DesignSystem package) instead of a third-party library, to keep the dependency list at `supabase-swift` and RevenueCat. Reference images are compared only on the iOS major version they were recorded on | Assumed |
 | E5 | Colors are defined in code as light/dark token pairs (`ColorToken`) rather than an asset catalog, so the same values serve SwiftUI, UIKit and the Screen Time extensions and can be contrast-tested. Fraunces and Instrument Sans are bundled as variable font files (SIL Open Font License, license files included); fonts are assets, not code dependencies | Assumed |
+| E6 | Website: the brand name, company, domain, prices and launch state live only in `web/src/config/site.ts` (overridable by environment variables, same placeholders as E2); the build fails if a page hard-codes them. The site stays fully static: `/i/<token>` and `/approve/<token>` are served by fixed pages through Cloudflare Pages rewrites (`web/public/_redirects`), and the invite page never reads or sends the token | Assumed |
+| E7 | Website loads nothing from third parties: Fraunces and Instrument Sans are self-hosted (Fontsource packages, SIL Open Font License), Open Graph images are generated at build time, and the build fails on any external script, style, font or image. Cloudflare Web Analytics (named in `09-website-and-seo.md` §2) is **not** embedded, because `CLAUDE.md` rules out third-party analytics; whether to turn it on is a founder decision | Assumed |
 
 ## Verified technical facts (checked 2026-11-13)
 
@@ -94,3 +96,4 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 - 2026-11-13 — WP-1: added engineering decisions E1–E3 (XcodeGen, placeholder identifiers, feature module naming).
 - 2026-11-13 — Founder confirmed O11 (weekly report email off by default, P24) and O1 (minimum age 18+, App Store rating 12+, P25).
 - 2026-11-13 — WP-2: added engineering decisions E4–E5 (in-repo snapshot helper; color tokens in code and bundled fonts).
+- 2026-11-13 — W1: added engineering decisions E6–E7 (website config and static token routes; no third-party resources on the website).
