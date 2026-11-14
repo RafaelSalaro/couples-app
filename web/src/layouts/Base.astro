@@ -1,5 +1,6 @@
 ---
-import '@fontsource-variable/fraunces/wght.css';
+import '@fontsource-variable/fraunces/soft.css';
+import '@fontsource-variable/fraunces/wght-italic.css';
 import '@fontsource-variable/instrument-sans/wght.css';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
@@ -23,6 +24,11 @@ interface Props {
   ogType?: 'website' | 'article';
   /** Hide header navigation and footer (invite and approval pages). */
   bare?: boolean;
+  /**
+   * Where the two lights rest on this page, 0 (far apart) to 1 (overlapping).
+   * The home page ignores it: there the lights follow the scroll from 0 to 1.
+   */
+  closeness?: number;
 }
 
 const {
@@ -35,7 +41,13 @@ const {
   breadcrumbs,
   ogType = 'website',
   bare = false,
+  closeness,
 } = Astro.props;
+
+const isHome = Astro.url.pathname === '/';
+// Each page gets its own resting place for the lights, so they glide during page transitions.
+const pathSeed = [...Astro.url.pathname].reduce((sum, ch) => (sum * 31 + ch.charCodeAt(0)) % 997, 7);
+const base = closeness ?? 0.25 + (pathSeed % 45) / 100;
 
 const fullTitle = rawTitle ? title : `${title} · ${site.name}`;
 const canonical = absoluteUrl(Astro.url.pathname);
@@ -59,8 +71,31 @@ const graphs = [
     {noindex && <meta name="referrer" content="no-referrer" />}
     {!noindex && <link rel="alternate" hreflang="en" href={canonical} />}
     {!noindex && <link rel="alternate" hreflang="x-default" href={canonical} />}
-    <meta name="theme-color" content="#FBF6F0" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#191513" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FBF6F0" />
+    <script is:inline>
+      // Set the theme before first paint: the visitor's stored choice, else the device setting (B10).
+      (function () {
+        var root = document.documentElement;
+        var media = matchMedia('(prefers-color-scheme: dark)');
+        var stored = function () {
+          try {
+            var value = localStorage.getItem('theme');
+            return value === 'dark' || value === 'light' ? value : null;
+          } catch (e) {
+            return null;
+          }
+        };
+        var apply = function (theme) {
+          root.dataset.theme = theme;
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', theme === 'dark' ? '#191513' : '#FBF6F0');
+        };
+        apply(stored() || (media.matches ? 'dark' : 'light'));
+        media.addEventListener('change', function (event) {
+          if (!stored()) apply(event.matches ? 'dark' : 'light');
+        });
+      })();
+    </script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta property="og:site_name" content={site.name} />
@@ -83,7 +118,14 @@ const graphs = [
     }
     <slot name="head" />
   </head>
-  <body>
+  <body data-scene={isHome ? 'home' : 'page'}>
+    <div class="sky" aria-hidden="true" style={`--base: ${base.toFixed(2)}`}>
+      <span class="sky__warm"></span>
+      <span class="sky__stars"></span>
+      <span class="sky__orb sky__orb--a"></span>
+      <span class="sky__orb sky__orb--b"></span>
+      <span class="sky__grain"></span>
+    </div>
     <a class="skip-link" href="#main">Skip to content</a>
     {!bare && <Header />}
     <main id="main">
@@ -112,5 +154,8 @@ const graphs = [
       <slot />
     </main>
     {!bare && <Footer />}
+    <script>
+      import '../scripts/motion.ts';
+    </script>
   </body>
 </html>

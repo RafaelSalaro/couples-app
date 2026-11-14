@@ -24,11 +24,30 @@ const { wordmark = true, size = 28 } = Astro.props;
     align-items: center;
     gap: var(--space-2);
   }
+  .logo svg {
+    overflow: visible;
+  }
+  .logo circle {
+    transition: transform 450ms var(--ease-spring);
+  }
+  /* The circles lean into each other on hover. */
+  :global(a:hover) > .logo circle:first-child {
+    transform: translateX(3px);
+  }
+  :global(a:hover) > .logo circle:last-child {
+    transform: translateX(-3px);
+  }
   .logo__word {
     font-family: var(--font-display);
     font-weight: 500;
     font-size: 1.25rem;
     letter-spacing: -0.01em;
     color: var(--ink);
+    white-space: nowrap;
+  }
+  @media (max-width: 419px) {
+    .logo__word {
+      font-size: 1.0625rem;
+    }
   }
 </style>

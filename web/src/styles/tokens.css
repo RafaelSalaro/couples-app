@@ -1,6 +1,6 @@
 /* Design tokens from docs/10-brand-and-design-system.md. Do not use raw colors elsewhere. */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   --surface: #fbf6f0;
   --surface-raised: #ffffff;
@@ -43,12 +43,58 @@
   --radius-pill: 999px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: linear(0, 0.36 8%, 0.74 17%, 1.02 28%, 1.1 36%, 1.08 44%, 1.01 60%, 0.99 74%, 1);
+
+  /* W3 atmosphere (docs/09 §10). Everything below derives from the palette above. */
+  --disc-a: color-mix(in srgb, var(--hearth) 9%, transparent);
+  --disc-b: color-mix(in srgb, var(--glow) 17%, transparent);
+  --warm: color-mix(in srgb, var(--glow-soft) 55%, var(--hearth-soft));
+  --panel: color-mix(in srgb, var(--surface-sunken) 72%, transparent);
+  --glass: color-mix(in srgb, var(--surface-raised) 78%, transparent);
+  --grain-opacity: 0.5;
+  --stars-opacity: 0;
+  --shadow-lift: 0 2px 4px rgba(42, 33, 28, 0.05), 0 18px 48px rgba(42, 33, 28, 0.12);
   --page: 1120px;
   --prose: 680px;
 }
 
+/* Dark theme. The head script in Base.astro always sets data-theme (stored choice, else the
+   device setting, decision B10). The media query covers visitors without JavaScript. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface: #191513;
+  --surface-raised: #231e1b;
+  --surface-sunken: #120f0d;
+  --line: #3a322c;
+  --ink: #f4ede5;
+  --ink-muted: #b6a99e;
+  --hearth: #e8836a;
+  --hearth-soft: #4a2820;
+  --on-hearth: #191513;
+  --glow: #f2b65a;
+  --glow-strong: #f2b65a;
+  --glow-soft: #45351a;
+  --on-glow: #191513;
+  --sage: #8db596;
+  --sage-soft: #22332a;
+  --on-sage: #191513;
+  --dusk: #2a2230;
+  --on-dusk: #f5eee6;
+  --danger: #f0a097;
+  --shadow: none;
+  --disc-a: color-mix(in srgb, var(--hearth) 15%, transparent);
+  --disc-b: color-mix(in srgb, var(--glow) 11%, transparent);
+  --warm: var(--dusk);
+  --panel: color-mix(in srgb, var(--surface-raised) 62%, transparent);
+  --glass: color-mix(in srgb, var(--surface-raised) 82%, transparent);
+  --grain-opacity: 0.35;
+  --stars-opacity: 1;
+  --shadow-lift: 0 0 0 1px var(--line);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
+    color-scheme: dark;
     --surface: #191513;
     --surface-raised: #231e1b;
     --surface-sunken: #120f0d;
@@ -69,5 +115,13 @@
     --on-dusk: #f5eee6;
     --danger: #f0a097;
     --shadow: none;
+    --disc-a: color-mix(in srgb, var(--hearth) 15%, transparent);
+    --disc-b: color-mix(in srgb, var(--glow) 11%, transparent);
+    --warm: var(--dusk);
+    --panel: color-mix(in srgb, var(--surface-raised) 62%, transparent);
+    --glass: color-mix(in srgb, var(--surface-raised) 82%, transparent);
+    --grain-opacity: 0.35;
+    --stars-opacity: 1;
+    --shadow-lift: 0 0 0 1px var(--line);
   }
 }
