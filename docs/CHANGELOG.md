@@ -2,6 +2,17 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-5 Auth and onboarding
+
+- Foundations this package stands on (all in `ios/Packages`): `Core` (models for every table of doc 05, schedule evaluation with midnight crossing and daylight saving, stricter/looser classification, a mirror of the ledger rules, the ask-partner state machine, App Group shared state, deep links); `Backend` (the `Backend` protocol for doc 05, `SupabaseBackend`, and the in-memory `FakeBackend`/`FakeWorld` with a scripted partner); `Blocking` (`BlockingService`, `MockBlockingService`, the real `ScreenTimeBlockingService`, pause-screen copy); `QRCode` (TOTP, verification, QR rendering, scanner, Keychain store); `FeatureSupport` (the app model and shared views).
+- Sign in with Apple and email magic link, both through the `Backend` protocol. In the demo build Apple sign-in resolves to a fixed person and the "email" link can be opened from the sign-in screen.
+- Onboarding in the order of feature spec §2, on `MockBlockingService`: welcome, sign in, relationship type (Couple only), invite or join, notifications with the reason, Screen Time access, guidance and app choice (nothing pre-selected), protected time (default 6 PM–9 AM), starting minutes and daily maximum (30 and 60), ready. Progress survives a relaunch. Declining Screen Time is gentle: the picker is skipped and the home scene offers to turn it on later.
+- The app runs in the Simulator without Supabase: with no project configured (or `-demo 1`) it uses the in-memory backend and a scripted partner, Ana. Launch arguments for scenarios are documented in `ios/App/Composition.swift`.
+- `scripts/ios-strings.sh` keeps the String Catalogs in step with the code (`--check` for CI).
+- Tests: Core 52, Backend 43, Blocking 18, QRCode 10, FeatureSupport 28, Onboarding 8 (unit); UI tests `OnboardingUITests`: install → ready, magic link, declining Screen Time — 3 pass. Build has no warnings.
+- **Not verified:** real Sign in with Apple and real magic-link email (need the Apple developer account and a Supabase project); `SupabaseBackend` compiles but has not run against the Edge Functions, which are not built yet. Profile photo is not built (needs a storage contract in doc 05).
+- An assumption to confirm: someone who declines Screen Time access during onboarding can finish onboarding and is offered it again on the home scene (the spec covers revoking later, not declining at the start).
+
 ## 2026-11-14 — App design direction: "Two lights, one evening"
 
 Under decision B11 the app's look, navigation and motion were redefined before more screens are built. The direction is specified in `10-brand-and-design-system.md` §11 (with §4, §5 and §7 updated) and noted in `06-ios-app.md` §5. Nothing a feature does has changed; only how it is reached and shown.
