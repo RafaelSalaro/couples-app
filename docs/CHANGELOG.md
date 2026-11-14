@@ -2,6 +2,17 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-6 Pairing
+
+- Invite three ways: share a link (`https://<domain>/i/<token>`), a 6-character code, or a QR code of the link for in person. Invites last 72 hours and can be cancelled. Join by typing the code, scanning the QR in the app, or opening the link.
+- Universal links and the URL scheme are handled in one place (`AppModel.open`): an invite link that arrives before sign-in is kept and used once the person can pair. The app's associated domain is the placeholder from `Shared.xcconfig`.
+- Pairing complete: both see "You're now paired with Ana." as the two lights, each carrying an initial, meet. The pair's QR secret is fetched and stored in the Keychain; starting minutes arrive for both.
+- Unpair from Us → Partner: one confirmation (the only red button besides account deletion), instant, no approval. The other partner gets the gentle note "Ana ended your pairing." Protected time stays on each phone, minutes reset to zero, history is kept, open requests are cancelled. "Renew unlock code" rotates the QR secret.
+- Inviting while paired is not offered. Before pairing, the home scene is in "waiting for your partner" mode.
+- Tests: Pairing 9 unit tests; UI tests with two seeded users (`PairingUITests`): invite and partner accepts, join with code (including a wrong code), join by scanning, invite link opens the app, unpair, partner unpairs — 6 pass.
+- **Not verified:** universal links on a device (need the real domain's `apple-app-site-association` and the developer account); the camera scanner (the Simulator has no camera, so a sample code stands in).
+- Reading of the spec to confirm: "pairing requires both to confirm" is implemented as one partner creating the invite and the other accepting it, which is what doc 05's `create_invite`/`accept_invite` provide.
+
 ## 2026-11-14 — WP-5 Auth and onboarding
 
 - Foundations this package stands on (all in `ios/Packages`): `Core` (models for every table of doc 05, schedule evaluation with midnight crossing and daylight saving, stricter/looser classification, a mirror of the ledger rules, the ask-partner state machine, App Group shared state, deep links); `Backend` (the `Backend` protocol for doc 05, `SupabaseBackend`, and the in-memory `FakeBackend`/`FakeWorld` with a scripted partner); `Blocking` (`BlockingService`, `MockBlockingService`, the real `ScreenTimeBlockingService`, pause-screen copy); `QRCode` (TOTP, verification, QR rendering, scanner, Keychain store); `FeatureSupport` (the app model and shared views).
