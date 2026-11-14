@@ -59,8 +59,10 @@ sends no email and must never be deployed.
 One Markdown file per guide in `src/content/guides/` (schema in `src/content.config.ts`): title,
 description, lede, published date, cluster, FAQ and optional sources. Guides must not name the app
 or state prices in the body; the layout adds the call to action and the links to `/how-it-works/`
-and `/pricing/`. Set `draft: true` to keep a guide out of the build. Publishing a draft: remove
-`draft`, set `published` to the day it goes live, and run `npm run build`.
+and `/pricing/`. Set `draft: true` to keep a guide out of the build. Six drafts for the weeks after launch of the
+site are in the folder (`plannedWeek` 1 to 6). Publishing a draft: read it once, remove `draft`
+and `plannedWeek`, set `published` to the day it goes live, and run `npm run build`. To preview
+and check drafts: `npm run build:drafts` (output in `dist-drafts/`, never deployed).
 
 ## Web approval page
 

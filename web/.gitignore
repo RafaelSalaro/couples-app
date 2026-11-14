@@ -1,5 +1,6 @@
 dist/
 dist-e2e/
+dist-drafts/
 .astro/
 .lighthouse/
 node_modules/

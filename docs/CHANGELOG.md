@@ -2,6 +2,12 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-13 — Extra SEO guide drafts (doc 12 §6, item 4)
+
+- Six more guides as drafts (`draft: true`, `plannedWeek` 1–6, 1,300–1,600 words each) in `web/src/content/guides/`: partner always on their phone, phone-free dinner, phones out of the bedroom, 75 conversation starters, weekend digital detox, phone-free morning routine. Drafts are not built, not in the sitemap and not linked.
+- `npm run build:drafts` builds a preview with drafts into `dist-drafts/` and runs the site checks on it: 26 pages, no errors. The normal build is unchanged (20 pages).
+- Each draft needs one read by the founder before publishing; the dinner guide cites one paper (checked against Crossref).
+
 ## 2026-11-13 — App Store copy, App Review notes, legal drafts
 
 - `content/app-store/listing.md`: name-agnostic listing copy with `{{APP_NAME}}` placeholders: subtitle options, promotional text, full description (states that one price covers both partners, 18+, no medical claims, subscription terms), two keyword options, in-app purchase names, six screenshot captions, preview video outline, draft App Privacy answers. Character counts measured.

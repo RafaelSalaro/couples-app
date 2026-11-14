@@ -10,9 +10,13 @@ export const clusterLabel: Record<Guide['data']['cluster'], string> = {
   comparison: 'Comparison',
 };
 
-/** Published guides, newest first. Drafts never reach the build. */
+// Drafts never reach a normal build. To preview them locally:
+//   npm run build:drafts
+const includeDrafts = process.env.GUIDES_INCLUDE_DRAFTS === 'true';
+
+/** Published guides, newest first. */
 export async function publishedGuides(): Promise<Guide[]> {
-  const guides = await getCollection('guides', ({ data }) => !data.draft);
+  const guides = await getCollection('guides', ({ data }) => includeDrafts || !data.draft);
   return guides.sort(
     (a, b) => b.data.published.getTime() - a.data.published.getTime() || a.id.localeCompare(b.id),
   );
