@@ -25,4 +25,17 @@ const guides = defineCollection({
   }),
 });
 
-export const collections = { guides };
+// Legal drafts live in content/legal/ at the repository root so the same text serves the
+// website, the App Store listing and attorney review. Brand tokens such as {{APP_NAME}}
+// are filled in by the remark plugin in astro.config.mjs.
+const legal = defineCollection({
+  loader: glob({ pattern: '*.md', base: '../content/legal' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    status: z.string(),
+    version: z.string(),
+  }),
+});
+
+export const collections = { guides, legal };

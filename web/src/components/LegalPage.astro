@@ -1,0 +1,60 @@
+---
+// Renders a legal draft from content/legal/<id>.md (the single source for the text).
+import { getEntry } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { fillPlaceholders, fillPlaceholdersInHtml } from '../lib/placeholders';
+
+interface Props {
+  id: 'privacy-policy' | 'terms-of-service';
+  path: string;
+  og: string;
+  crumb: string;
+}
+
+const { id, path, og, crumb } = Astro.props;
+const entry = await getEntry('legal', id);
+if (!entry) throw new Error(`content/legal/${id}.md is missing`);
+const html = entry.rendered?.html;
+if (!html) throw new Error(`content/legal/${id}.md was not rendered`);
+if (/\{\{[A-Z_]+\}\}/.test(fillPlaceholdersInHtml(html))) throw new Error(`content/legal/${id}.md uses an unknown {{TOKEN}}`);
+---
+
+<Base
+  title={entry.data.title}
+  description={fillPlaceholders(entry.data.description)}
+  og={og}
+  breadcrumbs={[{ name: crumb, path }]}
+>
+  <section class="page-head">
+    <div class="wrap prose legal">
+      <h1>{entry.data.title}</h1>
+      <p class="legal__meta">{entry.data.status} Version {entry.data.version}.</p>
+      <div class="table-scroll-host" set:html={fillPlaceholdersInHtml(html)} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .legal__meta {
+    font-size: 15px;
+    color: var(--ink-muted);
+  }
+  .table-scroll-host > :global(* + *) {
+    margin-top: var(--space-4);
+  }
+  .table-scroll-host :global(h2) {
+    margin-top: var(--space-7);
+    font-size: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);
+  }
+  .table-scroll-host :global(h3) {
+    margin-top: var(--space-6);
+  }
+  .table-scroll-host :global(table) {
+    display: block;
+    overflow-x: auto;
+  }
+  .table-scroll-host :global(th:first-child),
+  .table-scroll-host :global(td:first-child) {
+    min-width: 180px;
+  }
+</style>

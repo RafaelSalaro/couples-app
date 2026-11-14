@@ -1,28 +1,6 @@
 ---
-import Base from '../layouts/Base.astro';
-import { site } from '../config/site';
+// Text lives in content/legal/terms-of-service.md (draft for attorney review).
+import LegalPage from '../components/LegalPage.astro';
 ---
 
-<Base
-  title="Terms of service"
-  description={`The terms for using ${site.name} and this website.`}
-  og="terms"
-  breadcrumbs={[{ name: 'Terms', path: '/terms/' }]}
->
-  <section class="page-head">
-    <div class="wrap prose">
-      <h1>Terms of service</h1>
-      <p class="notice">
-        <strong>Placeholder.</strong> The full terms of service are being drafted and will be reviewed by an attorney
-        before the app launches. Until the app is available, these short terms cover this website and the waitlist.
-      </p>
-      <h2>This website and the waitlist</h2>
-      <p>
-        This website is provided by {site.company} to share information about {site.name}. Joining the waitlist is free
-        and creates no obligation for you. You can leave it at any time with the unsubscribe link in any email.
-      </p>
-      <h2>Contact</h2>
-      <p>Questions: <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>.</p>
-    </div>
-  </section>
-</Base>
+<LegalPage id="terms-of-service" path="/terms/" og="terms" crumb="Terms" />

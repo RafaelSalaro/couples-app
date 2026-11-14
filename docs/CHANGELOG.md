@@ -2,6 +2,15 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-13 — App Store copy, App Review notes, legal drafts
+
+- `content/app-store/listing.md`: name-agnostic listing copy with `{{APP_NAME}}` placeholders: subtitle options, promotional text, full description (states that one price covers both partners, 18+, no medical claims, subscription terms), two keyword options, in-app purchase names, six screenshot captions, preview video outline, draft App Privacy answers. Character counts measured.
+- `content/app-store/review-notes.md`: text for the App Review notes field (what the app does, why it needs Screen Time, how pausing and each unlock method work, that no usage data leaves the device, test path with demo accounts), the checklist of what must accompany it, and text for the Family Controls (Distribution) request. Everything that needs the real app or accounts is marked TO DO; in-app labels quoted from the spec must be checked against the submitted build.
+- `content/legal/privacy-policy.md` and `content/legal/terms-of-service.md`: drafts written from `04-architecture.md` §5, `03-feature-spec.md` and `11-business-legal-launch.md` §4, with 18+ (P25) and weekly report email off by default (P24) as decided. **Both are clearly marked as drafts for attorney review and not in force.** Company name, address, effective date, governing law, dispute terms, liability cap, the meaning of "lifetime" and the waitlist retention period are bracketed placeholders, not invented.
+- The website's `/privacy/` and `/terms/` pages now render these same files (one source), filling the brand tokens from the site config; the build fails on an unknown token.
+- Verified: build clean, 0 SEO errors and 0 warnings, `astro check` 0 errors, Lighthouse 100 on all four scores for `/privacy/` and `/terms/`.
+- Founder decisions parked in the files: App Store keyword option (with or without "blocker"), secondary category, how reviewers sign in to demo accounts and how protected time is made active during review.
+
 ## 2026-11-13 — W2 Full website and first guides
 
 - All pages of `09-website-and-seo.md` §3: `/how-it-works/`, `/pricing/` (free vs premium table from spec §12; every price says it covers both partners), `/guides/`, `/about/`, `/support/` (help, contact, account deletion steps), `/safety/` (safety by design, how to step away, US helplines), `/press/`, plus the token routes `/i/<token>` and `/approve/<token>`. Privacy and terms are still the W1 placeholders until the legal drafts land.
