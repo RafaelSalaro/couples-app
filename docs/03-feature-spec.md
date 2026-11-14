@@ -1,6 +1,6 @@
 # 03 — Feature specification
 
-This is the complete behavior of v1. Language in quotes is draft user-facing copy (final copy follows the voice rules in `10-brand-and-design-system.md`).
+This is the complete behavior of v1. It defines **what** the app does, not how it looks: layouts, navigation and visual design are open (see `06-ios-app.md` §5). Language in quotes is draft user-facing copy (final copy follows the voice rules in `10-brand-and-design-system.md`).
 
 ## 1. Glossary
 
@@ -62,7 +62,7 @@ This is the complete behavior of v1. Language in quotes is draft user-facing cop
 
 When a paused app opens during protected time, Apple shows our custom pause screen:
 
-- Background: Dusk color. Title: "Protected time". Subtitle: time remaining ("2h 14m left") and an inviting line rotated from a list ("Want to do something together?", "Ana is around — say hi?").
+- Styled in brand colors (Apple fixes the layout). Title: "Protected time". Subtitle: time remaining ("2h 14m left") and an inviting line rotated from a list ("Want to do something together?", "Ana is around — say hi?").
 - Primary button: "Ask Ana". Secondary: "Not now".
 - Because Apple does not allow the pause screen to open the app, "Ask Ana" posts a time-sensitive local notification "Tap to ask Ana or use your minutes"; tapping it opens the unlock sheet. "Not now" closes the app.
 

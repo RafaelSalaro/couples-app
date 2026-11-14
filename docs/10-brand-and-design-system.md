@@ -1,5 +1,20 @@
 # 10 — Brand and design system
 
+## 0. How to read this document
+
+This document separates a small **fixed core** from **starting points**. The designer (Claude Code with Fable 5.2) has full creative freedom in UI and UX for the app and the website, and is encouraged to evolve, extend or replace the starting points when it makes the product better.
+
+| Fixed core (keep) | Starting points (open to reinvention) |
+|---|---|
+| The philosophy and personality (§1) | Type scale, weights and treatments (§4) |
+| Voice and vocabulary rules (§2) | Spacing, radii, elevation, materials (§5) |
+| The palette's identity: cream, ink, Hearth, Glow, Sage, Dusk and their roles (§3) | Additional tints, gradients, textures, light effects derived from the palette |
+| The two type families, Fraunces and Instrument Sans (§4) | Motion timings and choreography (§7) |
+| Accessibility: WCAG AA contrast in both themes, Dynamic Type, VoiceOver, Reduce Motion | Iconography, illustration style (§8–9) |
+| Light and dark themes, both first-class | Logo and app icon execution (§6, §10) |
+
+When a starting point changes, update this document so the design system and the docs stay in sync.
+
 ## 1. Personality
 
 Warm, calm, playful, equal. It should feel like an evening at home together, not a lock screen. Every surface answers "is this controlling?" with a clear no.
@@ -44,7 +59,7 @@ Rules: short sentences, second person, never guilt. Celebrate effort. Use the pa
 | `partner-a` | alias `hearth` | | Charts: the user |
 | `partner-b` | alias `glow` | | Charts: the partner |
 
-All text pairings meet WCAG AA (4.5:1) in both themes (checked 2026-11-13: e.g. hearth on surface 5.2:1, ink-muted on surface 5.8:1, on-glow on glow 7.3:1). Partner colors differ in lightness, not only hue, so charts read for color-blind users; also distinguish them with labels or patterns.
+These hex values are the fixed core of the palette. New tints, gradients, translucency and light effects may be derived from them freely. All text pairings meet WCAG AA (4.5:1) in both themes (checked 2026-11-13: e.g. hearth on surface 5.2:1, ink-muted on surface 5.8:1, on-glow on glow 7.3:1). Partner colors differ in lightness, not only hue, so charts read for color-blind users; also distinguish them with labels or patterns.
 
 ## 4. Typography
 
@@ -53,9 +68,11 @@ All text pairings meet WCAG AA (4.5:1) in both themes (checked 2026-11-13: e.g. 
 | **Fraunces** (soft optical serif) | Headlines, big numbers (minutes, streaks) | Google Fonts (free) |
 | **Instrument Sans** | All UI and body text | Google Fonts (free) |
 
-Scale (iOS points / web px): hero 44/48 Fraunces 500 · title 30/36 Fraunces 500 · numeral 40/44 Fraunces 500 tabular figures · heading 20/26 Instrument Sans 600 · body 17/24 Instrument Sans 400 · callout 15/20 500 · caption 13/18 500. iOS supports Dynamic Type by mapping these to text styles.
+Starting scale, open to refinement (iOS points / web px): hero 44/48 Fraunces 500 · title 30/36 Fraunces 500 · numeral 40/44 Fraunces 500 tabular figures · heading 20/26 Instrument Sans 600 · body 17/24 Instrument Sans 400 · callout 15/20 500 · caption 13/18 500. iOS supports Dynamic Type by mapping these to text styles.
 
 ## 5. Shape, space and elevation
+
+Starting values; the designer may redefine shape language, depth and materials.
 
 - Spacing scale: 4, 8, 12, 16, 24, 32, 48.
 - Radius: 10 (small controls), 16 (cards), 24 (sheets, large cards), pill (buttons, chips).
@@ -63,24 +80,27 @@ Scale (iOS points / web px): hero 44/48 Fraunces 500 · title 30/36 Fraunces 500
 
 ## 6. Logo direction (pending the name)
 
-Motif: **two overlapping circles**, one Hearth and one Glow, where the overlap is the time together. Wordmark in Fraunces. The mark must work as a single-color glyph for the app icon's small sizes and notifications.
+Starting idea: **two overlapping circles**, one Hearth and one Glow, where the overlap is the time together. Other concepts that express two people and shared time are welcome. Wordmark in Fraunces. The mark must work as a single-color glyph for the app icon's small sizes and notifications.
 
 ## 7. Motion
 
-- Gentle springs, 200–450 ms; ease-out for entrances; nothing longer than 600 ms except celebrations (≤ 1.2 s, once).
-- Celebration moments use Glow; calm states use Sage; protected time uses Dusk.
+**Character (fixed):** warm, calm, alive and celebratory. Motion should feel natural and physical, reward connection and never feel frantic, aggressive or punishing.
+
+**Starting guidance (open):** gentle springs and short durations for everyday interactions; longer, richer moments are welcome for celebrations and milestones. A natural association is Glow for celebration, Sage for calm and success, Dusk for protected time; the designer may develop this further.
+
+**Fixed rules:**
 - Never shake, flash red or play "denied" sounds.
-- Reduce Motion: replace movement with opacity fades.
+- Reduce Motion: every animated moment has a calm equivalent (for example fades) with no information lost.
 - **Website:** the marketing site may be more expressive than the app (scroll-driven storytelling, transitions, depth and light effects) as long as it keeps the same warm, calm character. See `09-website-and-seo.md` §10.
 
 ## 8. Iconography
 
-SF Symbols (rounded variants where available) on iOS; Lucide on the web and Android, 1.75 px stroke, rounded caps. Icons inherit text color.
+Starting point: SF Symbols on iOS and Lucide on the web and Android. Custom icons, animated symbols or a bespoke icon set are welcome if they fit the brand.
 
 ## 9. Imagery
 
-Real moments: hands, shared meals, walks, warm evening light, laughter. People present with each other. Never stock photos of couples staring at phones, never phones as villains. Illustrations, if used, are flat shapes from the circle motif in brand colors.
+Real moments: hands, shared meals, walks, warm evening light, laughter. People present with each other. Never stock photos of couples staring at phones, never phones as villains. Illustration style is open; it should feel warm and human and use the brand palette.
 
 ## 10. App icon direction
 
-Cream or Dusk background, the two overlapping circles in Hearth and Glow. Test at 29 pt and on both light and dark home screens.
+Starting idea: cream or Dusk background with the brand motif in Hearth and Glow. The designer may explore other directions. Fixed: it must read clearly at the smallest sizes and on light, dark and tinted home screens.

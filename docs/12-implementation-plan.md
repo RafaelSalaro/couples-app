@@ -34,22 +34,24 @@ Each package: read the listed docs first, implement, write tests, meet the Defin
 | WP | Title | Read | Deliverable | Acceptance |
 |---|---|---|---|---|
 | 1 | Repo and project skeleton | CLAUDE.md, 06 | Monorepo: `ios/`, `supabase/`, `web/`, `android/` (empty), `docs/`; Xcode project with all targets and App Group, Swift packages per 06 §3; CI workflows | Builds; CI green; placeholders for bundle IDs |
-| 2 | Design system package | 10 | Color assets (light/dark), fonts, spacing, radii, buttons, cards, rings, motion helpers | Snapshot tests of components in both themes |
+| 2 | Design system package | 10 | Color assets (light/dark), fonts, spacing, radii, buttons, cards, rings, motion helpers. May be evolved later to fit the chosen visual direction (B11) | Snapshot tests of components in both themes |
 | 3 ★ | Database schema, RLS, SQL functions | 05 | Migrations for all tables, policies, grant/spend/expire/debt/reset/streak functions, seed challenges | pgTAP tests cover every case in 07 §3 |
 | 4 ★ | Edge Functions | 04, 05 | All functions in 05 §3, APNs sender, Resend sender, RevenueCat webhook, cron jobs | Deno tests for success and error paths; idempotency tests |
-| 5 | Auth and onboarding | 03 §2, 06 §5 | Sign in with Apple + magic link, onboarding flow on `MockBlockingService` | UI test: install → ready |
+| 5 | Auth and onboarding | 03 §2, 06 §5–6 | Sign in with Apple + magic link, onboarding flow on `MockBlockingService` | UI test: install → ready |
 | 6 | Pairing | 03 §3 | Invite link/code/QR, accept, unpair, universal links handling | UI test with two seeded users |
 | 7 ★ | Blocking service | 04 §3.1–3.2, 06 §4 | `BlockingService`, `ScreenTimeBlockingService`, `MockBlockingService`, all five Screen Time extensions with shared App Group state | Unit tests on schedule evaluation; mock UI flows pass; real implementation compiles |
 | 8 ★ | Unlock methods | 03 §5–6, 04 §3.3–3.4 | Unlock sheet, QR show/scan with TOTP, ask-partner with actionable push, code entry, minutes spend, emergency, Live Activity countdown | Unit tests for TOTP and state machine; UI tests for each method |
-| 9 ★ | Minutes, challenges, kudos | 03 §7–8 | Minutes screen with 7-day expiry chart, ledger history, reset proposals, challenge library, completion/confirmation, custom challenges, kudos with celebration animation | UI tests; animations follow 06 §6 |
+| 9 ★ | Minutes, challenges, kudos | 03 §7–8 | Minutes screen with 7-day expiry chart, ledger history, reset proposals, challenge library, completion/confirmation, custom challenges, kudos with celebration animation | UI tests; signature moments per 06 §7 |
 | 10 | Home, schedule, reports, settings | 03 §4, §9–14 | Home screen, schedule editor with approval flow, weekly report, private report extension view, settings, export, account deletion | UI tests; account deletion verified against backend |
 | 11 | Real device Screen Time | 06 §4, 07 §4 | Switch to `ScreenTimeBlockingService`; fix device-only issues; verify midnight crossing and 15-minute minimum | Device scripts 1–17 pass |
-| 12 | Purchases | 03 §12, 06 §10 | RevenueCat, paywall, trial, restore, pair premium from backend, downgrade behavior | Sandbox purchase tests; partner sees premium |
-| 13 | Widgets and notifications polish | 06 §7–8 | Widgets, notification categories, expiry reminders, weekly report notification | Manual checks on device |
-| 14 | Accessibility, localization readiness, App Store package | 06 §11–12, 07 §7 | Dynamic Type, VoiceOver, Reduce Motion, privacy manifest, review notes, demo accounts | Accessibility audit passes; checklist complete |
+| 12 | Purchases | 03 §12, 06 §11 | RevenueCat, paywall, trial, restore, pair premium from backend, downgrade behavior | Sandbox purchase tests; partner sees premium |
+| 13 | Widgets and notifications polish | 06 §8–9 | Widgets, notification categories, expiry reminders, weekly report notification | Manual checks on device |
+| 14 | Accessibility, localization readiness, App Store package | 06 §12–13, 07 §7 | Dynamic Type, VoiceOver, Reduce Motion, privacy manifest, review notes, demo accounts | Accessibility audit passes; checklist complete |
 | W1 | Waitlist landing page | 09, 10 | Astro site skeleton, hero, philosophy, how it works, waitlist form, privacy/terms placeholders, deep-link files | Lighthouse ≥ 95; form works end to end |
 | W2 | Full website + first guides | 09 | All pages in 09 §3, structured data, sitemap, 6 guides | Search Console verified; no SEO errors |
 | W3 ★ | Website visual and motion redesign | 09 §10, 10 | Reimagined visuals, motion, scroll storytelling and transitions across the existing site; polished light and dark themes with a theme switch; content unchanged | Guardrails in 09 §10 met in both themes on phone and desktop; reduced-motion experience complete; site builds and existing checks pass |
+
+**Design freedom for app UI work packages (WP-5 to WP-10, WP-13):** follow `06-ios-app.md` §5. Each package uses the functional inventory (§6) and feature spec as the checklist of what must exist, and is free to design how it looks and works. Before building the first screens, establish a coherent visual and interaction direction for the whole app so later packages stay consistent; record it in `10-brand-and-design-system.md`.
 
 ## 4. Sprint schedule (Nov 13–16), three parallel lanes
 
@@ -86,7 +88,7 @@ Keep the Mac awake (`caffeinate -di claude`). Commit after each package.
 
 **If credits remain after the main plan (in this order)**
 1. More tests: edge cases for the minutes ledger, unlock state machine and time zones.
-2. Animation and haptics polish for the signature moments (`06-ios-app.md` §6).
+2. Animation and haptics polish for the signature moments (`06-ios-app.md` §7).
 3. Snapshot tests of every screen in light/dark and large text.
 4. Extra SEO guides (drafts for the next 6 weeks).
 5. Detailed Android work packages (docs only, no Android code yet).

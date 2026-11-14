@@ -19,6 +19,10 @@ Every feature, string, color and animation must pass this test. Concretely:
 - An emergency unlock is always available.
 - Use the vocabulary in `docs/10-brand-and-design-system.md` (for example "protected time", never "blocked"; "ask your partner", never "request permission").
 
+## Design freedom
+
+You have full creative freedom over UI, UX, visual design and motion for the app and the website. The docs define *what* the product does and a small fixed brand core; *how* it looks and feels is yours to invent. Aim for original, polished, memorable design, not templates. Guardrails: `docs/06-ios-app.md` §5 (app), `docs/09-website-and-seo.md` §10 (website), `docs/10-brand-and-design-system.md` §0 (fixed core vs starting points).
+
 ## Which document to read for which task
 
 | Task | Read first |
