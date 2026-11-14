@@ -13,11 +13,11 @@ public enum Spacing {
     public static let all: [CGFloat] = [xxs, xs, sm, md, lg, xl, xxl]
 }
 
-/// Corner radii: 10 (small controls), 16 (cards), 24 (sheets, large cards), pill.
+/// Corner radii: generous, like worn paper. 14 (small controls), 22 (cards), 32 (sheets and panels), pill.
 public enum Radius {
-    public static let small: CGFloat = 10
-    public static let card: CGFloat = 16
-    public static let sheet: CGFloat = 24
+    public static let small: CGFloat = 14
+    public static let card: CGFloat = 22
+    public static let sheet: CGFloat = 32
     public static let pill: CGFloat = 999
 }
 
@@ -45,9 +45,17 @@ private struct WarmShadow: ViewModifier {
 public extension View {
     func warmShadow() -> some View { modifier(WarmShadow()) }
 
-    /// Full-screen cream page background.
+    /// A paper page: cream with fine grain. Used for the quieter places behind the scene
+    /// (lists, forms, settings). Content on it uses the ordinary ink colors.
     func pageBackground() -> some View {
-        background(Color.surface.ignoresSafeArea())
+        environment(\.skyMoment, nil)
+            .background {
+                ZStack {
+                    Color.surface
+                    PaperGrain(opacity: 0.03)
+                }
+                .ignoresSafeArea()
+            }
     }
 }
 
@@ -58,6 +66,12 @@ public enum Motion {
     public static let gentle: Animation = .spring(duration: 0.45, bounce: 0.25)
     public static let entrance: Animation = .easeOut(duration: 0.3)
     public static let celebration: Animation = .spring(duration: 1.1, bounce: 0.3)
+    /// The two lights drifting toward or away from each other.
+    public static let drift: Animation = .spring(duration: 0.7, bounce: 0.18)
+    /// The two lights meeting.
+    public static let meet: Animation = .spring(duration: 0.5, bounce: 0.32)
+    /// Light changing in the sky.
+    public static let light: Animation = .easeInOut(duration: 1.0)
     /// What movement becomes when Reduce Motion is on.
     public static let fade: Animation = .easeInOut(duration: 0.25)
 
@@ -106,22 +120,33 @@ public extension View {
     }
 }
 
-/// Haptics for the signature moments. Never a "denied" buzz.
+/// The haptic vocabulary. Each word means one thing everywhere; there is no "denied" buzz.
+///
+/// - `tick`: a choice changed (a length, a place, a step of a slider).
+/// - `touch`: something answered your finger (a light picked up, a button that starts something).
+/// - `settle`: something was saved or sent and is now at rest.
+/// - `meet`: the two lights met (an unlock started, pairing completed).
+/// - `warmth`: warmth arrived (kudos, a milestone): three soft, rising taps.
 @MainActor
 public enum Haptics {
-    public static func success() {
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    public static func tick() { UISelectionFeedbackGenerator().selectionChanged() }
+    public static func touch() { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
+    public static func settle() { UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.7) }
+
+    public static func meet() {
+        UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: 0.6)
+        Task {
+            try? await Task.sleep(for: .milliseconds(120))
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        }
     }
 
-    public static func light() {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
-
-    public static func soft() {
-        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-    }
-
-    public static func selection() {
-        UISelectionFeedbackGenerator().selectionChanged()
+    public static func warmth() {
+        Task {
+            for intensity in [0.4, 0.65, 0.9] {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred(intensity: intensity)
+                try? await Task.sleep(for: .milliseconds(140))
+            }
+        }
     }
 }

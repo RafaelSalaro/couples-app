@@ -1,0 +1,33 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ %@" : {},
+    "%@ expire %@" : {},
+    "%@ left to spend today (daily maximum %@)." : {},
+    "%@: %@ expire" : {},
+    "Adjustment" : {},
+    "Challenge" : {},
+    "Each minute lasts 7 days from when it was earned." : {},
+    "Earned back" : {},
+    "Emergency unlock" : {},
+    "Expired" : {},
+    "Expiring soon" : {},
+    "Fresh start" : {},
+    "History" : {},
+    "Kudos" : {},
+    "Minutes" : {},
+    "Not now" : {},
+    "Nothing expires in the next 7 days." : {},
+    "Reset both" : {},
+    "Reset both balances to %@. You both need to agree." : {},
+    "Starting minutes" : {},
+    "Suggest a reset" : {},
+    "Unlock" : {},
+    "Whose minutes" : {},
+    "You" : {},
+    "You borrowed %@ for an emergency unlock. New minutes repay it first." : {},
+    "Your minutes history will appear here." : {},
+    "your minutes" : {}
+  },
+  "version" : "1.0"
+}

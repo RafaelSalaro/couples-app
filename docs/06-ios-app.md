@@ -95,6 +95,8 @@ protocol BlockingService: Sendable {
 - Apple-controlled surfaces stay within Apple's limits: the app picker, permission prompts and the pause screen (shield), whose layout Apple fixes (icon, title, subtitle, two buttons, colors).
 - Prices always shown as one price for both partners (decision M7).
 
+**Chosen direction (2026-11-14):** "Two lights, one evening": a sky that follows the day and protected time, the two partners as two equal lights, three places (Tonight, Together, Us) instead of a tab bar, unlocking as a gesture with a button path. It is specified in `10-brand-and-design-system.md` §11 and implemented in the `DesignSystem` package.
+
 ## 6. Functional inventory
 
 What each area must let people do. This is a checklist of required functions, not a layout: screens may be combined, split, reordered or reimagined, as long as every function is reachable and onboarding respects the permission order Apple requires.

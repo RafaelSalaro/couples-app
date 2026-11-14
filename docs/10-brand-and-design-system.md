@@ -68,15 +68,18 @@ These hex values are the fixed core of the palette. New tints, gradients, transl
 | **Fraunces** (soft optical serif) | Headlines, big numbers (minutes, streaks) | Google Fonts (free) |
 | **Instrument Sans** | All UI and body text | Google Fonts (free) |
 
-Starting scale, open to refinement (iOS points / web px): hero 44/48 Fraunces 500 · title 30/36 Fraunces 500 · numeral 40/44 Fraunces 500 tabular figures · heading 20/26 Instrument Sans 600 · body 17/24 Instrument Sans 400 · callout 15/20 500 · caption 13/18 500. iOS supports Dynamic Type by mapping these to text styles.
+**App scale (iOS points, size/line height; updated 2026-11-14 with the app direction, §11):** hero 44/48 Fraunces 500 · display 30/36 Fraunces *italic* 500 (scene statements such as "Tonight is yours, together.") · title 28/34 Fraunces 500 · numeral 40/44 Fraunces 500, tabular figures · numeral-large 64/66 Fraunces 400, tabular figures (the one number a scene is about) · heading 19/25 Instrument Sans 600 · body 17/24 Instrument Sans 400 · callout 15/20 500 · caption 13/18 500 · label 12/16 Instrument Sans 600, uppercase, tracked (small labels over the sky). All Fraunces is set with the SOFT axis at 100, as on the website. Every role scales with Dynamic Type through its text style.
+
+**Website:** the site's type scale lives in its own styles (see W3). The original starting values in web px were hero 48, title 36, numeral 44, heading 20/26, body 17/24, callout 15/20, caption 13/18.
 
 ## 5. Shape, space and elevation
 
 Starting values; the designer may redefine shape language, depth and materials.
 
 - Spacing scale: 4, 8, 12, 16, 24, 32, 48.
-- Radius: 10 (small controls), 16 (cards), 24 (sheets, large cards), pill (buttons, chips).
+- Radius (app, updated 2026-11-14): 14 (small controls), 22 (cards), 32 (sheets, panels), pill (buttons, chips, the place bar). The website keeps its own W3 values.
 - Shadows: very soft and warm in light theme (`0 1px 2px rgba(42,33,28,.06), 0 8px 24px rgba(42,33,28,.08)`); none in dark theme, use `surface-raised` contrast instead.
+- Materials (app): **sky** (full-bleed gradient, §11), **paper** (cream or raised surface with fine grain, a hairline edge and the warm shadow: cards, panels and the quieter pages), **light** (soft translucent discs with a halo: the two people), **glass** (thin translucent material for small chips over the sky).
 
 ## 6. Logo direction (pending the name)
 
@@ -87,6 +90,10 @@ Starting idea: **two overlapping circles**, one Hearth and one Glow, where the o
 **Character (fixed):** warm, calm, alive and celebratory. Motion should feel natural and physical, reward connection and never feel frantic, aggressive or punishing.
 
 **Starting guidance (open):** gentle springs and short durations for everyday interactions; longer, richer moments are welcome for celebrations and milestones. A natural association is Glow for celebration, Sage for calm and success, Dusk for protected time; the designer may develop this further.
+
+**App motion (2026-11-14):** quick 0.2 s, standard 0.35 s, gentle 0.45 s springs for controls; **drift** 0.7 s (the lights moving toward or away from each other), **meet** 0.5 s with a little bounce (the lights meeting), **light** 1.0 s ease (the sky changing), celebrations up to 1.2 s, once. With Reduce Motion every one of these becomes a 0.25 s cross-fade and the lights are simply shown in their final place.
+
+**App haptics, one meaning each:** *tick* (a choice changed), *touch* (something answered your finger), *settle* (saved or sent, now at rest), *meet* (the two lights met: an unlock started, pairing completed), *warmth* (three soft rising taps: kudos, a milestone). There is no error or "denied" haptic.
 
 **Fixed rules:**
 - Never shake, flash red or play "denied" sounds.
@@ -104,3 +111,48 @@ Real moments: hands, shared meals, walks, warm evening light, laughter. People p
 ## 10. App icon direction
 
 Starting idea: cream or Dusk background with the brand motif in Hearth and Glow. The designer may explore other directions. Fixed: it must read clearly at the smallest sizes and on light, dark and tinted home screens.
+
+## 11. App direction: "Two lights, one evening"
+
+Defined 2026-11-14 under decision B11. It shares its concept with the website's "One evening" (W3): the two circles of the logo are alive.
+
+**The idea.** The app is a scene, not a stack of lists. There is a sky, and in it two lights: **you are Hearth, your partner is Glow**. They are always drawn the same size, with the same treatment and the same amount of information, on every screen: neither is ever the "main" one. Where the lights overlap is the time together. Everything the app celebrates is some version of the two lights drawing closer, meeting or glowing.
+
+**The sky.** Every scene sits under one of three skies, chosen from protected time and the clock, never from decoration:
+
+| Sky | When | Light theme | Dark theme |
+|---|---|---|---|
+| Daylight | Protected time is more than 90 minutes away (or off) | Cream paper warming toward Glow | A lamplit room: warm near-black |
+| Golden hour | The 90 minutes before protected time, and while an unlock is running | Glow-soft to a peach horizon | Candlelight: brown warming to ember |
+| Dusk | Protected time | The Dusk color deepening to a warm horizon | The same, a little deeper |
+
+Text placed on a sky uses that sky's own foreground and muted colors, which are tested for WCAG AA against every stop of the gradient in both themes. Dusk is dark in both themes on purpose: protected time should feel like evening whatever the phone's setting. Paper surfaces follow the theme as before.
+
+**Places, not tabs.** Three places, reached from a small floating pill at the bottom (the current place carries the two lights):
+
+- **Tonight**: the home scene. The two lights hold the two balances; the arc above them is protected time (or an unlock) passing, with one large number for the time left; a line for the shared streak; Unlock, the emergency unlock and "Show my code" directly under it; then today's activity on a sheet of paper.
+- **Together**: challenges and kudos (earning and giving).
+- **Us**: minutes, the week (reports), protected time and paused apps, partner and unpairing, settings.
+
+Every function in `06-ios-app.md` §6 stays reachable. The emergency unlock is one tap from Tonight during protected time and is one of the four ways in the unlock sheet at all times; unpairing is in Us, under the partner, two taps from anywhere.
+
+**Unlocking is a gesture between two people.** Asking your partner, and saying "Go for it" to them, can be done by sliding your light across to meet theirs. The same action is always also an ordinary button directly below, which is what VoiceOver and Switch Control use. When an unlock starts, the lights meet and the sky moves from dusk to golden hour.
+
+**Signature moments (06 §7), all built from the motif:**
+
+| Moment | Treatment | Reduce Motion |
+|---|---|---|
+| Kudos received | Your partner's light swells and its glow washes over yours while the minutes count up; *warmth* haptic | Glow fades in; the number changes without counting |
+| Unlock approved | The lights ease apart to let the evening open, the arc turns to a countdown, the sky warms to golden hour; *meet* haptic | Cross-fade to the new state |
+| QR scan success | The two lights slide together and overlap, glowing; *meet* haptic | Lights shown overlapped |
+| Streak milestone | The lights settle fully together and a few warm sparks drift up, once | Lights shown together, no sparks moving |
+| Minutes expiring timeline | Bars rise from the baseline one day after another, in the person's own color | Bars shown at full height |
+| Pairing complete | Two lights carrying the two initials drift together under a dusk sky and settle overlapped; *meet* haptic | Lights shown together |
+
+Never: shaking, red flashes, "denied" sounds or haptics.
+
+**Onboarding is one evening.** It starts in daylight with the lights far apart and ends at dusk with them together; the progress indicator is the two lights drawing closer.
+
+**Accessibility.** Everything the scene shows is also plain text and a VoiceOver label (each balance, the time left as a sentence, the streak). The arc is one element with a spoken description. Layouts are scroll views that reflow up to the accessibility text sizes. Touch targets are at least 44 pt. Red appears only on the two destructive confirmations.
+
+**Apple-controlled surfaces** (the app picker, permission prompts, the pause screen) keep Apple's layout; the pause screen uses the Dusk background, cream text, the Glow button and the two-lights mark as its icon.

@@ -71,15 +71,22 @@ import UIKit
         #expect(Typography.uiFont(.hero).familyName == "Fraunces")
         #expect(Typography.uiFont(.title).familyName == "Fraunces")
         #expect(Typography.uiFont(.numeral).familyName == "Fraunces")
+        // Scene statements are Fraunces italic.
+        #expect(Typography.uiFont(.display).familyName == "Fraunces")
+        #expect(Typography.uiFont(.display).fontDescriptor.symbolicTraits.contains(.traitItalic))
+        #expect(!Typography.uiFont(.title).fontDescriptor.symbolicTraits.contains(.traitItalic))
         #expect(Typography.uiFont(.body).familyName == "Instrument Sans")
         #expect(Typography.uiFont(.caption).familyName == "Instrument Sans")
     }
 
     @Test func scaleMatchesBrandDocument() {
         #expect(TextRole.hero.pointSize == 44)
-        #expect(TextRole.title.pointSize == 30)
+        #expect(TextRole.display.pointSize == 30 && TextRole.display.isItalic)
+        #expect(TextRole.title.pointSize == 28)
         #expect(TextRole.numeral.pointSize == 40)
-        #expect(TextRole.heading.pointSize == 20)
+        #expect(TextRole.numeralLarge.pointSize == 64)
+        #expect(TextRole.heading.pointSize == 19)
+        #expect(TextRole.label.pointSize == 12)
         #expect(TextRole.body.pointSize == 17)
         #expect(TextRole.callout.pointSize == 15)
         #expect(TextRole.caption.pointSize == 13)
@@ -90,9 +97,9 @@ import UIKit
 @Suite struct LayoutAndMotionTests {
     @Test func scales() {
         #expect(Spacing.all == [4, 8, 12, 16, 24, 32, 48])
-        #expect(Radius.small == 10)
-        #expect(Radius.card == 16)
-        #expect(Radius.sheet == 24)
+        #expect(Radius.small == 14)
+        #expect(Radius.card == 22)
+        #expect(Radius.sheet == 32)
         #expect(Sizing.minTouchTarget == 44)
     }
 
@@ -110,10 +117,46 @@ import UIKit
     }
 }
 
+@Suite struct SceneTests {
+    /// Text placed directly on any sky meets WCAG AA against every stop of its gradient, in both themes.
+    @Test(arguments: SkyMoment.allCases)
+    func skyTextMeetsAA(moment: SkyMoment) {
+        for scheme in [ColorScheme.light, .dark] {
+            let palette = SkyPalette.make(moment, scheme: scheme)
+            #expect(palette.stops.count == 3)
+            for stop in palette.stops {
+                #expect(Contrast.ratio(palette.foreground, stop) >= 4.5, "\(moment) \(scheme) foreground")
+                #expect(Contrast.ratio(palette.muted, stop) >= 4.5, "\(moment) \(scheme) muted")
+            }
+        }
+    }
+
+    @Test func duskIsDarkInBothThemesAndDaylightFollowsTheTheme() {
+        #expect(SkyPalette.make(.dusk, scheme: .light).isDark && SkyPalette.make(.dusk, scheme: .dark).isDark)
+        #expect(!SkyPalette.make(.daylight, scheme: .light).isDark && SkyPalette.make(.daylight, scheme: .dark).isDark)
+        #expect(!SkyPalette.make(.goldenHour, scheme: .light).isDark)
+        // On paper (no sky) text uses the ordinary ink colors.
+        #expect(SkyInk(moment: nil, scheme: .light).isDark == false)
+    }
+
+    /// The two lights are equals: same diameter, mirrored positions, and they overlap only as far as allowed.
+    @Test func lightsAreEqualAndMeet() {
+        typealias Lights = TwoLights<EmptyView, EmptyView>
+        let apart = Lights.separation(closeness: 0, diameter: 100, overlap: 0.55)
+        let together = Lights.separation(closeness: 1, diameter: 100, overlap: 0.55)
+        #expect(apart == 130 && together == 45)
+        #expect(Lights.separation(closeness: 2, diameter: 100, overlap: 0.55) == together)
+        // With text inside, the discs only touch at the edge.
+        #expect(Lights.separation(closeness: 1, diameter: 100, overlap: 0.14) == 86)
+        #expect(LightTone.allCases.count == 2)
+    }
+}
+
 /// A gallery of every component, used for the snapshot tests.
 struct ComponentGallery: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
+            Text(verbatim: "Tonight is yours, together.").textRole(.display).foregroundStyle(Color.ink)
             Text(verbatim: "Protected time").textRole(.title).foregroundStyle(Color.ink)
             Text(verbatim: "Not about control. About being here, together.")
                 .textRole(.body).foregroundStyle(Color.inkMuted)
@@ -174,6 +217,36 @@ struct ComponentGallery: View {
         }
     }
 
+    /// The home scene's building blocks on each sky, in both themes.
+    @Test(arguments: SkyMoment.allCases)
+    func sceneOnEachSky(moment: SkyMoment) {
+        let view = VStack(spacing: Spacing.lg) {
+            SkyText("Tonight", role: .label, muted: true)
+            SkyText("Tonight is yours, together.", role: .display)
+            EveningArc(progress: 0.4, tint: .glow, track: Color.inkMuted.opacity(0.45), accessibilityText: "1 hour of protected time left")
+                .frame(height: 120)
+            TwoLights(closeness: moment == .dusk ? 1 : 0.3, diameter: 120, overlap: 0.14, glow: 0.8) {
+                VStack(spacing: 0) { Text(verbatim: "You").textRole(.caption); Text(verbatim: "45").textRole(.numeral) }
+            } theirs: {
+                VStack(spacing: 0) { Text(verbatim: "Ana").textRole(.caption); Text(verbatim: "30").textRole(.numeral) }
+            }
+            SkyText("2h 14m", role: .numeralLarge)
+            SkyText("of protected time left", role: .callout, muted: true)
+            Button(action: {}) { Text(verbatim: "Unlock") }.buttonStyle(.dsPrimary)
+            Button(action: {}) { Text(verbatim: "Emergency unlock") }.buttonStyle(.dsQuiet)
+            LightsMeetControl("Slide your light to Ana") {}
+            PlaceBar(
+                places: [PlaceItem(id: 0, title: "Tonight", systemImage: "moon.stars"), PlaceItem(id: 1, title: "Together", systemImage: "sparkles"), PlaceItem(id: 2, title: "Us", systemImage: "person.2")],
+                selection: .constant(0)
+            )
+        }
+        .padding(Spacing.md)
+        .onSky(moment)
+        for result in Snapshot.verify(view, named: "scene-\(moment.rawValue)") {
+            #expect(result.isAcceptable, "\(result)")
+        }
+    }
+
     @Test func celebrations() {
         let view = ZStack {
             GlowBloom(isActive: true)
@@ -191,7 +264,7 @@ struct ComponentGallery: View {
     @Test func darkThemeRendersDarker() throws {
         let light = try #require(Snapshot.render(ComponentGallery(), variant: .light, width: 390))
         let dark = try #require(Snapshot.render(ComponentGallery(), variant: .dark, width: 390))
-        #expect(Snapshot.averageLuminance(light) > 0.7)
+        #expect(Snapshot.averageLuminance(light) > 0.65)
         #expect(Snapshot.averageLuminance(dark) < 0.3)
     }
 

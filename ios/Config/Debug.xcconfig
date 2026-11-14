@@ -1,1 +1,6 @@
 #include "Shared.xcconfig"
+
+// Which BlockingService a device build uses: mock or screentime (the Simulator always uses the mock).
+// Override in Secrets.xcconfig.local or with the launch argument -blockingService screentime.
+BLOCKING_SERVICE = mock
+#include? "Secrets.xcconfig.local"

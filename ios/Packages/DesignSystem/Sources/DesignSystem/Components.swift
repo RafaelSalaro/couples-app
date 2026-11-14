@@ -29,19 +29,23 @@ public struct Card<Content: View>: View {
 
     public var body: some View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
-        Group {
-            if tone == .raised {
-                padded.background(tone.background, in: shape).warmShadow()
-            } else {
-                padded.background(tone.background, in: shape)
-            }
-        }
-    }
-
-    private var padded: some View {
         content
             .padding(Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
+            // Sheets of paper resting on the scene: a hairline edge, a soft warm shadow, fine grain.
+            .background {
+                shape.fill(tone.background)
+                    .overlay(PaperGrain(opacity: 0.03).clipShape(shape))
+                    .overlay(shape.strokeBorder(tone == .dusk ? Color.clear : Color.line.opacity(0.7), lineWidth: 1))
+            }
+            .modifier(RaisedShadow(isRaised: tone == .raised))
+    }
+}
+
+private struct RaisedShadow: ViewModifier {
+    let isRaised: Bool
+    func body(content: Content) -> some View {
+        if isRaised { content.warmShadow() } else { content }
     }
 }
 
@@ -124,12 +128,12 @@ public struct Avatar: View {
     }
 
     public var body: some View {
-        Text(String(name.trimmingCharacters(in: .whitespaces).prefix(1)).uppercased())
-            .font(Typography.font(.heading, size: diameter * 0.42))
-            .foregroundStyle(tone == .me ? Color.onHearth : Color.onGlow)
-            .frame(width: diameter, height: diameter)
-            .background(tone == .me ? Color.hearth : Color.glow, in: Circle())
-            .accessibilityHidden(true)
+        // A person is always drawn as their light: Hearth for you, Glow for your partner.
+        LightDisc(tone == .me ? .me : .partner, diameter: diameter, glow: 0.25) {
+            Text(String(name.trimmingCharacters(in: .whitespaces).prefix(1)).uppercased())
+                .font(Typography.font(.title, size: diameter * 0.42))
+        }
+        .accessibilityHidden(true)
     }
 }
 
@@ -233,11 +237,28 @@ public struct SectionHeader: View {
     public init(_ title: String) { self.title = title }
 
     public var body: some View {
-        Text(title)
-            .textRole(.heading)
-            .foregroundStyle(Color.ink)
+        SkyText(title, role: .label, muted: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityAddTraits(.isHeader)
+    }
+}
+
+/// Text that picks legible colors wherever it sits: on the sky or on paper.
+public struct SkyText: View {
+    let text: String
+    let role: TextRole
+    let muted: Bool
+
+    public init(_ text: String, role: TextRole = .body, muted: Bool = false) {
+        self.text = text
+        self.role = role
+        self.muted = muted
+    }
+
+    public var body: some View {
+        SkyReader { ink in
+            Text(text).textRole(role).foregroundStyle(muted ? ink.muted : ink.primary)
+        }
     }
 }
 
@@ -252,7 +273,7 @@ public struct DSRow<Trailing: View>: View {
         _ title: String,
         subtitle: String? = nil,
         systemImage: String? = nil,
-        @ViewBuilder trailing: () -> Trailing = { EmptyView() }
+        @ViewBuilder trailing: () -> Trailing
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -279,5 +300,11 @@ public struct DSRow<Trailing: View>: View {
         }
         .frame(minHeight: Sizing.minTouchTarget)
         .contentShape(Rectangle())
+    }
+}
+
+public extension DSRow where Trailing == EmptyView {
+    init(_ title: String, subtitle: String? = nil, systemImage: String? = nil) {
+        self.init(title, subtitle: subtitle, systemImage: systemImage) { EmptyView() }
     }
 }

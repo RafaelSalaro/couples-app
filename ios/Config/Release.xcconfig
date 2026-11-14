@@ -1,1 +1,4 @@
 #include "Shared.xcconfig"
+
+// Release builds always use real Screen Time.
+BLOCKING_SERVICE = screentime

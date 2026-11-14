@@ -10,9 +10,10 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Core"),
+        .package(path: "../DesignSystem"),
     ],
     targets: [
-        .target(name: "Blocking", dependencies: ["Core"]),
+        .target(name: "Blocking", dependencies: ["Core", "DesignSystem"], resources: [.process("Resources")]),
         .testTarget(name: "BlockingTests", dependencies: ["Blocking"]),
     ],
     swiftLanguageModes: [.v6]

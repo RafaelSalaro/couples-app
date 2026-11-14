@@ -1,0 +1,11 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Allow the camera to scan your partner's code." : {},
+    "Camera access is off. You can turn it on in Settings." : {},
+    "Open Settings" : {},
+    "This device has no camera to scan with." : {},
+    "Use a sample code" : {}
+  },
+  "version" : "1.0"
+}

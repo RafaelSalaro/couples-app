@@ -1,0 +1,26 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ just got %@ from you." : {},
+    "%@ noticed you." : {},
+    "%@ of kudos left to give today." : {},
+    "Close" : {},
+    "Done" : {},
+    "Give %@ to %@" : {},
+    "Give each other minutes just because. One price covers both of you." : {},
+    "How many minutes?" : {},
+    "I noticed what you did" : {},
+    "Kudos" : {},
+    "Kudos are part of premium." : {},
+    "Kudos from %@" : {},
+    "Lovely" : {},
+    "See premium" : {},
+    "Tell %@ you noticed." : {},
+    "Thank you for today" : {},
+    "That meant a lot" : {},
+    "You made me laugh today" : {},
+    "You've given all of today's kudos. More tomorrow." : {},
+    "your partner" : {}
+  },
+  "version" : "1.0"
+}

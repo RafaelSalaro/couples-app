@@ -71,7 +71,7 @@ public struct ParticleDrift: View {
     }
 }
 
-/// Signature moments 3 and 6: two circles (or avatars) slide together and settle overlapped.
+/// Signature moments 3 and 6: the two lights slide together and settle overlapped, glowing.
 public struct ComingTogether: View {
     let together: Bool
     let diameter: CGFloat
@@ -83,8 +83,9 @@ public struct ComingTogether: View {
     }
 
     public var body: some View {
-        TwoCirclesMark(overlap: reduceMotion ? 1 : (together ? 1 : 0), diameter: diameter)
+        TwoLights(closeness: reduceMotion ? 1 : (together ? 1 : 0), diameter: diameter, glow: together ? 1 : 0.2)
             .opacity(reduceMotion ? (together ? 1 : 0.4) : 1)
-            .animation(Motion.resolve(Motion.gentle, reduceMotion: reduceMotion), value: together)
+            .animation(Motion.resolve(Motion.meet, reduceMotion: reduceMotion), value: together)
+            .accessibilityHidden(true)
     }
 }

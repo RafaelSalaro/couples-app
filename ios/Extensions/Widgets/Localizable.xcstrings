@@ -1,17 +1,38 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "widget.status.placeholder" : {
+    "widget.status.description" : {
       "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Protected time" } } }
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See your protected time at a glance."
+          }
+        }
+      }
     },
     "widget.status.name" : {
       "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Protected time" } } }
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protected time"
+          }
+        }
+      }
     },
-    "widget.status.description" : {
+    "widget.status.placeholder" : {
       "extractionState" : "manual",
-      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "See your protected time at a glance." } } }
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protected time"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

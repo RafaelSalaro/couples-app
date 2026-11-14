@@ -2,6 +2,18 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — App design direction: "Two lights, one evening"
+
+Under decision B11 the app's look, navigation and motion were redefined before more screens are built. The direction is specified in `10-brand-and-design-system.md` §11 (with §4, §5 and §7 updated) and noted in `06-ios-app.md` §5. Nothing a feature does has changed; only how it is reached and shown.
+
+- Concept, shared with the website: the logo's two circles are two living lights, you (Hearth) and your partner (Glow), always the same size and treatment. Every scene sits under a sky that follows protected time and the clock: daylight, golden hour (the 90 minutes before protected time, and during an unlock) and dusk (protected time, dark in both themes on purpose).
+- `DesignSystem`: sky palettes and `EveningSky` with paper grain, `LightDisc` and `TwoLights`, `EveningArc` (the status ring as an arc with a light travelling along it), `PlaceBar` (floating navigation pill), `LightsMeetControl` (slide your light to your partner's), sky-aware text and buttons, paper cards, new radii (14/22/32), Fraunces italic and two new type roles, a five-word haptic vocabulary, drift/meet/light motion tokens. Fraunces italic (variable, OFL) is now bundled.
+- Navigation: three places instead of a tab bar. Tonight (home scene) and Us exist now; Together arrives with challenges and kudos (WP-9).
+- Rebuilt in the new direction: onboarding (one evening, from daylight to dusk, with the lights drawing closer as progress), pairing (two lights carrying your initials meet), the home scene, the unlock sheet, asking and answering as a gesture with an ordinary button beside it, and the unlock-started moment.
+- Snapshots: all component references were re-recorded on purpose because the look changed, and six scene references were added (each sky in both themes).
+- Tests: DesignSystem 20 pass, including WCAG AA checks of the text colors against every gradient stop of every sky in both themes. All 213 package tests and the 9 UI tests pass (details in the WP-5 and WP-6 entries); the build has no warnings.
+- Not yet verified by eye on a device: haptics and the feel of the slide gesture (the Simulator has no haptics).
+
 ## 2026-11-14 — W3 Website visual and motion redesign
 
 Concept, "One evening": the two circles of the logo live as two lights behind every page. On the home page they start far apart and follow the scroll until they overlap at the waitlist, while the page warms from daylight to golden hour (light theme) or from dusk to candlelight (dark theme). Content, copy, page list, structured data and the waitlist flow are unchanged.

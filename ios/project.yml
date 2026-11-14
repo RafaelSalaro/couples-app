@@ -74,6 +74,7 @@ targets:
         SupabaseHost: $(SUPABASE_HOST)
         SupabaseAnonKey: $(SUPABASE_ANON_KEY)
         RevenueCatAPIKey: $(REVENUECAT_API_KEY)
+        BlockingServiceKind: $(BLOCKING_SERVICE)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -107,6 +108,8 @@ targets:
       - package: Blocking
       - package: QRCode
       - package: Purchases
+      - package: Features
+        product: FeatureSupport
       - package: Features
         product: OnboardingFeature
       - package: Features
@@ -184,6 +187,7 @@ targets:
     dependencies:
       - package: Core
       - package: Blocking
+      - package: DesignSystem
 
   ShieldActionExtension:
     type: app-extension
@@ -260,6 +264,19 @@ targets:
       - package: Core
       - package: DesignSystem
 
+  CouplesAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).uitests
+        GENERATE_INFOPLIST_FILE: true
+        TEST_TARGET_NAME: CouplesApp
+    dependencies:
+      - target: CouplesApp
+
 schemes:
   CouplesApp:
     build:
@@ -276,6 +293,7 @@ schemes:
         - package: Blocking/BlockingTests
         - package: QRCode/QRCodeTests
         - package: Purchases/PurchasesTests
+        - package: Features/FeatureSupportTests
         - package: Features/OnboardingFeatureTests
         - package: Features/PairingFeatureTests
         - package: Features/HomeFeatureTests
@@ -286,5 +304,6 @@ schemes:
         - package: Features/ReportsFeatureTests
         - package: Features/ScheduleFeatureTests
         - package: Features/SettingsFeatureTests
+        - name: CouplesAppUITests
     archive:
       config: Release

@@ -13,7 +13,7 @@ let package = Package(
         .package(path: "../DesignSystem"),
     ],
     targets: [
-        .target(name: "QRCode", dependencies: ["Core", "DesignSystem"]),
+        .target(name: "QRCode", dependencies: ["Core", "DesignSystem"], resources: [.process("Resources")]),
         .testTarget(name: "QRCodeTests", dependencies: ["QRCode"]),
     ],
     swiftLanguageModes: [.v6]

@@ -11,6 +11,8 @@ public struct DSButtonStyle: ButtonStyle {
     let fullWidth: Bool
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.skyMoment) private var skyMoment
+    @Environment(\.colorScheme) private var scheme
 
     public init(_ kind: ButtonKind = .primary, fullWidth: Bool = true) {
         self.kind = kind
@@ -41,7 +43,8 @@ public struct DSButtonStyle: ButtonStyle {
         switch kind {
         case .primary: .onHearth
         case .secondary: .ink
-        case .quiet: .hearth
+        // On a dark sky a quiet button is cream, so it stays legible.
+        case .quiet: skyMoment != nil && SkyInk(moment: skyMoment, scheme: scheme).isDark ? SkyInk(moment: skyMoment, scheme: scheme).primary : .hearth
         case .glow: .onGlow
         case .onDusk: .dusk
         case .destructive: .surfaceRaised

@@ -8,6 +8,8 @@
 	<string>$(URL_SCHEME)</string>
 	<key>AppWebsiteDomain</key>
 	<string>$(ASSOCIATED_DOMAIN)</string>
+	<key>BlockingServiceKind</key>
+	<string>$(BLOCKING_SERVICE)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

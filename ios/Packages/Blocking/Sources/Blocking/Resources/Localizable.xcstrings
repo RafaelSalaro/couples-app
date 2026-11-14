@@ -1,0 +1,25 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ is around — say hi?" : {},
+    "%@ left" : {},
+    "A good moment to look up." : {},
+    "Ask %@" : {},
+    "Entertainment" : {},
+    "Games" : {},
+    "News app" : {},
+    "Not now" : {},
+    "Protected time" : {},
+    "Shopping app" : {},
+    "Simulated list. On a real iPhone this is Apple's app picker." : {},
+    "Simulated pause screen" : {},
+    "Social" : {},
+    "Social websites" : {},
+    "Tap to ask %@ or use your minutes" : {},
+    "Tap to see your unlock options" : {},
+    "Unlock options" : {},
+    "Want to do something together?" : {},
+    "What would you and %@ like to do?" : {}
+  },
+  "version" : "1.0"
+}
