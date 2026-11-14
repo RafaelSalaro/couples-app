@@ -137,6 +137,10 @@ svg {
 }
 
 /* Layout */
+main {
+  overflow-x: clip;
+}
+
 .wrap {
   width: min(100% - 2 * var(--space-4), var(--page));
   margin-inline: auto;

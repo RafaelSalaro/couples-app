@@ -3,8 +3,8 @@
 // (transform and opacity only) that becomes a still image with reduced motion.
 ---
 
-<div class="grid grid--3">
-  <article class="card how reveal">
+<div class="deck">
+  <article class="card how" style="--i: 0">
     <div class="how__art how__art--scan" aria-hidden="true">
       <div class="qr">
         {Array.from({ length: 25 }, (_, i) => <i style={`--d: ${(i * 7) % 5}`} />)}
@@ -18,7 +18,7 @@
     </p>
   </article>
 
-  <article class="card how reveal">
+  <article class="card how" style="--i: 1">
     <div class="how__art how__art--ask" aria-hidden="true">
       <span class="bubble bubble--a">30 minutes?</span>
       <span class="bubble bubble--b">Go for it</span>
@@ -30,7 +30,7 @@
     </p>
   </article>
 
-  <article class="card how reveal">
+  <article class="card how" style="--i: 2">
     <div class="how__art how__art--earn" aria-hidden="true">
       <span class="earn__task">Phone-free dinner</span>
       <span class="earn__plus">+20 min each</span>
@@ -44,10 +44,34 @@
 </div>
 
 <style>
-  .how {
+  /* A deck: each card sticks a little lower than the one before, so the next way to unlock
+     slides over the last one as you scroll. Without sticky support they are simply a list. */
+  .deck {
     display: grid;
-    gap: var(--space-2);
+    gap: var(--space-5);
+    max-width: 920px;
+    margin-inline: auto;
+  }
+  .how {
+    position: sticky;
+    top: calc(96px + var(--i) * 18px);
+    display: grid;
+    gap: var(--space-2) var(--space-6);
     align-content: start;
+    padding: var(--space-5);
+    border-radius: 32px;
+    box-shadow: var(--shadow-lift);
+  }
+  .how:hover {
+    transform: none;
+  }
+  .how h3 {
+    font-family: var(--font-display);
+    font-variation-settings: 'SOFT' 100;
+    font-weight: 500;
+    font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.125rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
   }
   .how__art {
     position: relative;
@@ -55,9 +79,43 @@
     place-content: center;
     height: 150px;
     margin-bottom: var(--space-3);
-    border-radius: var(--radius-s);
+    border-radius: var(--radius-l);
     background: var(--surface-sunken);
     overflow: hidden;
+  }
+  .how:nth-child(1) .how__art {
+    background: var(--hearth-soft);
+  }
+  .how:nth-child(2) .how__art {
+    background: var(--sage-soft);
+  }
+  .how:nth-child(3) .how__art {
+    background: var(--glow-soft);
+  }
+  @media (min-width: 760px) {
+    .how {
+      grid-template-columns: 0.9fr 1.1fr;
+      grid-template-rows: auto 1fr;
+      align-items: start;
+      padding: var(--space-6);
+      min-height: 320px;
+    }
+    .how__art {
+      grid-row: 1 / 3;
+      height: 100%;
+      min-height: 256px;
+      margin-bottom: 0;
+    }
+    .how h3 {
+      align-self: end;
+      padding-top: var(--space-5);
+    }
+  }
+  @media (max-height: 640px) {
+    .how {
+      position: relative;
+      top: auto;
+    }
   }
 
   .qr {

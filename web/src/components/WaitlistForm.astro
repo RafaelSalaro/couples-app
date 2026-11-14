@@ -40,7 +40,10 @@ const { source, id = 'waitlist-form' } = Astro.props;
     </div>
     <button class="button" type="submit">Join the waitlist</button>
   </div>
-  <p class="waitlist__status" id={`${id}-status`} role="status" aria-live="polite"></p>
+  <div class="waitlist__result">
+    <span class="waitlist__motif" aria-hidden="true"><i></i><i></i></span>
+    <p class="waitlist__status" id={`${id}-status`} role="status" aria-live="polite"></p>
+  </div>
   <p class="waitlist__note" id={`${id}-note`}>
     We'll send one email to confirm, then only launch news. Unsubscribe any time.
     See our <a href="/privacy/">privacy policy</a>.
@@ -77,6 +80,59 @@ const { source, id = 'waitlist-form' } = Astro.props;
     background: var(--surface-raised);
     color: var(--ink);
     font: inherit;
+    transition:
+      border-color 200ms var(--ease-out),
+      box-shadow 300ms var(--ease-out);
+  }
+  input[type='email']:focus-visible {
+    outline: none;
+    border-color: var(--hearth);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--hearth) 22%, transparent);
+  }
+  .waitlist__result {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+  /* On success the two circles slide together: you're in. */
+  .waitlist__motif {
+    display: none;
+    flex: none;
+  }
+  .waitlist__motif i {
+    display: block;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--hearth);
+  }
+  .waitlist__motif i + i {
+    margin-left: -8px;
+    background: color-mix(in srgb, var(--glow) 88%, transparent);
+  }
+  .waitlist[data-done] .waitlist__motif {
+    display: flex;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .waitlist[data-done] .waitlist__motif i:first-child {
+      animation: meet-a 900ms var(--ease-spring) both;
+    }
+    .waitlist[data-done] .waitlist__motif i:last-child {
+      animation: meet-b 900ms var(--ease-spring) both;
+    }
+  }
+  @keyframes meet-a {
+    from {
+      transform: translateX(-18px);
+      opacity: 0;
+    }
+  }
+  @keyframes meet-b {
+    from {
+      transform: translateX(18px);
+      opacity: 0;
+    }
   }
   input[type='email']::placeholder {
     color: var(--ink-muted);
@@ -93,7 +149,6 @@ const { source, id = 'waitlist-form' } = Astro.props;
   }
   .waitlist__status {
     min-height: 1.6em;
-    margin-top: var(--space-3);
     font-weight: 500;
   }
   .waitlist__status[data-state='success'] {

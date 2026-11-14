@@ -11,6 +11,10 @@ import { homeFaq } from '../data/faq';
 import { appSchema, faqSchema } from '../lib/schema';
 
 const never = ['Which apps you paused', 'What you do in any app', 'Your messages', 'Where you are', 'Your screen time'];
+// Presentation only: the tagline and the philosophy line are split so they can be staged.
+const taglineLines = site.tagline.split(/(?<=\.)\s+/);
+const philosophy = 'Not about control. About being intentional and present together.';
+const philosophyWords = philosophy.split(' ');
 const shared = ['Minutes you each have', 'Requests you send each other', 'Challenges and kudos', 'Your streak together'];
 ---
 
@@ -24,9 +28,17 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
   <section class="hero">
     <div class="wrap hero__grid">
       <div class="hero__copy">
-        <span class="chip chip--sage">For couples · iPhone first</span>
-        <h1>{site.tagline}</h1>
-        <p class="lede">
+        <span class="chip chip--sage hero__chip">For couples · iPhone first</span>
+        <h1 class="hero__title" aria-label={site.tagline}>
+          {
+            taglineLines.map((line, index) => (
+              <span class="hero__line" aria-hidden="true">
+                <span style={`--i: ${index}`}>{line}{index < taglineLines.length - 1 ? ' ' : ''}</span>
+              </span>
+            ))
+          }
+        </h1>
+        <p class="lede hero__lede">
           {site.name} pauses the apps that pull you away, on a schedule you share, and gives you warm ways to unlock time
           together. It is not about control. It is about being here, with each other.
         </p>
@@ -41,27 +53,37 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
         }
       </div>
       <div class="hero__demo">
-        <PhoneDemo />
+        <span class="hero__ring hero__ring--a" aria-hidden="true"></span>
+        <span class="hero__ring hero__ring--b" aria-hidden="true"></span>
+        <div class="hero__phone">
+          <PhoneDemo />
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="section section--sunken" id="philosophy">
+  <section class="section" id="philosophy">
     <div class="wrap philosophy">
-      <span class="eyebrow">Our one rule</span>
-      <h2>Not about control. About being intentional and present together.</h2>
+      <span class="eyebrow eyebrow--center">Our one rule</span>
+      <h2 class="lit" data-scrub aria-label={philosophy} style={`--n: ${philosophyWords.length}`}>
+        {
+          philosophyWords.map((word, index) => (
+            <span aria-hidden="true" style={`--i: ${index}`}>{word}{index < philosophyWords.length - 1 ? ' ' : ''}</span>
+          ))
+        }
+      </h2>
       <div class="grid grid--3 philosophy__points">
-        <div>
+        <div class="reveal" style="--i: 0">
           <Icon name="scale" />
           <h3>Equal, always</h3>
           <p>You both have exactly the same powers. There is no admin and no one in charge.</p>
         </div>
-        <div>
+        <div class="reveal" style="--i: 1">
           <Icon name="door-open" />
           <h3>Free to leave</h3>
           <p>Either of you can unpair at any time, instantly. No approval, no questions.</p>
         </div>
-        <div>
+        <div class="reveal" style="--i: 2">
           <Icon name="sparkles" />
           <h3>Celebrate, never scold</h3>
           <p>No red screens and no guilt. Just small rewards for choosing each other.</p>
@@ -84,7 +106,7 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     </div>
   </section>
 
-  <section class="section section--sunken" id="kudos">
+  <section class="section" id="kudos">
     <div class="wrap split">
       <div class="reveal">
         <span class="eyebrow">The kudos moment</span>
@@ -94,8 +116,12 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
           arrives as a small celebration, and it is the heart of the app.
         </p>
       </div>
-      <div class="kudos-card reveal" role="img" aria-label="A notification: Ana says you made her laugh, plus 10 minutes.">
+      <div class="kudos-card" data-inview role="img" aria-label="A notification: Ana says you made her laugh, plus 10 minutes.">
         <span class="kudos-card__ripple" aria-hidden="true"></span>
+        <span class="kudos-card__ripple kudos-card__ripple--late" aria-hidden="true"></span>
+        <span class="kudos-card__sparks" aria-hidden="true">
+          {Array.from({ length: 8 }, (_, i) => <i style={`--a: ${i * 45 + 12}deg; --k: ${i}`} />)}
+        </span>
         <div class="kudos-card__body" aria-hidden="true">
           <span class="kudos-card__avatar">A</span>
           <div>
@@ -107,7 +133,8 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     </div>
   </section>
 
-  <section class="section section--dusk" id="protected-time">
+  <section class="section section--dusk daypanel" id="protected-time" data-scrub>
+    <span class="daypanel__light" aria-hidden="true"></span>
     <div class="wrap">
       <div class="section-head reveal">
         <span class="eyebrow">Protected time</span>
@@ -118,6 +145,7 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
         </p>
       </div>
       <div class="day" role="img" aria-label="A 24 hour day. Protected time runs from 6 PM to 9 AM. Apps are open from 9 AM to 6 PM.">
+        <div class="day__now" aria-hidden="true"><i></i></div>
         <div class="day__bar" aria-hidden="true">
           <span class="day__seg day__seg--on" style="flex: 9">Protected</span>
           <span class="day__seg" style="flex: 9">Open</span>
@@ -145,7 +173,7 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
           side: minutes earned, challenges done, kudos given. If a day is missed, a new streak starts today. That's all.
         </p>
       </div>
-      <div class="card report reveal" role="img" aria-label="Example weekly report: a 12 day streak. You earned 85 minutes and Ana earned 70 minutes. 4 challenges done together and 5 kudos given.">
+      <div class="card report" data-inview role="img" aria-label="Example weekly report: a 12 day streak. You earned 85 minutes and Ana earned 70 minutes. 4 challenges done together and 5 kudos given.">
         <div aria-hidden="true">
           <div class="report__streak">
             <span class="numeral report__num">12</span>
@@ -173,16 +201,16 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
         <p class="lede">The app shares only what it creates itself. Everything else stays on your phone.</p>
       </div>
       <div class="grid grid--2 promise">
-        <div class="card reveal">
+        <div class="card promise__never">
           <h3>Never shared</h3>
           <ul>
-            {never.map((item) => <li><Icon name="eye-off" size={20} />{item}</li>)}
+            {never.map((item, i) => <li class="reveal" style={`--i: ${i}`}><Icon name="eye-off" size={20} />{item}</li>)}
           </ul>
         </div>
-        <div class="card reveal">
+        <div class="card promise__shared">
           <h3>Shared between you two</h3>
           <ul>
-            {shared.map((item) => <li><Icon name="heart-handshake" size={20} />{item}</li>)}
+            {shared.map((item, i) => <li class="reveal" style={`--i: ${i}`}><Icon name="heart-handshake" size={20} />{item}</li>)}
           </ul>
         </div>
       </div>
@@ -191,7 +219,8 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
 
   <section class="section" id="pricing">
     <div class="wrap pricing-teaser reveal">
-      <span class="eyebrow">Pricing</span>
+      <span class="pricing-teaser__motif" aria-hidden="true"><i></i><i></i></span>
+      <span class="eyebrow eyebrow--center">Pricing</span>
       <h2>One price for both of you: {price.yearly} a year.</h2>
       <p class="lede">
         One of you pays, both of you get premium. That is {site.pricing.perPersonYearly}. Pairing, protected time and
@@ -216,7 +245,7 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
 
   {
     !site.launched && (
-      <section class="section section--dusk" id="waitlist">
+      <section class="section finale" id="waitlist">
         <div class="wrap final">
           <h2>Put the phone down, together.</h2>
           <p class="lede">Join the waitlist and we'll let you know when {site.name} is ready for the two of you.</p>
@@ -226,51 +255,177 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     )
   }
 </Base>
-
 <style>
+  /* ---------- Hero ---------- */
   .hero {
-    padding-block: clamp(var(--space-6), 6vw, 72px) clamp(var(--space-7), 7vw, 88px);
+    display: grid;
+    align-items: center;
+    min-height: calc(100svh - 84px);
+    padding-block: clamp(var(--space-6), 5vw, 64px) clamp(var(--space-7), 7vw, 96px);
   }
   .hero__grid {
     display: grid;
     gap: var(--space-7);
     align-items: center;
   }
-  .hero__copy h1 {
+  .hero__title {
     margin-top: var(--space-4);
-    font-size: clamp(2.75rem, 1.6rem + 5.2vw, 4.5rem);
-    line-height: 1.02;
+    font-size: clamp(2.75rem, 7.4vw, 6.75rem);
+    line-height: 0.96;
+    letter-spacing: -0.035em;
+    font-weight: 400;
+  }
+  .hero__line {
+    display: block;
+    overflow: clip;
+    overflow-clip-margin: 0.12em;
+    padding-bottom: 0.08em;
+  }
+  .hero__line > span {
+    display: block;
+  }
+  /* The second half of the promise, in the warm voice. */
+  .hero__line:last-child > span {
+    font-style: italic;
+    color: var(--hearth);
+    font-variation-settings: normal;
+    padding-right: 0.08em;
+  }
+  .hero__lede {
+    max-width: 34rem;
   }
   .hero__form {
     margin-top: var(--space-6);
   }
+  .hero__demo {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+  .hero__phone {
+    position: relative;
+    width: 100%;
+    transform: rotate(3deg);
+  }
+  /* Two rings behind the phone: the motif as an outline. */
+  .hero__ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(118%, 460px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1.5px solid var(--hearth);
+    opacity: 0.5;
+    transform: translate(-72%, -56%);
+  }
+  .hero__ring--b {
+    border-color: var(--glow);
+    opacity: 0.8;
+    transform: translate(-28%, -44%);
+  }
   @media (min-width: 900px) {
     .hero__grid {
-      grid-template-columns: 1.15fr 0.85fr;
+      width: min(100% - 2 * var(--space-4), 1280px);
+      grid-template-columns: 1.5fr 0.7fr;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__line > span {
+      animation: line-up 900ms var(--ease-out) both;
+      animation-delay: calc(var(--i) * 120ms + 60ms);
+    }
+    .hero__chip,
+    .hero__lede,
+    .hero__form {
+      animation: rise-in 700ms var(--ease-out) both;
+      animation-delay: 120ms;
+    }
+    .hero__lede {
+      animation-delay: 340ms;
+    }
+    .hero__form {
+      animation-delay: 440ms;
+    }
+    .hero__phone {
+      animation:
+        phone-in 1000ms var(--ease-out) 200ms both,
+        phone-float 7s ease-in-out 1200ms infinite alternate;
+    }
+    .hero__ring {
+      animation: ring-in 1200ms var(--ease-out) 300ms both;
+    }
+    .hero__ring--b {
+      animation-delay: 420ms;
+    }
+  }
+  @keyframes line-up {
+    from {
+      transform: translateY(105%) rotate(2deg);
+    }
+  }
+  @keyframes phone-in {
+    from {
+      opacity: 0;
+      transform: translateY(48px) rotate(9deg);
+    }
+  }
+  @keyframes phone-float {
+    to {
+      translate: 0 -10px;
+      rotate: -1.2deg;
+    }
+  }
+  @keyframes ring-in {
+    from {
+      opacity: 0;
+      scale: 0.7;
     }
   }
 
+  /* ---------- Philosophy: the line lights up word by word as it crosses the screen ---------- */
   .philosophy {
     text-align: center;
   }
   .philosophy h2 {
-    max-width: 760px;
+    max-width: 15ch;
     margin-inline: auto;
-    font-size: clamp(2rem, 1.3rem + 3vw, 3rem);
+    font-size: clamp(2.5rem, 1rem + 6.6vw, 6rem);
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    font-weight: 400;
+  }
+  :global(.motion) .lit span {
+    opacity: clamp(0.16, calc((var(--t, 1) - 0.2) / 0.34 * var(--n) - var(--i)), 1);
   }
   .philosophy__points {
-    margin-top: var(--space-7);
+    margin-top: clamp(var(--space-7), 8vw, 96px);
     text-align: left;
   }
   .philosophy__points > div {
     display: grid;
     gap: var(--space-2);
     align-content: start;
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--line);
   }
   .philosophy__points :global(.icon) {
+    box-sizing: content-box;
+    width: 26px;
+    height: 26px;
+    padding: 13px;
+    margin-bottom: var(--space-2);
+    border-radius: 50%;
+    background: var(--hearth-soft);
     color: var(--hearth);
-    width: 28px;
-    height: 28px;
+  }
+  .philosophy__points > div:nth-child(2) :global(.icon) {
+    background: var(--sage-soft);
+    color: var(--sage);
+  }
+  .philosophy__points > div:nth-child(3) :global(.icon) {
+    background: var(--glow-soft);
+    color: var(--glow-strong);
   }
   .philosophy__points p {
     color: var(--ink-muted);
@@ -288,37 +443,100 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     }
   }
 
+  /* ---------- Kudos: a small celebration when it comes into view ---------- */
+  #kudos h2 {
+    font-style: italic;
+    font-variation-settings: normal;
+    font-size: clamp(2.75rem, 1.4rem + 6vw, 5.5rem);
+    color: var(--glow-strong);
+  }
   .kudos-card {
     position: relative;
     display: grid;
     place-items: center;
-    min-height: 220px;
+    min-height: 300px;
   }
   .kudos-card__ripple {
     position: absolute;
-    width: 220px;
-    height: 220px;
+    width: 260px;
+    height: 260px;
     border-radius: 50%;
     background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
     opacity: 0.22;
+  }
+  .kudos-card__ripple--late {
+    display: none;
+  }
+  .kudos-card__sparks {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+  .kudos-card__sparks i {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin: -6px;
+    border-radius: 50%;
+    background: var(--glow);
+    opacity: 0;
+  }
+  .kudos-card__sparks i:nth-child(even) {
+    background: var(--hearth);
+    width: 8px;
+    height: 8px;
   }
   @media (prefers-reduced-motion: no-preference) {
     .kudos-card__ripple {
       animation: ripple 4.8s ease-out infinite;
     }
+    .kudos-card__ripple--late {
+      display: block;
+      animation-delay: 1.1s;
+    }
+    :global(.motion) .kudos-card__body {
+      opacity: 0;
+      transform: translateY(26px) scale(0.92);
+    }
+    :global(.motion) .kudos-card.is-in .kudos-card__body {
+      opacity: 1;
+      transform: none;
+      transition:
+        opacity 300ms var(--ease-out),
+        transform 700ms var(--ease-spring);
+    }
+    .kudos-card.is-in .kudos-card__sparks i {
+      animation: spark 1100ms var(--ease-out) 250ms both;
+    }
+    .kudos-card__body:hover {
+      transform: scale(1.03) rotate(-1deg);
+    }
+  }
+  @keyframes spark {
+    0% {
+      opacity: 0;
+      transform: rotate(var(--a)) translateX(40px) scale(0.4);
+    }
+    25% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(var(--a)) translateX(calc(150px + var(--k) * 6px)) scale(1);
+    }
   }
   @keyframes ripple {
     0% {
       opacity: 0;
-      transform: scale(0.7);
+      transform: scale(0.6);
     }
     12% {
       opacity: 0.4;
     }
-    25%,
+    30%,
     100% {
       opacity: 0;
-      transform: scale(1.5);
+      transform: scale(1.7);
     }
   }
   .kudos-card__body {
@@ -326,12 +544,13 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    width: min(100%, 400px);
-    padding: var(--space-4) var(--space-5);
+    width: min(100%, 460px);
+    padding: var(--space-5);
     border-radius: var(--radius-l);
     background: var(--surface-raised);
     border: 1px solid var(--line);
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-lift);
+    transition: transform 450ms var(--ease-spring);
   }
   .kudos-card__body div {
     display: grid;
@@ -342,28 +561,82 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     flex: none;
     display: grid;
     place-content: center;
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     background: var(--glow);
     color: var(--on-glow);
     font-family: var(--font-display);
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     font-weight: 600;
   }
 
+  /* ---------- Protected time: scrolling through the panel moves a light through one day ---------- */
+  .daypanel {
+    /* --q: 0 at midnight, 1 at the next midnight. Without motion it rests at 8:42 PM, the hero's time. */
+    --q: 0.86;
+    padding-block: clamp(64px, 10vw, 128px);
+  }
+  :global(.motion) .daypanel {
+    --q: clamp(0, calc((var(--t, 0.6) - 0.28) / 0.42), 1);
+  }
+  /* Daylight inside the panel: brightest at midday, gone at night. */
+  .daypanel__light {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(90% 120% at 50% 0%, #f2b65a, transparent 70%);
+    opacity: calc(0.34 * (1 - max(2 * var(--q) - 1, 1 - 2 * var(--q))));
+    pointer-events: none;
+  }
+  .daypanel > .wrap {
+    position: relative;
+  }
   .day {
-    margin-top: var(--space-6);
+    position: relative;
+    margin-top: var(--space-7);
+    container-type: inline-size;
+  }
+  .day__now {
+    position: absolute;
+    left: 0;
+    top: -18px;
+    bottom: 20px;
+    width: 0;
+    z-index: 1;
+    transform: translateX(calc(var(--q) * 100cqw));
+  }
+  .day__now::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 14px;
+    bottom: 0;
+    width: 2px;
+    border-radius: 2px;
+    background: #f5eee6;
+    opacity: 0.9;
+  }
+  .day__now i {
+    position: absolute;
+    left: -11px;
+    top: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #f2b65a;
+    box-shadow:
+      0 0 0 6px rgba(242, 182, 90, 0.22),
+      0 0 28px 6px rgba(242, 182, 90, 0.5);
   }
   .day__bar {
     display: flex;
     gap: 4px;
-    height: 56px;
+    height: clamp(64px, 9vw, 96px);
   }
   .day__seg {
     display: grid;
     place-content: center;
-    border-radius: var(--radius-s);
+    border-radius: var(--radius-m);
     background: rgba(245, 238, 230, 0.1);
     font-size: 13px;
     font-weight: 600;
@@ -386,13 +659,16 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     white-space: nowrap;
   }
   .day__note {
+    position: relative;
     margin-top: var(--space-4);
     max-width: 560px;
     opacity: 0.85;
   }
 
+  /* ---------- Shared progress ---------- */
   .report {
     padding: var(--space-6);
+    border-radius: 32px;
   }
   .report__streak {
     display: flex;
@@ -403,8 +679,9 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     line-height: 1.25;
   }
   .report__num {
-    font-size: 64px;
-    line-height: 1;
+    font-size: clamp(72px, 10vw, 112px);
+    line-height: 0.9;
+    font-variation-settings: 'SOFT' 100;
   }
   .report__bars {
     display: grid;
@@ -419,10 +696,11 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     font-size: 15px;
   }
   .report__bar i {
-    height: 14px;
+    height: 16px;
     width: var(--w);
     border-radius: var(--radius-pill);
     background: var(--partner-a);
+    transform-origin: left center;
   }
   .report__bar--b i {
     background: var(--partner-b);
@@ -441,7 +719,41 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     font-size: 13px;
     color: var(--ink-muted);
   }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.motion) .report {
+      opacity: 0;
+      transform: translateY(28px) rotate(1.5deg);
+    }
+    :global(.motion) .report.is-in {
+      opacity: 1;
+      transform: none;
+      transition:
+        opacity 500ms var(--ease-out),
+        transform 800ms var(--ease-out),
+        box-shadow 450ms var(--ease-out);
+    }
+    :global(.motion) .report .report__bar i {
+      transform: scaleX(0);
+    }
+    :global(.motion) .report.is-in .report__bar i {
+      transform: none;
+      transition: transform 900ms var(--ease-out) 350ms;
+    }
+    :global(.motion) .report.is-in .report__bar--b i {
+      transition-delay: 500ms;
+    }
+    :global(.motion) .report .report__num {
+      display: inline-block;
+      transform: scale(0.6);
+      transform-origin: left bottom;
+    }
+    :global(.motion) .report.is-in .report__num {
+      transform: none;
+      transition: transform 900ms var(--ease-spring) 200ms;
+    }
+  }
 
+  /* ---------- Privacy promise ---------- */
   .promise ul {
     display: grid;
     gap: var(--space-3);
@@ -454,18 +766,56 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     align-items: center;
     gap: var(--space-3);
   }
+  .promise :global(.card) {
+    padding: var(--space-6);
+    border-radius: 32px;
+  }
   .promise :global(.icon) {
     color: var(--ink-muted);
   }
+  .promise__shared {
+    background: linear-gradient(160deg, var(--glow-soft), var(--surface-raised) 70%);
+  }
+  .promise__shared :global(.icon) {
+    color: var(--hearth);
+  }
 
+  /* ---------- Pricing teaser ---------- */
   .pricing-teaser {
     text-align: center;
+  }
+  .pricing-teaser h2 {
+    max-width: 18ch;
+    margin-inline: auto;
+    font-size: clamp(2.25rem, 1.2rem + 4.6vw, 4.5rem);
   }
   .pricing-teaser .lede {
     max-width: 620px;
     margin-inline: auto;
   }
-
+  /* One price, two people: the motif, drawn together. */
+  .pricing-teaser__motif {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-5);
+  }
+  .pricing-teaser__motif i {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--hearth);
+    transition: transform 900ms var(--ease-spring) 200ms;
+  }
+  .pricing-teaser__motif i + i {
+    margin-left: -22px;
+    background: color-mix(in srgb, var(--glow) 88%, transparent);
+  }
+  :global(.motion) .pricing-teaser:not(.is-in) .pricing-teaser__motif i:first-child {
+    transform: translateX(-40px);
+  }
+  :global(.motion) .pricing-teaser:not(.is-in) .pricing-teaser__motif i:last-child {
+    transform: translateX(40px);
+  }
   .pricing-teaser__links {
     display: flex;
     flex-wrap: wrap;
@@ -474,15 +824,29 @@ const shared = ['Minutes you each have', 'Requests you send each other', 'Challe
     margin-top: var(--space-5);
   }
 
+  /* ---------- Finale: the two lights have met; the waitlist sits where they overlap ---------- */
+  .finale {
+    display: grid;
+    align-items: center;
+    min-height: min(92svh, 860px);
+  }
   .final {
     display: grid;
     justify-items: center;
     text-align: center;
     gap: var(--space-2);
   }
+  .final h2 {
+    max-width: 12ch;
+    font-size: clamp(2.75rem, 1.2rem + 7vw, 6.5rem);
+    line-height: 0.96;
+    letter-spacing: -0.03em;
+    font-weight: 400;
+  }
   .final .lede {
-    margin-top: 0;
+    margin-top: var(--space-3);
     margin-bottom: var(--space-5);
+    color: var(--ink);
   }
   .final :global(.waitlist) {
     width: 100%;
