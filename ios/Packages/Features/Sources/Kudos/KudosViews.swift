@@ -27,7 +27,7 @@ public struct GiveKudosSheet: View {
             .navigationTitle(L("Kudos"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(L("Close")) { dismiss() }.accessibilityIdentifier("kudos.close") }
+                ToolbarItem(placement: .cancellationAction) { BarButton(L("Close")) { dismiss() }.accessibilityIdentifier("kudos.close") }
             }
         }
         .task { await model.load() }

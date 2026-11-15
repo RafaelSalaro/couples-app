@@ -53,6 +53,34 @@ public extension AsyncButton where Label == Text {
 }
 
 /// A full-screen step: scrolling content with the actions pinned at the bottom. Reflows at large text sizes.
+/// A centred moment (welcome, ready): centred while it fits, scrolling when it does not (the
+/// largest text sizes), with the action kept below. Text is never cut off.
+public struct CenteredScaffold<Content: View, Actions: View>: View {
+    let content: Content
+    let actions: Actions
+
+    public init(@ViewBuilder content: () -> Content, @ViewBuilder actions: () -> Actions) {
+        self.content = content()
+        self.actions = actions()
+    }
+
+    public var body: some View {
+        VStack(spacing: 0) {
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: Spacing.lg) { content }
+                        .padding(Spacing.lg)
+                        .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+            }
+            VStack(spacing: Spacing.xs) { actions }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.bottom, Spacing.lg)
+        }
+    }
+}
+
 public struct StepScaffold<Content: View, Actions: View>: View {
     let title: String
     let subtitle: String?

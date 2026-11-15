@@ -182,12 +182,13 @@ To be confirmed against the shipped build and the final privacy policy before su
 - **Tracking:** No. The app does not track users and contains no third-party analytics or advertising SDKs.
 - **Data linked to the user, used for App Functionality only:**
   - Contact info: email address; name (display name)
-  - User content: photos (optional profile photo and optional challenge photos); other user content (challenge titles, notes, kudos messages, request reasons); customer support messages
+  - User content: other user content (challenge titles, notes, kudos messages, request reasons); customer support messages. Photos are not collected by the current build (profile and challenge photos are not built); add "Photos" here if they ship.
   - Identifiers: user ID; device ID (push notification token)
   - Purchases: purchase history (premium status)
   - Usage data: product interaction (first-party product events without content), also used for Analytics
 - **Not collected:** location, contacts, browsing history, search history, health and fitness, financial info, sensitive info, diagnostics sent to third parties.
 - **Screen Time:** the selection of apps and all Screen Time usage data stay on the device and are not collected.
+- The app's privacy manifest (`ios/App/PrivacyInfo.xcprivacy`) declares exactly these types; keep the two in step.
 
 ## Still needed before this can be submitted
 

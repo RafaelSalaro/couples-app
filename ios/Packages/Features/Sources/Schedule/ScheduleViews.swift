@@ -110,6 +110,7 @@ public struct ScheduleView: View {
 struct ScheduleEditor: View {
     let model: ScheduleModel
     @State var draft: ProtectedSchedule
+    @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.dismiss) private var dismiss
 
     private var isNew: Bool { !model.schedules.contains { $0.id == draft.id } }
@@ -123,7 +124,10 @@ struct ScheduleEditor: View {
                     }
                     ScheduleTimesEditor(schedule: $draft)
                     SectionHeader(L("Days"))
-                    HStack(spacing: Spacing.xxs) {
+                    // Seven days in a row; two rows at accessibility sizes so no day is cut off.
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.xxs),
+                                             count: typeSize.isAccessibilitySize ? 4 : 7),
+                              alignment: .leading, spacing: Spacing.xxs) {
                         ForEach(1...7, id: \.self) { day in
                             let on = draft.weekdays.contains(day)
                             Chip(String(ScheduleText.shortWeekday(day).prefix(2)), isSelected: on) {
@@ -163,7 +167,7 @@ struct ScheduleEditor: View {
             .pageBackground()
             .navigationTitle(isNew ? L("New protected time") : L("Edit protected time"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(L("Close")) { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { BarButton(L("Close")) { dismiss() } } }
         }
     }
 }
@@ -198,7 +202,7 @@ struct PausedAppsEditor: View {
             .pageBackground()
             .navigationTitle(L("Paused apps"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(L("Close")) { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { BarButton(L("Close")) { dismiss() } } }
             .onAppear { selection = model.app.deps.blocking.currentSelection() }
         }
     }

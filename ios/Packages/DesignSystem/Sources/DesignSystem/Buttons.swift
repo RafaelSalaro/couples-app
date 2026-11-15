@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Button looks. `destructive` is the only red one and is reserved for
 /// truly destructive actions (delete account, confirm unpair).
@@ -93,6 +94,7 @@ public struct Chip: View {
             Text(title)
                 .textRole(.callout)
                 .foregroundStyle(isSelected ? Color.onHearth : Color.ink)
+                .fixedSize() // a chip's label never wraps; rows of chips stack instead (see callers)
                 .padding(.horizontal, Spacing.md)
                 .frame(minWidth: Sizing.minTouchTarget, minHeight: Sizing.minTouchTarget)
                 .background(isSelected ? Color.hearth : Color.surfaceRaised, in: Capsule())
@@ -100,5 +102,31 @@ public struct Chip: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+    }
+}
+
+/// Close / Done in a sheet's navigation bar. The bar's glass button is lighter than the bar
+/// itself, so on a dark bar (any dusk sheet, or dark mode) Hearth falls under 4.5:1; cream
+/// is used there instead. In a toolbar the color scheme is the bar's own.
+public struct BarButton: View {
+    let title: String
+    let action: () -> Void
+
+    /// Resolved when drawn, from the bar's real appearance (the environment inside a toolbar
+    /// does not reflect `toolbarColorScheme`): deep Hearth on a light bar, cream on a dark one.
+    static let color = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(hex: ColorToken.onDusk.dark) : UIColor(hex: ColorToken.hearth.light)
+    })
+
+    public init(_ title: String, action: @escaping () -> Void) {
+        self.title = title
+        self.action = action
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            Text(title).foregroundStyle(Self.color)
+        }
+        .tint(Self.color)
     }
 }

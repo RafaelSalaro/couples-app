@@ -125,15 +125,22 @@ struct ExpiryChart: View {
     let person: MinutesModel.Person
     @State private var shown = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         let buckets = model.buckets(person)
+        // Seven columns: at accessibility sizes the days become single letters ("W"), never cut;
+        // VoiceOver reads the full day either way.
+        let dayStyle: Date.FormatStyle.Symbol.Weekday = typeSize.isAccessibilitySize ? .narrow : .abbreviated
         HStack(alignment: .bottom, spacing: Spacing.xs) {
             ForEach(Array(buckets.enumerated()), id: \.element.id) { index, bucket in
                 VStack(spacing: Spacing.xxs) {
-                    Text(bucket.minutes > 0 ? bucket.minutes.formatted() : " ")
-                        .textRole(.caption)
-                        .foregroundStyle(Color.glowStrong)
+                    // Days with nothing expiring keep the row's height but show no number.
+                    if bucket.minutes > 0 {
+                        Text(bucket.minutes.formatted()).textRole(.caption).foregroundStyle(Color.glowStrong)
+                    } else {
+                        Text(verbatim: "0").textRole(.caption).hidden()
+                    }
                     RoundedRectangle(cornerRadius: 6, style: .continuous)
                         .fill(bucket.minutes > 0 ? (person == .me ? Color.partnerA : Color.partnerB) : Color.surfaceSunken)
                         .frame(height: max(6, 96 * model.fraction(bucket, in: buckets) * (shown || reduceMotion ? 1 : 0)))
@@ -142,18 +149,17 @@ struct ExpiryChart: View {
                             Motion.resolve(Motion.gentle, reduceMotion: reduceMotion).delay(Motion.stagger(index: index, reduceMotion: reduceMotion)),
                             value: shown
                         )
-                    Text(model.dayName(bucket, style: .abbreviated))
+                    Text(model.dayName(bucket, style: dayStyle))
                         .textRole(.caption)
                         .foregroundStyle(Color.inkMuted)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
+                        .fixedSize()
                 }
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(L("\(model.dayName(bucket)): \(MinutesText.short(bucket.minutes)) expire"))
             }
         }
-        .frame(height: 150, alignment: .bottom)
+        .frame(minHeight: 150, alignment: .bottom)
         .onAppear { shown = true }
         .accessibilityIdentifier("minutes.chart")
     }

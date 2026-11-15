@@ -113,7 +113,7 @@ public struct InviteOrJoinView: View {
             .navigationTitle(L("Scan invite"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(L("Close")) { showScanner = false } }
+                ToolbarItem(placement: .cancellationAction) { BarButton(L("Close")) { showScanner = false } }
             }
         }
     }
@@ -300,7 +300,7 @@ public struct InviteSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(L("Done")) { dismiss() }.accessibilityIdentifier("invite.done")
+                    BarButton(L("Done")) { dismiss() }.accessibilityIdentifier("invite.done")
                 }
             }
         }

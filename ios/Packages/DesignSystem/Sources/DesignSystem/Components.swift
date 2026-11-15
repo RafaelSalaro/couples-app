@@ -281,25 +281,51 @@ public struct DSRow<Trailing: View>: View {
         self.trailing = trailing()
     }
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     public var body: some View {
-        HStack(spacing: Spacing.sm) {
-            if let systemImage {
-                Image(systemName: systemImage)
-                    .foregroundStyle(Color.hearth)
-                    .frame(width: 28)
-                    .accessibilityHidden(true)
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).textRole(.body).foregroundStyle(Color.ink)
-                if let subtitle {
-                    Text(subtitle).textRole(.caption).foregroundStyle(Color.inkMuted)
+        Group {
+            if typeSize.isAccessibilitySize {
+                // At accessibility sizes the text gets the full width: icon and accessory sit on
+                // the line above, so words are never broken across lines or covered.
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    HStack(spacing: Spacing.sm) {
+                        icon
+                        Spacer(minLength: Spacing.xs)
+                        trailing
+                    }
+                    texts
+                }
+            } else {
+                HStack(spacing: Spacing.sm) {
+                    icon.frame(width: 28)
+                    texts
+                    Spacer(minLength: Spacing.xs)
+                    trailing
                 }
             }
-            Spacer(minLength: Spacing.xs)
-            trailing
         }
         .frame(minHeight: Sizing.minTouchTarget)
         .contentShape(Rectangle())
+    }
+
+    @ViewBuilder private var icon: some View {
+        if let systemImage {
+            Image(systemName: systemImage)
+                .foregroundStyle(Color.hearth)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private var texts: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title).textRole(.body).foregroundStyle(Color.ink)
+                .fixedSize(horizontal: false, vertical: true)
+            if let subtitle {
+                Text(subtitle).textRole(.caption).foregroundStyle(Color.inkMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 }
 

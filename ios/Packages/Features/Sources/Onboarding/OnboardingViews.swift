@@ -89,23 +89,22 @@ struct WelcomeStep: View {
     @State private var together = false
 
     var body: some View {
-        VStack(spacing: Spacing.lg) {
-            Spacer()
+        CenteredScaffold {
             TwoLights(closeness: together ? 0.75 : 0, diameter: 110, glow: together ? 0.8 : 0.2)
                 .accessibilityHidden(true)
             SkyText(model.app.deps.brand.displayName, role: .label, muted: true)
             SkyText(L("Not about control. About being here, together."), role: .hero)
                 .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.6)
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
             SkyText(L("Pause the apps that pull you away, on a schedule you share. Unlock time together, never alone against the clock."), role: .body, muted: true)
                 .multilineTextAlignment(.center)
-            Spacer()
+                .fixedSize(horizontal: false, vertical: true)
+        } actions: {
             Button(L("Get started")) { model.advance() }
                 .buttonStyle(.dsPrimary)
                 .accessibilityIdentifier("onboarding.start")
         }
-        .padding(Spacing.lg)
         .task {
             try? await Task.sleep(for: .milliseconds(300))
             together = true
@@ -352,24 +351,24 @@ struct ReadyStep: View {
     @State private var together = false
 
     var body: some View {
-        VStack(spacing: Spacing.lg) {
-            Spacer()
+        CenteredScaffold {
             // The evening has arrived: the two lights settle together.
             TwoLights(closeness: together ? 1 : 0.3, diameter: 120, glow: together ? 1 : 0.3)
                 .accessibilityHidden(true)
             SkyText(L("You're all set"), role: .title).accessibilityAddTraits(.isHeader)
             SkyText(model.readyLine, role: .display)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("ready.line")
             if !model.app.isPaired {
                 SkyText(L("Invite your partner any time from the home screen."), role: .body, muted: true)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            Spacer()
+        } actions: {
             AsyncButton(L("Done")) { await model.finish() }
                 .accessibilityIdentifier("onboarding.done")
         }
-        .padding(Spacing.lg)
         .task {
             try? await Task.sleep(for: .milliseconds(300))
             together = true

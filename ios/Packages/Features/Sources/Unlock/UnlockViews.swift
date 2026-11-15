@@ -9,6 +9,7 @@ public struct UnlockSheet: View {
     @State private var model: UnlockModel
     @State private var path: [UnlockModel.Method] = []
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     public init(app: AppModel) { _model = State(initialValue: UnlockModel(app: app)) }
 
@@ -25,7 +26,7 @@ public struct UnlockSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(L("Close")) { dismiss() }.accessibilityIdentifier("unlock.close")
+                    BarButton(L("Close")) { dismiss() }.accessibilityIdentifier("unlock.close")
                 }
             }
             .navigationDestination(for: UnlockModel.Method.self) { method in
@@ -71,7 +72,11 @@ public struct UnlockSheet: View {
 
     private var lengthPicker: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack(spacing: Spacing.xs) {
+            // Three chips in a row; one under the other at accessibility sizes.
+            let chips = typeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.xs))
+                : AnyLayout(HStackLayout(spacing: Spacing.xs))
+            chips {
                 ForEach(UnlockRules.freeLengths, id: \.self) { minutes in
                     Chip(MinutesText.short(minutes), isSelected: model.length == minutes) {
                         Haptics.tick()
@@ -408,7 +413,7 @@ public struct ShowMyCodeView: View {
             .navigationTitle(L("Show my code"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button(L("Done")) { dismiss() }.accessibilityIdentifier("code.done") }
+                ToolbarItem(placement: .confirmationAction) { BarButton(L("Done")) { dismiss() }.accessibilityIdentifier("code.done") }
             }
         }
     }

@@ -272,7 +272,7 @@ public struct PaywallView: View {
             }
             .onSky(.goldenHour)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button(L("Close")) { dismiss() }.accessibilityIdentifier("paywall.close") }
+                ToolbarItem(placement: .cancellationAction) { BarButton(L("Close")) { dismiss() }.accessibilityIdentifier("paywall.close") }
             }
         }
         .task { await model.load() }

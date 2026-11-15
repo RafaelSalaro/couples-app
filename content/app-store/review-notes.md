@@ -43,7 +43,7 @@ Sign-in: [TO DO: describe the reviewer sign-in path. Magic links need a mailbox,
 Suggested path with one device (Account A):
 1. Sign in. Allow notifications. Allow Screen Time access when iOS asks.
 2. Choose one or two apps to pause (for example Safari or any installed social app).
-3. Home > "Start protected time now" [TO DO: confirm the exact label of the demo/test control, or state the schedule the demo account uses so protected time is active during review].
+3. Nothing to start: both demo accounts have protected time all day, every day, so it is already on.
 4. Open a paused app: the "Protected time" screen appears.
 5. Return to {{APP_NAME}} > Unlock > "Use my minutes" > 15 minutes. The paused app opens and a countdown appears.
 6. Unlock > "Emergency unlock" shows the always-available 15-minute option.
@@ -81,13 +81,13 @@ CONTACT
 
 | Item | Status | Owner |
 |---|---|---|
-| Two demo accounts, already paired, each with a pre-filled minutes balance (for example 60 minutes) and one challenge awaiting confirmation | **TO DO** after the backend is deployed. Needs a seed script for the production project and a sign-in path that does not depend on a mailbox | Backend lane, founder |
+| Two demo accounts, already paired, each with a pre-filled minutes balance (for example 60 minutes) and one challenge awaiting confirmation | Script ready: `supabase/demo/review_accounts.sql` (60 minutes each, protected time all day, one challenge by B awaiting A). Checked on the local stack. **TO DO:** run it on the production project; a sign-in path that does not depend on a mailbox (founder question 5) | Founder |
 | Sign-In Information fields in App Store Connect filled with Account A | **TO DO** | Founder |
 | Screen recording, 2 to 3 minutes: pairing, protected time starting, the pause screen, each unlock method (scan, ask, minutes, emergency), a challenge confirmation and a kudos | **TO DO** on two real iPhones | Founder |
 | Privacy policy URL and support URL live on the real domain | Drafts exist (`content/legal/`, website pages). **TO DO:** attorney review, real domain | Founder |
 | Family Controls (Distribution) entitlement approved for all five bundle IDs | **TO DO**, needs the organization developer account (decision log T1, T2) | Account Holder |
 | App Privacy answers | Draft in `content/app-store/listing.md` | Founder to confirm |
-| Export compliance | The app uses only standard encryption (HTTPS, Apple CryptoKit for one-time codes). **TO DO:** confirm and answer the encryption question accordingly | Founder |
+| Export compliance | The app uses only standard encryption (HTTPS, Apple CryptoKit for one-time codes) and declares `ITSAppUsesNonExemptEncryption = false` in its Info.plist. **TO DO:** founder to confirm that answer | Founder |
 | Every label and path quoted in the notes checked against the submitted build | **TO DO** at submission. The labels above come from the feature spec and may differ slightly in the app | iPhone lane |
 
 ## Text for the Family Controls (Distribution) entitlement request

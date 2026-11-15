@@ -109,7 +109,22 @@ public struct EveningSky: View {
 public extension View {
     /// Puts the view on a sky and tells its content which one, so text picks legible colors.
     func onSky(_ moment: SkyMoment) -> some View {
-        environment(\.skyMoment, moment).background(EveningSky(moment))
+        modifier(OnSky(moment: moment))
+    }
+}
+
+/// The sky behind a scene, and a navigation bar that matches it: under the dusk sky (dark in
+/// both themes) the title and bar buttons must be light, whatever the phone's appearance.
+private struct OnSky: ViewModifier {
+    let moment: SkyMoment
+    @Environment(\.colorScheme) private var scheme
+
+    func body(content: Content) -> some View {
+        let dark = SkyPalette.make(moment, scheme: scheme).isDark
+        content
+            .environment(\.skyMoment, moment)
+            .background(EveningSky(moment))
+            .toolbarColorScheme(dark ? .dark : .light, for: .navigationBar)
     }
 }
 
@@ -172,7 +187,8 @@ public struct LightDisc<Content: View>: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [tone.fill.opacity(0.96), tone.fill.opacity(0.88)],
+                        // Opaque, so text on a light keeps its contrast whatever glows behind it.
+                        colors: [tone.fill, tone.fill.opacity(0.98)],
                         center: UnitPoint(x: 0.38, y: 0.32), startRadius: 0, endRadius: diameter * 0.7
                     )
                 )
@@ -292,10 +308,20 @@ public struct EveningArc: View {
 /// A floating glass surface for controls that sit over the sky.
 public struct Glass: ViewModifier {
     let radius: CGFloat
+    @Environment(\.skyMoment) private var moment
+    @Environment(\.colorScheme) private var scheme
 
     public func body(content: Content) -> some View {
+        // The material follows the sky, not the phone's appearance: under the dusk sky (dark in
+        // both themes) light text needs dark glass behind it to stay readable.
+        let dark = SkyInk(moment: moment, scheme: scheme).isDark
         content
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .background {
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .environment(\.colorScheme, dark ? .dark : .light)
+                    .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).fill(Color.black.opacity(dark ? 0.25 : 0)))
+            }
             .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).strokeBorder(Color.white.opacity(0.18), lineWidth: 1))
     }
 }
@@ -323,6 +349,7 @@ public struct PlaceBar<ID: Hashable>: View {
     @Binding var selection: ID
     @Namespace private var namespace
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     public init(places: [PlaceItem<ID>], selection: Binding<ID>) {
         self.places = places
@@ -330,6 +357,12 @@ public struct PlaceBar<ID: Hashable>: View {
     }
 
     public var body: some View {
+        // Full labels, never cut off; at accessibility text sizes three labels no longer fit
+        // one line, so the bar shows icons only (each keeps its name for VoiceOver).
+        bar(showTitles: !typeSize.isAccessibilitySize)
+    }
+
+    private func bar(showTitles: Bool) -> some View {
         HStack(spacing: Spacing.xxs) {
             ForEach(places) { place in
                 let isSelected = place.id == selection
@@ -346,7 +379,9 @@ public struct PlaceBar<ID: Hashable>: View {
                         } else {
                             Image(systemName: place.systemImage).imageScale(.small)
                         }
-                        Text(place.title).textRole(.callout).lineLimit(1)
+                        if showTitles {
+                            Text(place.title).textRole(.callout).fixedSize()
+                        }
                     }
                     .foregroundStyle(isSelected ? Color.ink : Color.inkMuted)
                     .padding(.horizontal, Spacing.md)
@@ -359,13 +394,14 @@ public struct PlaceBar<ID: Hashable>: View {
                     .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(place.title)
                 .accessibilityAddTraits(isSelected ? [.isSelected] : [])
                 .accessibilityIdentifier("place.\(place.id)")
             }
         }
         .padding(Spacing.xxs)
-        // Solid enough that the labels keep their contrast over any sky.
-        .background(Color.surfaceSunken.opacity(0.94), in: Capsule())
+        // Solid, so the labels keep their contrast and nothing scrolling beneath shows through.
+        .background(Color.surfaceSunken, in: Capsule())
         .overlay(Capsule().strokeBorder(Color.line, lineWidth: 1))
         .warmShadow()
     }

@@ -7,13 +7,16 @@ import SwiftUI
 struct EarnBadge: View {
     let minutes: Int
     let shared: Bool
+    /// The badge grows with Dynamic Type so the number always fits its light.
+    @ScaledMetric(relativeTo: .headline) private var textSize: CGFloat = 15
+    @ScaledMetric(relativeTo: .headline) private var disc: CGFloat = 44
 
     var body: some View {
         HStack(spacing: -10) {
             // A shared challenge lights both of you; an individual one, just the person who did it.
-            if shared { LightDisc(.me, diameter: 30, glow: 0) }
-            LightDisc(.partner, diameter: 44, glow: 0.2) {
-                Text(verbatim: "+\(minutes)").font(Typography.font(.heading, size: 15))
+            if shared { LightDisc(.me, diameter: disc * 0.68, glow: 0) }
+            LightDisc(.partner, diameter: disc, glow: 0.2) {
+                Text(verbatim: "+\(minutes)").font(Typography.font(.heading, size: textSize))
             }
         }
         .accessibilityHidden(true)
@@ -309,7 +312,7 @@ struct CustomChallengeSheet: View {
             .pageBackground()
             .navigationTitle(L("Your own challenge"))
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button(L("Close")) { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .cancellationAction) { BarButton(L("Close")) { dismiss() } } }
         }
     }
 }

@@ -2,6 +2,23 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-15 — WP-14 Accessibility and App Store package
+
+- Accessibility audit: `AccessibilityUITests` runs Xcode's audit (contrast, labels, element size, Dynamic Type, clipped text, traits) on Tonight, the unlock sheet, Together, Us, Minutes, the welcome screen and Tonight before protected time, at the default text size and the largest accessibility size. All 4 tests pass. Each audited screen is attached to the test result as a screenshot.
+- Problems the audit and the screenshots found, all fixed:
+  - At the largest text sizes the welcome screen cut off its promise and its explanation ("About…", "on a sch…"); the welcome and ready screens now scroll when the text does not fit.
+  - Rows broke words one syllable per line and icons covered titles (challenges, unlock methods); rows now stack at accessibility sizes, with the icon and accessory on the line above the full-width text.
+  - The 15/30/60 length chips spilled their labels; chips keep one line and stack at accessibility sizes, and the seven weekday chips wrap to two rows.
+  - Place bar labels were cut off at larger sizes; at accessibility sizes the bar shows icons only, each keeping its name for VoiceOver.
+  - The expiry chart's day names were squeezed; at accessibility sizes they are single letters (VoiceOver reads the full day).
+  - Earn badges used a fixed font size; they now scale with Dynamic Type.
+  - Contrast: a sheet's navigation title was black on the dark dusk sky (nearly invisible), now light; Close and Done measured 3.7:1 (red on the bar's glass), now cream on dark bars (`BarButton`, 8.5:1); the streak chip's glass was light under cream text and now follows the sky; the place bar is solid, so nothing scrolling beneath shows through; the lights behind balances are opaque.
+- What the audit could not judge: it reports contrast failures for text on gradients, glass and the lights that pass when measured. Each was measured from the screenshot pixels and is listed with its ratio in the test (lowest 5.3:1); anything not listed still fails. Content under the place bar at rest is skipped (it is checked where it sits on screen), and so are contrast findings the audit reports without any element. Every text on the audited screens was measured.
+- Privacy manifests (`PrivacyInfo.xcprivacy`) for the app and all five extensions, bundled and checked in the built app: no tracking; data collected as in the App Privacy answers (email, name, other user content, user ID, push token, purchase history, product interaction); required-reason API: UserDefaults (CA92.1, and 1C8F.1 for the App Group). The listing's App Privacy draft no longer lists photos, which are not built.
+- App Review package: `supabase/demo/review_accounts.sql` creates the two paired demo accounts (60 minutes each, protected time all day so it is on during review, one challenge awaiting confirmation); checked on the local stack, rolled back. The review notes now say protected time is already on for the demo accounts, point to the script, and state the `ITSAppUsesNonExemptEncryption` answer.
+- Design system snapshots re-recorded on purpose for the visual changes above (scenes on each sky, gallery at the largest text size). All 271 package tests and the 38 UI tests pass.
+- **Not done (needs the founder or a device):** a reviewer sign-in path that does not need a mailbox (open question 5); running the demo script on the production project; the screen recording; VoiceOver and Switch Control by hand on a device; the age-rating questionnaire in App Store Connect.
+
 ## 2026-11-15 — WP-12 Purchases (backend side)
 
 - `revenuecat_webhook`: checks RevenueCat's Authorization header (constant-time), applies each event once (`webhook_events`), maps purchase, renewal, trial, product change, cancellation (premium stays to the end of the period), billing issue, expiry, lifetime and transfer to `entitlements`, ignores events older than the newest applied, and recomputes the pair's coverage. Anonymous RevenueCat ids are skipped; the app logs in with our user id.
