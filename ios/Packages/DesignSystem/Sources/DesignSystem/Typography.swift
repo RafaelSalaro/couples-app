@@ -169,6 +169,18 @@ public enum Typography {
         Font(uiFont(role, size: size))
     }
 
+    /// A font for widgets and Live Activities. WidgetKit archives the rendered text, and fonts
+    /// built from a variation descriptor cannot be archived, so this uses the face by name and
+    /// SwiftUI's own weight instead.
+    public static func widgetFont(_ role: TextRole, size: CGFloat? = nil) -> Font {
+        let size = size ?? role.pointSize
+        let weight: Font.Weight = role.weight >= 600 ? .semibold : (role.weight >= 500 ? .medium : .regular)
+        guard let name = face(for: role) else {
+            return .system(size: size, weight: weight, design: role.family == .fraunces ? .serif : .default)
+        }
+        return Font.custom(name, fixedSize: size).weight(weight)
+    }
+
     private static func fallback(_ role: TextRole, size: CGFloat) -> UIFont {
         let weight: UIFont.Weight = role.weight >= 600 ? .semibold : (role.weight >= 500 ? .medium : .regular)
         var descriptor = UIFont.systemFont(ofSize: size, weight: weight).fontDescriptor

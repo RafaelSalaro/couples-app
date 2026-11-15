@@ -1,0 +1,15 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ days free, then %@" : {},
+    "%@ once, for both of you" : {},
+    "%@/year for both of you" : {},
+    "Get lifetime for both of you" : {},
+    "Lifetime" : {},
+    "One price for both of you" : {},
+    "Start %@ days free" : {},
+    "Subscribe for both of you" : {},
+    "Yearly" : {}
+  },
+  "version" : "1.0"
+}

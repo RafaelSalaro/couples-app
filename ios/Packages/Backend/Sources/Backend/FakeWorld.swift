@@ -138,6 +138,19 @@ public final class FakeWorld: @unchecked Sendable {
         }
     }
 
+    /// Simulates buying a product: the yearly plan starts with the 14-day trial if the pair
+    /// (or the person) has not used it; otherwise it is a paid year. Lifetime never expires.
+    public func simulatePurchase(yearly: Bool, by user: UUID) {
+        let trialUsed = lock.withLock { premiumState(user).trialUsed }
+        if !yearly {
+            setEntitlement(.lifetime, for: user)
+        } else if trialUsed {
+            setEntitlement(.subscription, for: user, expiresAt: now().addingTimeInterval(365 * 86400))
+        } else {
+            setEntitlement(.trial, for: user, expiresAt: now().addingTimeInterval(Double(PremiumRules.trialDays) * 86400))
+        }
+    }
+
     // MARK: Helpers
 
     private func calendar(_ user: UUID) -> Calendar? {

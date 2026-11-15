@@ -566,6 +566,7 @@ func expectCode(_ code: BackendError.Code, _ body: () async throws -> Void) asyn
         _ = try await me.signInWithApple(idToken: "", nonce: nil, fullName: nil)
         var behavior = FakePartnerBot.Behavior()
         behavior.delay = .milliseconds(20)
+        behavior.inviteDelay = .milliseconds(20)
         let bot = FakePartnerBot(backend: FakeBackend(world: world, signedInAs: FakeWorld.partnerID), userBackend: me, behavior: behavior)
         let task = bot.start()
         defer { task.cancel() }

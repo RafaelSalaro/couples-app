@@ -74,22 +74,17 @@ public enum SchedulePlanner {
     }
 }
 
-/// Applies and clears the pause. Used by the app and by the Monitor extension, which is the
-/// only code running when a schedule or unlock window starts or ends.
-public struct ShieldController: Sendable {
-    public let store: any SharedStateStore
-    /// Device Activity callbacks can arrive a little early or late; look slightly ahead when deciding.
-    public static let callbackTolerance: TimeInterval = 90
+/// Where the pause is actually put up or taken down. On a phone this is the named
+/// ManagedSettings store; tests record the calls instead.
+public protocol ShieldTarget: Sendable {
+    func apply(_ selection: FamilyActivitySelection)
+    func clear()
+}
 
-    public init(store: any SharedStateStore) { self.store = store }
+public struct ManagedSettingsShieldTarget: ShieldTarget {
+    public init() {}
 
-    static func familySelection(from data: Data?) -> FamilyActivitySelection? {
-        guard let data, let wrapper = try? JSONDecoder().decode(PausedAppsSelection.self, from: data) else { return nil }
-        return try? PropertyListDecoder().decode(FamilyActivitySelection.self, from: wrapper.data)
-    }
-
-    public func applyShields() {
-        guard let selection = Self.familySelection(from: store.loadSelectionData()) else { return }
+    public func apply(_ selection: FamilyActivitySelection) {
         let settings = ManagedSettingsStore(named: .protectedTime)
         settings.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
         settings.shield.applicationCategories = selection.categoryTokens.isEmpty ? nil : .specific(selection.categoryTokens)
@@ -99,8 +94,36 @@ public struct ShieldController: Sendable {
         settings.application.denyAppRemoval = true
     }
 
-    public func clearShields() {
+    public func clear() {
         ManagedSettingsStore(named: .protectedTime).clearAllSettings()
+    }
+}
+
+/// Applies and clears the pause. Used by the app and by the Monitor extension, which is the
+/// only code running when a schedule or unlock window starts or ends.
+public struct ShieldController: Sendable {
+    public let store: any SharedStateStore
+    public let target: any ShieldTarget
+    /// Device Activity callbacks can arrive a little early or late; look slightly ahead when deciding.
+    public static let callbackTolerance: TimeInterval = 90
+
+    public init(store: any SharedStateStore, target: any ShieldTarget = ManagedSettingsShieldTarget()) {
+        self.store = store
+        self.target = target
+    }
+
+    static func familySelection(from data: Data?) -> FamilyActivitySelection? {
+        guard let data, let wrapper = try? JSONDecoder().decode(PausedAppsSelection.self, from: data) else { return nil }
+        return try? PropertyListDecoder().decode(FamilyActivitySelection.self, from: wrapper.data)
+    }
+
+    public func applyShields() {
+        guard let selection = Self.familySelection(from: store.loadSelectionData()) else { return }
+        target.apply(selection)
+    }
+
+    public func clearShields() {
+        target.clear()
     }
 
     /// Whether the pause should be up at `date`: inside protected time and not inside an unlock.
@@ -139,10 +162,12 @@ public final class ScreenTimeBlockingService: BlockingService, @unchecked Sendab
     public let kind = BlockingKind.screenTime
     private let store: any SharedStateStore
     private let now: NowProvider
-    private var controller: ShieldController { ShieldController(store: store) }
+    private let target: any ShieldTarget
+    private var controller: ShieldController { ShieldController(store: store, target: target) }
 
-    public init(store: any SharedStateStore, now: @escaping NowProvider = { Date() }) {
+    public init(store: any SharedStateStore, target: any ShieldTarget = ManagedSettingsShieldTarget(), now: @escaping NowProvider = { Date() }) {
         self.store = store
+        self.target = target
         self.now = now
     }
 

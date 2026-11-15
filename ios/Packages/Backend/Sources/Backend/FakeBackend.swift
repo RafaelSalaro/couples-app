@@ -169,6 +169,9 @@ public final class FakePartnerBot: Sendable {
         /// Accepts the user's invite as soon as one exists.
         public var acceptsInvite = true
         public var delay: Duration = .milliseconds(1200)
+        /// How long the partner takes to join once an invite exists: long enough to see the
+        /// code, QR and share button before the pairing moment.
+        public var inviteDelay: Duration = .seconds(4)
 
         public init() {}
     }
@@ -213,7 +216,7 @@ public final class FakePartnerBot: Sendable {
             try? await Task.sleep(for: .milliseconds(400))
             guard let me = await backend.currentSession()?.userID, let user = await userBackend.currentSession()?.userID,
                   (try? backend.world.pairState(me)) == nil, let invite = backend.world.openInvite(user) else { continue }
-            try? await Task.sleep(for: behavior.delay)
+            try? await Task.sleep(for: behavior.inviteDelay)
             _ = try? await backend.acceptInvite(codeOrToken: invite.code)
         }
     }

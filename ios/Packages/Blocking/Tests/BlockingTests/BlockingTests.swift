@@ -1,5 +1,6 @@
 import Core
 import DeviceActivity
+import FamilyControls
 import Foundation
 import Testing
 @testable import Blocking
@@ -239,5 +240,95 @@ struct MockFixture {
         #expect(BlockingServiceFactory.configuredKind(info: ["BlockingServiceKind": "screentime"], arguments: []) == .mock)
         #expect(BlockingServiceFactory.make(kind: .mock, store: InMemoryStateStore()).kind == .mock)
         #expect(BlockingServiceFactory.make(kind: .screenTime, store: InMemoryStateStore()).kind == .screenTime)
+    }
+}
+
+/// Records what the Monitor extension would do to the pause, instead of touching ManagedSettings.
+final class RecordingShieldTarget: ShieldTarget, @unchecked Sendable {
+    enum Call: Equatable { case apply, clear }
+    private let lock = NSLock()
+    private var recorded: [Call] = []
+    var calls: [Call] { lock.withLock { recorded } }
+    var last: Call? { calls.last }
+    func apply(_ selection: FamilyActivitySelection) { lock.withLock { recorded.append(.apply) } }
+    func clear() { lock.withLock { recorded.append(.clear) } }
+}
+
+/// The decisions the Monitor extension makes when iOS wakes it (04 §3.1–3.2).
+@Suite struct ShieldControllerTests {
+    let store = InMemoryStateStore()
+    let target = RecordingShieldTarget()
+    var controller: ShieldController { ShieldController(store: store, target: target) }
+
+    init() throws {
+        store.saveSelectionData(try JSONEncoder().encode(ScreenTimeBlockingService.wrap(FamilyActivitySelection())))
+        store.update {
+            $0.schedules = [.standard()] // 18:00–09:00, crosses midnight
+            $0.protectionConfigured = true
+        }
+    }
+
+    // Note: ShieldController evaluates in TimeZone.current; these dates are built in the same zone.
+    func local(_ h: Int, _ mi: Int = 0, day: Int = 10) -> Date {
+        Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: day, hour: h, minute: mi))!
+    }
+
+    @Test func protectedTimeStartingPutsThePauseUpEvenIfTheCallbackIsEarly() {
+        let schedule = store.load().schedules[0]
+        controller.intervalDidStart(ActivityNames.protected(schedule.id, part: "all"), now: local(17, 59).addingTimeInterval(30))
+        #expect(target.last == .apply)
+    }
+
+    @Test func protectedTimeEndingTakesItDownEvenIfTheCallbackIsEarly() {
+        let schedule = store.load().schedules[0]
+        controller.intervalDidEnd(ActivityNames.protected(schedule.id, part: "all"), now: local(8, 59, day: 11).addingTimeInterval(15))
+        #expect(target.last == .clear)
+    }
+
+    @Test func midnightCrossingStaysProtectedAfterMidnight() {
+        controller.reconcile(at: local(0, 30, day: 11))
+        #expect(target.last == .apply)
+        controller.reconcile(at: local(12, 0, day: 11))
+        #expect(target.last == .clear)
+    }
+
+    @Test func unlockWindowOpensThenThePauseReturnsWhenItEnds() {
+        let id = UUID()
+        let start = local(21)
+        store.update { $0.activeUnlock = ActiveUnlock(id: id, startedAt: start, endsAt: start.addingTimeInterval(20 * 60)) }
+        controller.intervalDidStart(ActivityNames.unlock(id), now: start)
+        #expect(target.last == .clear)
+        controller.intervalDidEnd(ActivityNames.unlock(id), now: start.addingTimeInterval(20 * 60))
+        #expect(target.last == .apply)
+        #expect(store.load().activeUnlock == nil)
+    }
+
+    @Test func unlockEndingAfterProtectedTimeLeavesAppsOpen() {
+        let id = UUID()
+        let start = local(8, 50, day: 11)
+        store.update { $0.activeUnlock = ActiveUnlock(id: id, startedAt: start, endsAt: start.addingTimeInterval(15 * 60)) }
+        controller.intervalDidEnd(ActivityNames.unlock(id), now: start.addingTimeInterval(15 * 60))
+        #expect(target.last == .clear)
+    }
+
+    @Test func endOfAnUnlockThatWasExtendedIsIgnored() {
+        let old = UUID(), extended = UUID()
+        let start = local(21)
+        store.update { $0.activeUnlock = ActiveUnlock(id: extended, startedAt: start, endsAt: start.addingTimeInterval(40 * 60)) }
+        controller.intervalDidEnd(ActivityNames.unlock(old), now: start.addingTimeInterval(15 * 60))
+        #expect(target.calls.isEmpty)
+        #expect(store.load().activeUnlock?.id == extended)
+    }
+
+    @Test func nothingIsPausedUntilProtectionIsConfigured() {
+        store.update { $0.protectionConfigured = false }
+        controller.reconcile(at: local(22))
+        #expect(target.last == .clear)
+    }
+
+    @Test func withoutAStoredSelectionThereIsNothingToApply() {
+        store.saveSelectionData(nil)
+        controller.reconcile(at: local(22))
+        #expect(target.calls.isEmpty)
     }
 }

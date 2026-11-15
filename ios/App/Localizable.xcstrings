@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Approve" : {},
+    "Confirm" : {},
+    "Go for it" : {},
+    "Let's talk" : {},
+    "Let's wait" : {},
+    "Together" : {},
     "Tonight" : {},
     "Us" : {}
   },

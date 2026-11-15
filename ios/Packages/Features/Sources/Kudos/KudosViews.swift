@@ -84,6 +84,7 @@ public struct GiveKudosSheet: View {
 
     private var sentView: some View {
         KudosGlow(amount: model.sent.map(KudosText.amount) ?? "", title: model.sentLine ?? "", bodyText: nil, receiving: false) { dismiss() }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("kudos.sent")
     }
 
@@ -166,6 +167,7 @@ public struct KudosCelebrationView: View {
             amount: KudosText.amount(kudos), title: KudosText.title(from: partnerName),
             bodyText: KudosText.body(kudos, partnerName: partnerName), receiving: true, onDone: onDone
         )
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("celebration.kudos")
     }
 }

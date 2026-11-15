@@ -12,7 +12,7 @@ let features = [
 /// Features that reuse another feature's screens.
 let featureDependencies: [String: [String]] = [
     "Onboarding": ["Pairing"],
-    "Settings": ["Pairing"],
+    "Settings": ["Pairing", "Minutes"],
 ]
 
 let shared: [Target.Dependency] = [

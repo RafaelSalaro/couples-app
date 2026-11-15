@@ -2,6 +2,20 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-7 Blocking service
+
+- `BlockingService` with two implementations: `MockBlockingService` (the Simulator, the demo and every UI test) and `ScreenTimeBlockingService` (FamilyControls, ManagedSettings, DeviceActivity). Which one runs comes from `BLOCKING_SERVICE` in the xcconfig files or the `-blockingService` launch argument; the Simulator always uses the mock.
+- One named ManagedSettings store holds the pause: apps, categories and websites (including web categories), plus "can't delete the app" during protected time. The chosen tokens stay in the App Group and never leave the phone.
+- Schedules become repeating Device Activity monitors: one for an every-day schedule, one per start weekday otherwise. Splitting at midnight (04 §3.1) is built and tested but off until a device shows it is needed.
+- Unlocks clear the pause and start a one-off `unlock-<id>` monitor of at least 15 minutes; extending an unlock replaces the monitor. When the window ends, the Monitor extension puts the pause back only if protected time is still on.
+- The four Screen Time extensions share one decision point, `ShieldController`, which reads the App Group state: Monitor (schedule and unlock boundaries, with a 90-second allowance for callbacks that arrive early or late), Shield Configuration (the dusk pause screen with time left, a rotating inviting line, "Ask {partner}" and "Not now"), Shield Action ("Ask" posts the time-sensitive notification that opens the unlock sheet), Report (WP-10).
+- Screen Time access is checked at launch and each time the app becomes active; when it goes off or comes back the server is told, so the partner sees only a neutral status.
+- Change in this package: `ShieldController` now puts up or takes down the pause through a small `ShieldTarget` seam (ManagedSettings on a phone), so the Monitor extension's decisions are unit tested.
+- Fixes found while bringing the lane-B branch to green: the place bar did not respond while a pushed screen (for example a challenge) was showing, because the navigation stack's UIKit layer sat on top of it; the bar is now a bottom safe-area inset. In the demo, Ana now joins 4 seconds after an invite appears (was 1.2 s), so the code and share button can be seen first; this also removes a timing failure in `PairingUITests`.
+- Tests: Blocking 26 (8 new on the Monitor decisions: early and late callbacks, protected time across midnight, an unlock ending inside and after protected time, the end of an unlock that was since extended, nothing paused before setup). All 269 package tests and the 34 UI tests pass. The build has no warnings from our code; Xcode's App Intents step prints "Metadata extraction skipped" for targets without App Intents, the same as on `main` before.
+- **Not verified:** everything on a real iPhone (no developer account yet): device scripts 1–17 in `ios/README.md`, in particular whether one interval across midnight fires correctly and the limit on how many monitors iOS accepts (a schedule on 7 separate weekdays uses 7; with the midnight split, 14).
+- The lane-B branch carries draft code for WP-8 to WP-10, WP-12 (app side) and WP-13. It is now on `main` because it builds and its tests pass, but each of those packages is closed only by its own entry in this changelog.
+
 ## 2026-11-14 — WP-6 Pairing
 
 - Invite three ways: share a link (`https://<domain>/i/<token>`), a 6-character code, or a QR code of the link for in person. Invites last 72 hours and can be cancelled. Join by typing the code, scanning the QR in the app, or opening the link.

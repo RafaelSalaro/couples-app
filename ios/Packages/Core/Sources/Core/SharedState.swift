@@ -41,6 +41,24 @@ public struct SharedState: Codable, Equatable, Sendable {
         return .protected(until: protection.end)
     }
 
+    /// The next moments at which the phase changes (protected time starting or ending, an unlock
+    /// ending), so widgets can schedule their timeline without the app running.
+    public func phaseChanges(after date: Date, timeZone: TimeZone = .current, limit: Int = 6) -> [Date] {
+        var result: [Date] = []
+        var cursor = date
+        while result.count < limit {
+            let next: Date?
+            switch phase(at: cursor, timeZone: timeZone) {
+            case .protected(let until), .unlocked(let until): next = until
+            case .open(let start): next = start
+            }
+            guard let next, next > cursor else { break }
+            result.append(next)
+            cursor = next
+        }
+        return result
+    }
+
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         schedules = try c.decodeIfPresent([ProtectedSchedule].self, forKey: .schedules) ?? []
@@ -140,6 +158,12 @@ public enum DeepLink: Equatable, Sendable {
     case invite(String)
     /// Magic-link sign-in callback, handed to the auth layer untouched.
     case authCallback(URL)
+    /// The Minutes screen (for example from the "minutes expire tomorrow" reminder).
+    case minutes
+    /// This week's report (from the weekly report notification).
+    case weeklyReport
+    /// Protected time and its pending changes (from a schedule request).
+    case schedule
 
     public static func parse(_ url: URL, scheme: String, domain: String) -> DeepLink? {
         let parts = url.pathComponents.filter { $0 != "/" }
@@ -150,6 +174,9 @@ public enum DeepLink: Equatable, Sendable {
             case "challenge": return parts.first.flatMap(UUID.init(uuidString:)).map(DeepLink.challenge)
             case "invite": return parts.first.map(DeepLink.invite)
             case "auth", "login-callback": return .authCallback(url)
+            case "minutes", "minutes_expiring": return .minutes
+            case "report", "weekly_report": return .weeklyReport
+            case "schedule", "schedule_request": return .schedule
             default: return nil
             }
         }

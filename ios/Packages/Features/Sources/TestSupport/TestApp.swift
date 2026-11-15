@@ -3,6 +3,7 @@ import Blocking
 import Core
 import FeatureSupport
 import Foundation
+import Purchases
 import QRCode
 
 /// A controllable clock for tests.
@@ -33,6 +34,7 @@ public struct TestApp {
     public let store: InMemoryStateStore
     public let blocking: MockBlockingService
     public let flags: InMemoryKeyValueStore
+    public let purchases: FakePurchasesService
     public let model: AppModel
 
     public static let me = FakeWorld.meID
@@ -66,8 +68,12 @@ public struct TestApp {
             flags.set("1", for: "onboarding.done.\(FakeWorld.meID.uuidString)")
         }
         let world = world
+        purchases = FakePurchasesService { product, user in
+            if let user { world.simulatePurchase(yearly: product == .yearly, by: user) }
+        }
         model = AppModel(deps: AppDependencies(
             backend: backend, blocking: blocking, store: store, flags: flags,
+            purchases: purchases,
             now: { clock.now }, timeZone: { testZone },
             demoMagicLink: { FakeBackend.magicLink(for: $0, scheme: "couplesapp") },
             sampleScan: { kind in

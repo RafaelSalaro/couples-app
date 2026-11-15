@@ -11,14 +11,20 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: macos-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Select latest Xcode
         run: sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
       - name: Install XcodeGen
         run: brew install xcodegen
+      - name: String Catalogs are up to date
+        run: ./scripts/ios-strings.sh --check
       - name: Build
         run: ./scripts/ios-build.sh
-      - name: Test
-        run: ./scripts/ios-test.sh
+      - name: Unit tests
+        run: ./scripts/ios-test.sh -skip-testing:CouplesAppUITests
+      # UI tests are slow on macOS runners: pull requests only (docs/07-testing-plan.md §2).
+      - name: UI tests
+        if: github.event_name == 'pull_request'
+        run: ./scripts/ios-test.sh -only-testing:CouplesAppUITests

@@ -66,6 +66,7 @@ public struct ChallengesView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("challenges.screen")
         .task { await model.load() }
         .refreshable { await model.load() }

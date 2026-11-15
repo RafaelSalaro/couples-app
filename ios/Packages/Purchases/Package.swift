@@ -16,7 +16,7 @@ let package = Package(
         .target(name: "Purchases", dependencies: [
             "Core",
             .product(name: "RevenueCat", package: "purchases-ios-spm"),
-        ]),
+        ], resources: [.process("Resources")]),
         .testTarget(name: "PurchasesTests", dependencies: ["Purchases"]),
     ],
     swiftLanguageModes: [.v6]

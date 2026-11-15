@@ -1,11 +1,16 @@
 import Backend
 import Blocking
+import ChallengesFeature
 import Core
 import DesignSystem
 import FeatureSupport
 import HomeFeature
+import KudosFeature
+import MinutesFeature
 import OnboardingFeature
 import PairingFeature
+import ReportsFeature
+import ScheduleFeature
 import SettingsFeature
 import UnlockFeature
 import SwiftUI
@@ -20,6 +25,9 @@ struct CouplesApp: App {
         let model = Composition.make()
         _model = State(initialValue: model)
         AppDelegate.model = model
+        let notifications = NotificationCoordinator(model: model)
+        notifications.start()
+        AppDelegate.notifications = notifications
     }
 
     var body: some Scene {
@@ -32,6 +40,7 @@ struct CouplesApp: App {
 /// Receives the push token and forwards it to the backend.
 final class AppDelegate: NSObject, UIApplicationDelegate {
     @MainActor static var model: AppModel?
+    @MainActor static var notifications: NotificationCoordinator?
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02x", $0) }.joined()
@@ -72,7 +81,12 @@ struct RootView: View {
             if let url = activity.webpageURL { Task { await app.open(url) } }
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Task { await app.becameActive() } }
+            if phase == .active {
+                Task {
+                    await app.becameActive()
+                    await LiveUnlockActivity().endExpired()
+                }
+            }
         }
     }
 }
@@ -85,21 +99,33 @@ struct MainTabs: View {
     private var places: [PlaceItem<AppPlace>] {
         [
             PlaceItem(id: .tonight, title: L("Tonight"), systemImage: "moon.stars"),
+            PlaceItem(id: .together, title: L("Together"), systemImage: "sparkles"),
             PlaceItem(id: .us, title: L("Us"), systemImage: "person.2"),
         ]
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Group {
+        Group {
                 switch app.place {
-                case .tonight, .together:
+                case .tonight:
                     HomeView(app: app)
+                case .together:
+                    ChallengesView(app: app)
                 case .us:
-                    NavigationStack { SettingsView(app: app) }
+                    UsView(app: app) { destination in
+                        switch destination {
+                        case .week: ReportsView(app: app)
+                        case .schedule: ScheduleView(app: app)
+                        default: SettingsScreen(app: app)
+                        }
+                    }
                 }
             }
-            .transition(.opacity)
+        .transition(.opacity)
+        // An inset, not a ZStack layer: a pushed NavigationStack screen is UIKit-backed and would
+        // otherwise sit above the bar and swallow its taps. Skies ignore the safe area, so they
+        // still run behind the floating pill.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             PlaceBar(places: places, selection: $app.place)
                 .padding(.bottom, Spacing.xs)
         }
@@ -109,9 +135,20 @@ struct MainTabs: View {
         }
         .overlay {
             // Celebrations cover the scene (not a modal, so they never collide with a sheet).
-            if case .paired(let name) = app.celebration, app.sheet == nil {
-                PairedCelebrationView(myName: app.myName, partnerName: name) { app.celebration = nil }
-                    .transition(.opacity)
+            if app.sheet == nil {
+                switch app.celebration {
+                case .paired(let name):
+                    PairedCelebrationView(myName: app.myName, partnerName: name) { app.celebration = nil }
+                        .transition(.opacity)
+                case .kudos(let kudos):
+                    KudosCelebrationView(kudos: kudos, partnerName: app.partnerName ?? "") { app.celebration = nil }
+                        .transition(.opacity)
+                case .streak(let days):
+                    StreakCelebrationView(days: days) { app.celebration = nil }
+                        .transition(.opacity)
+                case nil:
+                    EmptyView()
+                }
             }
         }
         .motion(Motion.gentle, value: app.celebration)
@@ -135,8 +172,10 @@ struct MainTabs: View {
             ShowMyCodeView(app: app)
         case .incomingRequest(let request):
             IncomingRequestView(app: app, request: request)
-        default:
-            Text(verbatim: "")
+        case .giveKudos(let challengeID):
+            GiveKudosSheet(app: app, challengeID: challengeID)
+        case .paywall:
+            PaywallView(app: app)
         }
     }
 }

@@ -3,6 +3,7 @@ import Blocking
 import Core
 import FeatureSupport
 import Foundation
+import Purchases
 import QRCode
 import UIKit
 import WidgetKit
@@ -20,7 +21,9 @@ import WidgetKit
 ///   -partnerPushOff 1            the partner has notifications off (email fallback at once)
 ///   -screenTime deny             the Screen Time prompt is declined
 ///   -streak N                    seeded shared streak
-struct LaunchOptions: Equatable {
+///   -purchase cancel|pending|fail  how the simulated store answers (default: the purchase succeeds)
+///   -restorable 1                "Restore purchases" finds an earlier lifetime purchase
+struct LaunchOptions {
     enum Scenario: String { case fresh, onboarded, paired }
     enum Phase: String { case protected, open }
 
@@ -34,6 +37,8 @@ struct LaunchOptions: Equatable {
     var partnerPushOff = false
     var screenTimeDenied = false
     var streak = 4
+    var purchase = FakePurchasesService.Behavior.succeed
+    var restorable = false
 
     init(arguments: [String] = ProcessInfo.processInfo.arguments) {
         func value(_ name: String) -> String? {
@@ -50,6 +55,13 @@ struct LaunchOptions: Equatable {
         partnerPushOff = value("partnerPushOff") == "1"
         screenTimeDenied = value("screenTime") == "deny"
         streak = value("streak").flatMap(Int.init) ?? 4
+        switch value("purchase") {
+        case "cancel": purchase = .cancel
+        case "pending": purchase = .pending
+        case "fail": purchase = .fail
+        default: purchase = .succeed
+        }
+        restorable = value("restorable") == "1"
     }
 }
 
@@ -76,6 +88,8 @@ enum Composition {
             pendingQRUnlocks: PendingQRUnlocks(),
             appleSignIn: SystemAppleSignIn(),
             notifications: SystemNotifications(),
+            unlockActivity: LiveUnlockActivity(),
+            purchases: AppConfig.revenueCatKey.map { RevenueCatPurchasesService(apiKey: $0) as any PurchasesService } ?? FakePurchasesService(behavior: .fail),
             brand: AppBrand.info,
             reloadWidgets: reload
         ))
@@ -124,6 +138,12 @@ enum Composition {
         return AppModel(deps: AppDependencies(
             backend: backend, blocking: blocking, store: store, flags: flags,
             usedCounters: InMemoryUsedCounterStore(),
+            unlockActivity: LiveUnlockActivity(),
+            purchases: FakePurchasesService(
+                behavior: options.purchase, previouslyBought: options.restorable ? [.lifetime] : []
+            ) { product, user in
+                if let user { world.simulatePurchase(yearly: product == .yearly, by: user) }
+            },
             brand: AppBrand.info,
             reloadWidgets: reloadWidgets,
             demoMagicLink: { FakeBackend.magicLink(for: $0, scheme: scheme) },

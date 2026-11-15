@@ -81,6 +81,7 @@ public struct HomeView: View {
             }
             .onSky(moment)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home.screen")
         .refreshable { await app.refresh() }
         .onChange(of: app.unlockStartCount) { _, _ in
@@ -320,6 +321,7 @@ public struct HomeView: View {
                 #endif
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home.activity")
     }
 }

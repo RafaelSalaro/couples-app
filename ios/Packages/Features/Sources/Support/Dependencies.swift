@@ -2,6 +2,7 @@ import Backend
 import Blocking
 import Core
 import Foundation
+import Purchases
 import QRCode
 
 func L(_ key: String.LocalizationValue) -> String { String(localized: key, bundle: .module) }
@@ -110,6 +111,7 @@ public struct AppDependencies: Sendable {
     public var appleSignIn: any AppleSignInProviding
     public var notifications: any NotificationServicing
     public var unlockActivity: any UnlockActivityControlling
+    public var purchases: any PurchasesService
     public var brand: BrandInfo
     public var now: NowProvider
     public var timeZone: @Sendable () -> TimeZone
@@ -131,6 +133,7 @@ public struct AppDependencies: Sendable {
         appleSignIn: any AppleSignInProviding = DemoAppleSignIn(),
         notifications: any NotificationServicing = DemoNotifications(),
         unlockActivity: any UnlockActivityControlling = NoUnlockActivity(),
+        purchases: any PurchasesService = FakePurchasesService(),
         brand: BrandInfo = BrandInfo(displayName: "Couples App", urlScheme: "couplesapp", websiteDomain: "example.com"),
         now: @escaping NowProvider = { Date() },
         timeZone: @escaping @Sendable () -> TimeZone = { .current },
@@ -148,6 +151,7 @@ public struct AppDependencies: Sendable {
         self.appleSignIn = appleSignIn
         self.notifications = notifications
         self.unlockActivity = unlockActivity
+        self.purchases = purchases
         self.brand = brand
         self.now = now
         self.timeZone = timeZone

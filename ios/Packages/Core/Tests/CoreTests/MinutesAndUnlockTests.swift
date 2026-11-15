@@ -291,6 +291,38 @@ import Testing
         #expect(state.phase(at: morning, timeZone: newYork) == .unlocked(until: local(2026, 11, 11, 9)))
     }
 
+    @Test func phaseChangesForWidgetTimelines() {
+        var state = SharedState()
+        state.schedules = [.standard()]
+        let night = local(2026, 11, 10, 22)
+        state.activeUnlock = ActiveUnlock(id: UUID(), startedAt: night, endsAt: night.addingTimeInterval(1800))
+        let changes = state.phaseChanges(after: night, timeZone: newYork, limit: 4)
+        #expect(changes == [night.addingTimeInterval(1800), local(2026, 11, 11, 9), local(2026, 11, 11, 18), local(2026, 11, 12, 9)])
+        #expect(SharedState().phaseChanges(after: night, timeZone: newYork).isEmpty)
+    }
+
+    @Test func pushIntents() {
+        let id = UUID()
+        func parse(_ category: String, _ action: String?, _ payload: [String: String]) -> PushIntent? {
+            PushIntent.parse(category: category, action: action, payload: payload, urlScheme: "couplesapp")
+        }
+        #expect(parse("UNLOCK_REQUEST", "GO_FOR_IT", ["request_id": id.uuidString]) == .answerUnlockRequest(id: id, approve: true))
+        #expect(parse("UNLOCK_REQUEST", "LETS_WAIT", ["request_id": id.uuidString]) == .answerUnlockRequest(id: id, approve: false))
+        #expect(parse("COMPLETION_CONFIRM", "CONFIRM", ["completion_id": id.uuidString]) == .confirmCompletion(id: id))
+        #expect(parse("SCHEDULE_CHANGE", "APPROVE", ["change_id": id.uuidString]) == .answerScheduleChange(id: id, approve: true))
+        #expect(parse("SCHEDULE_CHANGE", "LETS_TALK", ["change_id": id.uuidString]) == .answerScheduleChange(id: id, approve: false))
+        // Tapping the notification itself opens the matching place.
+        #expect(parse("UNLOCK_REQUEST", nil, ["request_id": id.uuidString]) == .open(URL(string: "couplesapp://request/\(id.uuidString)")!))
+        #expect(parse("", nil, ["link": "couplesapp://unlock"]) == .open(URL(string: "couplesapp://unlock")!))
+        #expect(parse("", nil, ["kind": "weekly_report"]) == .open(URL(string: "couplesapp://weekly_report")!))
+        #expect(parse("", nil, ["challenge_id": id.uuidString]) == .open(URL(string: "couplesapp://challenge/\(id.uuidString)")!))
+        // A button without its id does nothing rather than guessing.
+        #expect(parse("UNLOCK_REQUEST", "GO_FOR_IT", [:]) == nil)
+        #expect(DeepLink.parse(URL(string: "couplesapp://weekly_report")!, scheme: "couplesapp", domain: "example.com") == .weeklyReport)
+        #expect(DeepLink.parse(URL(string: "couplesapp://minutes_expiring")!, scheme: "couplesapp", domain: "example.com") == .minutes)
+        #expect(DeepLink.parse(URL(string: "couplesapp://schedule_request")!, scheme: "couplesapp", domain: "example.com") == .schedule)
+    }
+
     @Test func storeRoundTripsAndToleratesOldData() throws {
         let store = InMemoryStateStore()
         store.update { $0.partnerName = "Ana"; $0.myBalance = 45 }

@@ -66,7 +66,7 @@ final class PairingUITests: XCTestCase {
         let app = XCUIApplication.launched(scenario: "paired")
         app.waitFor("home.partnerBalance")
         app.tap("place.us")
-        app.tap("settings.partner")
+        app.tap("us.partner")
         app.tap("partner.unpair")
         app.tap("partner.unpair.confirm")
         app.waitForText("You're no longer paired")

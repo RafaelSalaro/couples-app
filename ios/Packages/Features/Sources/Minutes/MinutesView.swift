@@ -42,6 +42,7 @@ public struct MinutesView: View {
         }
         .pageBackground()
         .navigationTitle(L("Minutes"))
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("minutes.screen")
         .task { await model.load() }
         .refreshable { await model.load() }
@@ -112,6 +113,7 @@ public struct MinutesView: View {
                     }
                 }
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("minutes.history")
         }
     }

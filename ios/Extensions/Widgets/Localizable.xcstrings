@@ -1,39 +1,28 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "widget.status.description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "See your protected time at a glance."
-          }
-        }
-      }
-    },
-    "widget.status.name" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protected time"
-          }
-        }
-      }
-    },
-    "widget.status.placeholder" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Protected time"
-          }
-        }
-      }
-    }
+    "%@ evenings in a row" : {},
+    "%@: %@ minutes" : {},
+    "Both balances and your shared streak." : {},
+    "Enjoy your evening." : {},
+    "New streak starts today." : {},
+    "Off" : {},
+    "Partner" : {},
+    "Protected time" : {},
+    "Protected time and your minutes." : {},
+    "Protected time ends at %@" : {},
+    "Protected time is back" : {},
+    "Protected time starts" : {},
+    "The two of you" : {},
+    "Time left" : {},
+    "Time left in protected time or in an unlock." : {},
+    "Tonight" : {},
+    "Unlocked" : {},
+    "Unlocked until %@" : {},
+    "Unlocked. Protected time comes back on its own." : {},
+    "You" : {},
+    "Your minutes: %@" : {},
+    "your minutes" : {}
   },
   "version" : "1.0"
 }

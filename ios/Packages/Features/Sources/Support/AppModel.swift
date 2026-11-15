@@ -125,6 +125,8 @@ public final class AppModel {
     public func bootstrap() async {
         session = await deps.backend.currentSession()
         if let session {
+            // Purchases are tied to our user id so the server can share premium with the partner.
+            await deps.purchases.signIn(userID: session.userID)
             await refresh()
             phase = deps.flags.string(onboardingKey(session.userID)) == "1" ? .ready : .onboarding
             startListening()
@@ -137,6 +139,7 @@ public final class AppModel {
     /// Called by onboarding once sign-in succeeds.
     public func signedIn(_ session: AuthSession) async {
         self.session = session
+        await deps.purchases.signIn(userID: session.userID)
         await refresh()
         startListening()
         if deps.flags.string(onboardingKey(session.userID)) == "1" { phase = .ready }
@@ -153,6 +156,7 @@ public final class AppModel {
 
     public func signOut() async {
         listenTask?.cancel()
+        await deps.purchases.signOut()
         try? await deps.backend.signOut()
         clearAccountState()
         phase = .onboarding
@@ -506,6 +510,31 @@ public final class AppModel {
         deps.flags.set(nil, for: Self.pendingSelectionKey)
     }
 
+    // MARK: Notifications
+
+    /// Carries out what a notification (or one of its buttons) asked for (06 §9).
+    public func perform(_ intent: PushIntent) async {
+        do {
+            switch intent {
+            case .answerUnlockRequest(let id, let approve):
+                try await deps.backend.respondUnlockRequest(id: id, approve: approve)
+                await refreshRequests()
+                if case .incomingRequest(let shown) = sheet, shown.id == id { sheet = nil }
+            case .confirmCompletion(let id):
+                try await deps.backend.confirmCompletion(id: id)
+                await refreshChallenges()
+                await refreshMinutes()
+            case .answerScheduleChange(let id, let approve):
+                try await deps.backend.respondScheduleChange(requestID: id, approve: approve)
+                await refreshRequests()
+            case .open(let url):
+                await open(url)
+            }
+        } catch {
+            notice = Friendly.message(for: error)
+        }
+    }
+
     // MARK: Links
 
     /// Handles `couplesapp://…` links, invite universal links and the magic-link callback.
@@ -527,6 +556,11 @@ public final class AppModel {
         case .invite(let token):
             pendingInvite = token
             if phase == .ready, !isPaired { sheet = .invite }
+        case .minutes, .weeklyReport, .schedule:
+            guard phase == .ready else { return }
+            usDestination = link == .minutes ? .minutes : (link == .weeklyReport ? .week : .schedule)
+            place = .us
+            sheet = nil
         case .authCallback(let url):
             guard session == nil else { return }
             do {
