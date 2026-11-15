@@ -213,6 +213,8 @@ targets:
         com.apple.developer.family-controls: true
         com.apple.security.application-groups:
           - $(APP_GROUP_ID)
+        # The "Ask {partner}" prompt it posts is time-sensitive (06 §9), so it can break through a Focus.
+        com.apple.developer.usernotifications.time-sensitive: true
     dependencies:
       - package: Core
       - package: Blocking

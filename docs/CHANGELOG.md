@@ -2,6 +2,16 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-13 Widgets and notifications
+
+- Widgets, all read from the App Group (no network): small "Tonight" (protected-time status and your balance), medium "Together" (both balances and the streak), lock screen "Time left" (rectangular and inline: time left in protected time or in an unlock). Timelines are scheduled at the next phase changes, so they turn over at the right minute without the app running. Widgets use the brand faces by name, because WidgetKit cannot archive the variable fonts the app uses.
+- Live Activity and Dynamic Island: the unlock countdown, started on every unlock, updated when it is extended, ended when it closes (or cleared next time the app opens).
+- Notification categories with actions (06 §9): unlock request ("Go for it", "Let's wait"), completion ("Confirm"), schedule change ("Approve", "Let's talk"), all needing the phone unlocked. Taps open the right place: the unlock sheet, a request, a challenge, minutes, the weekly report, protected time.
+- Change in this package: the Shield Action extension now has the Time Sensitive Notifications entitlement too, because it posts the time-sensitive "Ask {partner}" prompt itself; `ios/README.md` says to turn the capability on for that bundle ID as well.
+- "Minutes expire tomorrow" (evening) and "weekly report ready" are server pushes from scheduled jobs (WP-4); the app's part is opening the Minutes screen and the weekly report from them, which is in place.
+- Tests: the phase-change schedule widgets rely on (Core), push payload parsing into actions (Core), the links each notification opens. All 271 package tests and the 34 UI tests pass; the build has no warnings from our code.
+- **Not verified, and the acceptance for this package (manual checks on a device):** widgets and the Live Activity on a home and lock screen, notification buttons, time-sensitive delivery through a Focus, push registration (needs the APNs key).
+
 ## 2026-11-14 — WP-12 Purchases (app side)
 
 - Paywall from Us and from every premium preview: headline "One price for both of you", price lines "$39.99/year for both of you" and "$119.99 once, for both of you" (from the store, so localized), the 14-day trial for both when the pair has not used it, restore, and a footnote on what stays free and what happens if premium ends.

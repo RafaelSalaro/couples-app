@@ -111,4 +111,6 @@ Specific things to check first, because the code makes an assumption about them:
   Ending it exactly on time with the app closed would need a push from the server.
 - **Widgets and notifications**: widget timelines, the notification categories and their
   buttons, time-sensitive delivery and push registration need a device and the APNs key.
+  Turn on Time Sensitive Notifications for both the app's and the ShieldAction extension's
+  bundle IDs: the extension posts the time-sensitive "Ask {partner}" prompt itself.
 - **Sign in with Apple, universal links, the camera scanner, haptics**.
