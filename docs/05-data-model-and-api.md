@@ -21,7 +21,7 @@ Postgres on Supabase. All timestamps `timestamptz` in UTC. All IDs `uuid` (`gen_
 ### Settings and schedules
 
 **user_settings**
-`user_id pk, daily_max_minutes int default 60 check (15..240), starting_minutes int default 30, notification_prefs jsonb, created_at, updated_at`
+`user_id pk, daily_max_minutes int default 60 check (15..240), emergency_allowance_minutes int default 15 check (in 15, 30, 45, 60), starting_minutes int default 30, notification_prefs jsonb, created_at, updated_at`
 
 **schedules**
 `id, user_id, name text, weekdays smallint[] (1=Mon..7=Sun), start_local time, end_local time, enabled bool, created_at, updated_at` · v1 free: 1 row; premium: up to 3
@@ -57,7 +57,7 @@ Rules implemented in SQL functions (called only by Edge Functions):
 **unlocks**
 `id, user_id, pair_id, method enum('qr','partner_approval','accountability_code','minutes','emergency'), minutes int, started_at, ends_at, ended_early_at null, minutes_used int null, request_id null, client_event_id uuid unique (idempotency for offline sync), created_at`
 
-Emergency allowance per user: 15 minutes per rolling 7-day window starting at the first emergency use in that window; remaining = 15 − minutes used by emergency unlocks in the window.
+Emergency allowance per user: `user_settings.emergency_allowance_minutes` per rolling 7-day window starting at the first emergency use in that window; remaining = allowance − minutes used by emergency unlocks in the window (never below zero).
 
 **qr_redemptions**
 `pair_id, user_id, counter bigint, redeemed_at` · unique (pair_id, counter)

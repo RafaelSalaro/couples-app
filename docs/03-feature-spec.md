@@ -19,16 +19,24 @@ This is the complete behavior of v1. It defines **what** the app does, not how i
 
 **Sign-in:** Sign in with Apple (primary) and email magic link (needed later for Android and web). No passwords.
 
+**New and returning users:**
+- The same sign-in works for creating an account and for signing back in. Entering the email of an existing account sends a sign-in link and never shows an error; Sign in with Apple recognizes an existing account automatically.
+- Under "Email me a link", a small secondary link reads "Already have an account? Sign in". It leads to the same sign-in options with returning-user wording ("Welcome back").
+- Signing back in restores everything from the server (pair, minutes, challenges, streak, settings) and skips onboarding steps already completed. Only what lives on the phone is asked again if it is missing, for example on a new phone: Screen Time permission and the paused-apps selection.
+- Error messages are specific and helpful (for example "That link has expired. We've sent you a new one." or "No connection. Try again when you're online."), never a generic "Something went wrong" for a case the app can identify.
+
+**Signing out:** "Sign out" is a visible item in Settings (not hidden in a menu), with one confirmation. Signing out does not unpair. Because protected time cannot run without an account, the confirmation explains that protected time pauses on this phone until the person signs back in, and the partner sees the neutral status from P23 ("Protected time is off on Ana's phone").
+
 **Onboarding order (iPhone):**
 1. Welcome: the philosophy in one screen ("Not about control. About being here, together.").
 2. Sign in.
-3. Your name: if Sign in with Apple shared the person's name, use it and skip this step. Otherwise (Apple name hidden or not shared, or email sign-in, which provides no name) ask "What should Ana call you?" with a first-name field. The name is required because it is what the partner sees; it can be changed later in Settings → Profile.
+3. Your name: if Sign in with Apple shared the person's name, use it and skip this step. Otherwise (Apple name hidden or not shared, or email sign-in, which provides no name) ask "What should we call you?" with a first-name field. The name is required because it is what the partner sees; it can be changed later in Settings → Profile.
 4. Invite partner, or enter an invite code if the partner already invited you (see §3). User may continue alone; app features stay in "waiting for your partner" mode.
 5. Notification permission with a clear reason: "So your partner's requests and kudos reach you."
 6. Screen Time permission (Apple's individual authorization).
 7. Choose paused apps in Apple's picker. Guidance screen first: "Tap Social, and add any other apps you want paused. Phone, Messages, Maps and your bank are best left out."
 8. Confirm protected time (default 6 PM–9 AM, editable).
-9. Starting minutes and daily maximum (defaults: start with 30 minutes; daily maximum 60 minutes).
+9. Starting minutes, daily maximum and emergency minutes, set together on one screen (defaults: start with 30 minutes; daily maximum 60 minutes; emergency minutes 15 per week).
 10. Done: "Protected time starts at 6 PM."
 
 **What works before the partner joins:** protected time, the schedule, emergency unlock, and the preview of challenges. Unlocks that need a partner show "Invite your partner to use this."
@@ -93,7 +101,7 @@ Every unlock: the user picks a length (15, 30 or 60 minutes; default 30; free-fo
 
 ### 6.4 Emergency unlock
 - Always available, partner or not, even with zero minutes.
-- **An allowance of 15 emergency minutes per rolling 7 days** (the 7 days start at the first emergency use). The allowance can be used in one session or split across several; each session runs until the remaining allowance is used up or the person ends it.
+- **A weekly emergency allowance per rolling 7 days** (the 7 days start at the first emergency use). Each person chooses their own allowance, next to their daily maximum (onboarding step 9 and Settings): 15, 30, 45 or 60 minutes, default 15. It can never be turned off (an emergency unlock is always available). A change applies right away: what is left this week is the new allowance minus what was already used. The allowance can be used in one session or split across several; each session runs until the remaining allowance is used up or the person ends it.
 - **Only time actually used is borrowed:** the balance goes negative by the minutes used (rounded up to the whole minute), not by the full 15. It must be earned back before minutes can be spent again.
 - **Ending early:** a confirmation shows what remains, for example "You've used 2 of your 15 emergency minutes this week. The other 13 stay available until Friday." Ending keeps the remainder; nothing is lost.
 - The unlock sheet shows the emergency minutes left this week and when the allowance renews.
@@ -190,7 +198,7 @@ Users can mute each category except unlock requests and schedule requests. Quiet
 
 ## 13. Settings
 
-Profile (name, prefilled from Sign in with Apple or the onboarding name step, editable; photo), partner and unpair, schedules, paused apps, daily maximum, notification categories, subscription, export my data, delete account, privacy policy, terms, support.
+Profile (name, prefilled from Sign in with Apple or the onboarding name step, editable; photo), partner and unpair, schedules, paused apps, daily maximum and emergency minutes (side by side), notification categories, subscription, export my data, delete account, privacy policy, terms, support, sign out (visible, see §2).
 
 ## 14. Account deletion
 

@@ -103,7 +103,7 @@ What each area must let people do. This is a checklist of required functions, no
 
 | Area | Functions |
 |---|---|
-| Onboarding | Welcome/philosophy · Sign in · Your name (only if Sign in with Apple did not share one) · Invite or join · Notifications permission · Screen Time permission · Choose apps guidance + picker · Protected time · Starting minutes & daily max · Ready |
+| Onboarding | Welcome/philosophy · Sign in · Your name (only if Sign in with Apple did not share one) · Invite or join · Notifications permission · Screen Time permission · Choose apps guidance + picker · Protected time · Starting minutes, daily max & emergency minutes (one screen) · Ready · returning users: "Already have an account? Sign in" under "Email me a link", onboarding skipped where already done |
 | Home | Both balances · protected-time status (time left or unlock countdown); tapping it opens the protected-time schedule · streak · "Unlock" button · today's activity feed |
 | Unlock sheet | Choose length · four methods: Scan partner's code, Ask partner, Use minutes, Emergency (shows emergency minutes left this week and when they renew) · end an active unlock early, with a confirmation that explains what happens to unused time |
 | Show my code | Full-screen rotating QR with a 30-second progress ring |
@@ -114,7 +114,7 @@ What each area must let people do. This is a checklist of required functions, no
 | Kudos | Give kudos sheet · received celebration |
 | Reports | This week (individual + combined) · history (premium) · private Screen Time report |
 | Schedule | Protected time editor · pending change approvals |
-| Settings | Profile (name editable; no relationship-type line in v1) · partner & unpair · paused apps · daily max · notifications · subscription · export · delete account · support & safety |
+| Settings | Profile (name editable; no relationship-type line in v1) · partner & unpair · paused apps · daily max and emergency minutes side by side · notifications · subscription · export · delete account · support & safety · sign out, visible (not hidden in a menu) |
 | Paywall | Headline "One price for both of you", benefits, yearly ($39.99/year for both of you) + lifetime ($119.99 once, for both of you), trial, restore |
 
 ## 7. Signature moments

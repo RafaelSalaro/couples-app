@@ -36,6 +36,12 @@ CI: GitHub Actions (free for private repositories within monthly minutes). macOS
 - Offline QR sync is idempotent; reused counter is rejected.
 - Emergency allowance: 15 minutes per rolling 7 days across sessions; ending early borrows only minutes used and keeps the rest; a second session uses the remainder; refused when the allowance is used up; streak breaks once per day.
 - Ending a minutes unlock early refunds unused whole minutes to their original lots.
+- Changing the emergency allowance mid-week: remaining = new allowance − used, never below zero; values outside 15/30/45/60 refused.
+
+**Accounts**
+- Sign out, then sign back in with the same email: no error, a sign-in link is sent, everything is restored, completed onboarding is skipped.
+- Sign out, then Sign in with Apple with the same Apple ID: same result.
+- Expired or reused magic link and no connection each show their specific message.
 
 **Schedules**
 - 18:00–09:00 is "protected" at 23:00, 02:00, 08:59 and not at 09:00 or 17:59.

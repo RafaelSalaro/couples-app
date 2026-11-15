@@ -19,7 +19,7 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 | P11 | Unlock requests stay valid 5 minutes; requester chooses the length; default 30 minutes; free options 15 / 30 / 60, premium any length in 15-minute steps | Decided |
 | P12 | Minimum unlock length is 15 minutes (Apple DeviceActivity schedule minimum, see T6) | Assumed |
 | P13 | Emergency unlock always available; it borrows minutes (balance can go negative) and must be earned back | Decided |
-| P14 | Emergency unlock: an allowance of 15 minutes per rolling 7 days, usable in one or several sessions; only minutes actually used are borrowed; ending early keeps the remainder, after a confirmation that says so; the streak breaks once per day of use. (Changed 2026-11-15 after founder testing; was one 15-minute unlock that borrowed 15 regardless of use.) | Decided (multi-session detail Assumed) |
+| P14 | Emergency unlock: a weekly allowance per rolling 7 days that each person sets next to their daily maximum (15, 30, 45 or 60 minutes, default 15; never off), usable in one or several sessions; only minutes actually used are borrowed; ending early keeps the remainder, after a confirmation that says so; the streak breaks once per day of use. (Changed 2026-11-15 after founder testing; was one 15-minute unlock that borrowed 15 regardless of use.) | Decided (multi-session detail Assumed) |
 | P15 | The only "penalty" is a broken shared streak; never shaming copy or red states | Decided |
 | P16 | Partner can mark the other's challenge complete unprompted (kudos) | Decided |
 | P17 | Custom challenges: creator types the challenge and its minute value; partner approves the value before it can be earned | Decided |
@@ -33,6 +33,8 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 | P26 | Ending any unlock early never silently loses time: minutes unlocks refund unused whole minutes; emergency keeps the remainder; free unlocks just end. A confirmation explains this before ending | Decided (minutes refund Assumed) |
 | P27 | Name: taken from Sign in with Apple when shared; otherwise asked once in onboarding right after sign-in (email sign-in never provides a name). Required, editable in Settings → Profile | Decided |
 | P28 | Tapping the protected-time status on the home screen opens the protected-time schedule | Decided |
+| P29 | Sign-in works for new and returning users alike (existing email never errors); "Already have an account? Sign in" sits under "Email me a link"; signing back in restores everything and skips completed onboarding; error messages are specific | Decided |
+| P30 | "Sign out" is visible in Settings. Signing out does not unpair; protected time pauses on that phone until signing back in, the confirmation says so, and the partner sees the P23 neutral status | Decided (protected-time pause Assumed) |
 | P23 | Partner sees a neutral status ("Protected time is off on Ana's phone") if Screen Time permission is revoked | Decided |
 
 ## Monetization
@@ -118,3 +120,4 @@ Status key: **Decided** = confirmed by the founder. **Assumed** = a default chos
 - 2026-11-14 — Founder: added B11 (full creative freedom for app UI and UX); `10-brand` now separates a fixed core from starting points; `06-ios-app` screens reframed as a functional inventory.
 - 2026-11-14 — App design direction and iPhone foundations: added engineering decisions E10–E13 (app direction and places; string catalog workflow; schedule and looser-change rules on the phone; in-memory demo backend).
 - 2026-11-15 — Founder testing in the Simulator: P14 emergency unlock reworked as a weekly allowance charging only minutes used; added P26 (ending unlocks early), P27 (name from Apple or onboarding), P28 (home status opens the schedule); P3 relationship type hidden in v1.
+- 2026-11-15 — Founder testing, round 2: emergency allowance chosen by each person next to the daily maximum (P14, allowance options and immediate effect Assumed); name step copy "What should we call you?"; added P29 (returning-user sign-in, specific errors) and P30 (visible sign out).
