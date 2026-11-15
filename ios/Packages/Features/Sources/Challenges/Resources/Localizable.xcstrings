@@ -2,6 +2,8 @@
   "sourceLanguage" : "en",
   "strings" : {
     "%@ added “%@” for %@ — sounds right?" : {},
+    "%@ agrees the minutes before it can be earned, and can suggest a different value." : {},
+    "%@ did this? Give kudos" : {},
     "%@ did “%@”" : {},
     "%@ each" : {},
     "%@ more ideas, your own challenges and kudos" : {},
@@ -14,16 +16,20 @@
     "Confirm · +%@" : {},
     "Done" : {},
     "For you to confirm" : {},
+    "Give %@ kudos" : {},
     "Invite your partner to use this." : {},
     "Kind" : {},
     "Movement" : {},
     "Offline fun" : {},
     "Part of premium. One price for both of you." : {},
+    "Send to %@" : {},
+    "Sent. %@ confirms with one tap, then the minutes arrive." : {},
     "Solo kindness" : {},
     "Sounds right" : {},
     "Suggest %@" : {},
     "Suggest a different value" : {},
     "Together" : {},
+    "Waiting for %@" : {},
     "We both earn it" : {},
     "What shall we do?" : {},
     "What's the challenge?" : {},
@@ -31,7 +37,8 @@
     "Worth" : {},
     "You both earn %@ when either of you confirms." : {},
     "Your own challenge" : {},
-    "Your partner" : {}
+    "Your partner" : {},
+    "“%@” is waiting for %@ to agree on %@." : {}
   },
   "version" : "1.0"
 }

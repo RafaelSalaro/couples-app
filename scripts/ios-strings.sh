@@ -33,7 +33,51 @@ for pkg in sorted(os.listdir("Packages")):
         if os.path.isdir(d):
             modules.append((d, os.path.join(d, "Resources", "Localizable.xcstrings")))
 
-call = re.compile(r'\bL\(\s*"((?:[^"\\]|\\.)*)"\s*[,)]')
+def skip_string(text, i):
+    """Index just past the Swift string literal starting at text[i] == '"', including
+    interpolations that themselves contain strings and parentheses."""
+    i += 1
+    while i < len(text):
+        c = text[i]
+        if c == "\\" and text.startswith("\\(", i):
+            i = skip_interpolation(text, i + 2)
+            continue
+        if c == "\\":
+            i += 2
+            continue
+        if c == '"':
+            return i + 1
+        if c == "\n":
+            return -1  # not a single-line literal
+        i += 1
+    return -1
+
+def skip_interpolation(text, i):
+    """Index just past the ')' closing an interpolation whose content starts at text[i]."""
+    depth = 1
+    while i < len(text) and depth:
+        c = text[i]
+        if c == '"':
+            j = skip_string(text, i)
+            if j < 0:
+                return len(text)
+            i = j
+            continue
+        depth += {"(": 1, ")": -1}.get(c, 0)
+        i += 1
+    return i
+
+def literals(text):
+    """The contents of every L("…") call's first argument (single-line string literals)."""
+    for m in re.finditer(r'\bL\(\s*', text):
+        start = m.end()
+        if not text.startswith('"', start) or text.startswith('"""', start):
+            continue
+        end = skip_string(text, start)
+        if end < 0 or not re.match(r'\s*[,)]', text[end:]):
+            continue
+        yield text[start + 1:end - 1]
+
 
 def key_of(literal):
     out, i, n = [], 0, len(literal)
@@ -42,12 +86,8 @@ def key_of(literal):
         if c == "\\" and i + 1 < n:
             nxt = literal[i + 1]
             if nxt == "(":
-                depth, j = 1, i + 2
-                while j < n and depth:
-                    depth += {"(": 1, ")": -1}.get(literal[j], 0)
-                    j += 1
                 out.append("%@")
-                i = j
+                i = skip_interpolation(literal, i + 2)
                 continue
             out.append({"n": "\n", "t": "\t", '"': '"', "\\": "\\"}.get(nxt, nxt))
             i += 2
@@ -56,6 +96,11 @@ def key_of(literal):
         i += 1
     return "".join(out)
 
+# Self-test on every run: interpolations may contain strings and parentheses (an earlier
+# pattern silently dropped such strings from the catalogs).
+_sample = 'Text(L("\\(name ?? "") asks for \\(short(m)) (now)")) x L("Plain %"), L("a \\("q)") b")'
+assert [key_of(x) for x in literals(_sample)] == ["%@ asks for %@ (now)", "Plain %%", "a %@ b"], [key_of(x) for x in literals(_sample)]
+
 stale = False
 for src, catalog in modules:
     keys = set()
@@ -63,7 +108,7 @@ for src, catalog in modules:
         for f in files:
             if f.endswith(".swift"):
                 text = open(os.path.join(root, f), encoding="utf-8").read()
-                keys.update(key_of(m) for m in call.findall(text))
+                keys.update(key_of(m) for m in literals(text))
     existing = {"sourceLanguage": "en", "strings": {}, "version": "1.0"}
     if os.path.exists(catalog):
         existing = json.load(open(catalog, encoding="utf-8"))

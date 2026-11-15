@@ -1,6 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ asks for %@" : {},
     "%@ did “%@”" : {},
     "%@ evenings in a row, together" : {},
     "%@ expired" : {},

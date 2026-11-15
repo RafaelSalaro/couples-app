@@ -3,6 +3,7 @@
   "strings" : {
     "%@ evenings in a row. That's a milestone." : {},
     "%@ kudos" : {},
+    "%@. You: %@. %@: %@." : {},
     "%@: %@ earned together" : {},
     "1 kudos" : {},
     "Challenges completed" : {},
@@ -15,6 +16,7 @@
     "Minutes earned together, week by week. Tap a week to see it." : {},
     "Minutes expired" : {},
     "Minutes spent" : {},
+    "Most generous: %@ gave %@ this week." : {},
     "Most generous: you gave %@ this week." : {},
     "Only on your phone" : {},
     "Our week" : {},
