@@ -2,6 +2,18 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-9 Minutes, challenges, kudos
+
+- Together, the third place: the challenge library by category (the 5 free presets; the full library for premium, a calm preview otherwise), challenge detail with "Done" and an optional note (280 characters), the partner's completions to confirm with one tap, and kudos.
+- Completing: the partner confirms, then the minutes arrive; shared challenges grant both on one confirmation. Unconfirmed completions expire after 48 hours (model rule; the server enforces it in WP-3/4).
+- Custom challenges (premium): title and 5–60 minutes; the partner approves the value or suggests another ("Ana added … — sounds right?").
+- Kudos (premium): from a challenge or free-form, 5–30 minutes, capped at 60 minutes given per day, with an optional note.
+- Minutes screen (from Us): both balances, a 7-day chart of what expires when with a spoken line per day, the ledger history, and the mutual reset (propose, accept or decline, waiting state).
+- Signature moments: kudos received (the giver's light swells and its glow washes over the other); streak milestone; the expiry timeline. Each has a Reduce Motion version that fades.
+- Fix in this package: the kudos celebration's minutes now actually count up (up to 12 steps, ending exactly on the amount); before, the number appeared all at once although the code described a count. With Reduce Motion the amount shows at once, and VoiceOver hears only the final amount.
+- Tests: Challenges 8, Kudos 6 (1 new for the count), Minutes 6 and expiry timeline 4 model tests; `TogetherUITests` 7: challenge done and confirmed, confirming the partner's challenge, free-tier preview, giving kudos and a custom challenge, the kudos-received celebration, the minutes screen with a reset, an incoming reset. All 271 package tests pass.
+- **Not built:** a photo on a completed challenge (spec §8 says "optional photo or note"); like the profile photo it needs a storage contract in doc 05. The expiry-eve notification belongs to WP-13.
+
 ## 2026-11-14 — WP-8 Unlock methods
 
 - One unlock sheet for every method (feature spec §6): pick a length (15, 30 or 60 minutes, default 30; premium steps in 15-minute increments), then scan your partner's code, ask your partner, type an accountability code, use your minutes, or take the emergency unlock. Unlocking while unlocked extends the window.

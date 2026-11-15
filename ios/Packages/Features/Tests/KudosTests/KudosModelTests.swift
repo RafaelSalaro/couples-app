@@ -76,3 +76,14 @@ import Testing
         #expect(KudosText.body(silent, partnerName: "Ana") == "Ana noticed you.")
     }
 }
+
+@Suite struct KudosCountTests {
+    @Test func countsUpInFewStepsAndEndsOnTheAmount() {
+        #expect(KudosText.countSteps(to: 10) == Array(1...10))
+        let thirty = KudosText.countSteps(to: 30)
+        #expect(thirty.last == 30 && thirty.count <= 12 && thirty == thirty.sorted())
+        #expect(KudosText.countSteps(to: 60).last == 60)
+        #expect(KudosText.countSteps(to: 0) == [0])
+        #expect(KudosText.amount(minutes: 15) == "+15 min")
+    }
+}

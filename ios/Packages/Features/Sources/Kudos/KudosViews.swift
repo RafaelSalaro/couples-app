@@ -83,7 +83,7 @@ public struct GiveKudosSheet: View {
     }
 
     private var sentView: some View {
-        KudosGlow(amount: model.sent.map(KudosText.amount) ?? "", title: model.sentLine ?? "", bodyText: nil, receiving: false) { dismiss() }
+        KudosGlow(minutes: model.sent?.minutes ?? 0, title: model.sentLine ?? "", bodyText: nil, receiving: false) { dismiss() }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("kudos.sent")
     }
@@ -108,13 +108,15 @@ public struct GiveKudosSheet: View {
 /// Signature moment 1: warmth arriving. The giver's light swells, its glow washes over the other,
 /// and the minutes count up. With Reduce Motion the glow simply fades in and the number is shown.
 struct KudosGlow: View {
-    let amount: String
+    let minutes: Int
     let title: String
     let bodyText: String?
     /// True when this person received the kudos (the partner's light glows); false when they gave it.
     let receiving: Bool
     let onDone: () -> Void
     @State private var lit = false
+    /// The number on screen while it counts up to `minutes`.
+    @State private var shown = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -126,8 +128,10 @@ struct KudosGlow: View {
                     .scaleEffect(lit && !reduceMotion ? 1.06 : 1)
                     .animation(Motion.resolve(Motion.celebration, reduceMotion: reduceMotion), value: lit)
                     .accessibilityHidden(true)
-                SkyText(amount, role: .numeralLarge)
-                    .contentTransition(.numericText())
+                SkyText(KudosText.amount(minutes: shown), role: .numeralLarge)
+                    .contentTransition(.numericText(value: Double(shown)))
+                    // VoiceOver hears the amount once, not every step of the count.
+                    .accessibilityLabel(KudosText.amount(minutes: minutes))
                     .accessibilityIdentifier("kudos.amount")
                 SkyText(title, role: .display).multilineTextAlignment(.center)
                 if let bodyText {
@@ -146,6 +150,14 @@ struct KudosGlow: View {
             try? await Task.sleep(for: .milliseconds(200))
             lit = true
             Haptics.warmth()
+            guard !reduceMotion else {
+                shown = minutes
+                return
+            }
+            for value in KudosText.countSteps(to: minutes) {
+                try? await Task.sleep(for: .milliseconds(70))
+                withAnimation(Motion.resolve(Motion.standard, reduceMotion: false)) { shown = value }
+            }
         }
     }
 }
@@ -164,7 +176,7 @@ public struct KudosCelebrationView: View {
 
     public var body: some View {
         KudosGlow(
-            amount: KudosText.amount(kudos), title: KudosText.title(from: partnerName),
+            minutes: kudos.minutes, title: KudosText.title(from: partnerName),
             bodyText: KudosText.body(kudos, partnerName: partnerName), receiving: true, onDone: onDone
         )
         .accessibilityElement(children: .contain)

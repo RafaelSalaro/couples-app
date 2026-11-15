@@ -78,5 +78,16 @@ public enum KudosText {
         kudos.message.isEmpty ? L("\(partnerName) noticed you.") : "“\(kudos.message)”"
     }
 
-    public static func amount(_ kudos: Kudos) -> String { "+\(MinutesText.short(kudos.minutes))" }
+    public static func amount(_ kudos: Kudos) -> String { amount(minutes: kudos.minutes) }
+    public static func amount(minutes: Int) -> String { "+\(MinutesText.short(minutes))" }
+
+    /// The values the celebration counts through on its way to `minutes`: at most 12 steps,
+    /// always ending exactly on the amount.
+    public static func countSteps(to minutes: Int) -> [Int] {
+        guard minutes > 0 else { return [0] }
+        let stride = max(1, Int((Double(minutes) / 12).rounded(.up)))
+        var values = Array(Swift.stride(from: stride, to: minutes, by: stride))
+        values.append(minutes)
+        return values
+    }
 }
