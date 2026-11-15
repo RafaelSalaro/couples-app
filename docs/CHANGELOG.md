@@ -2,6 +2,15 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-12 Purchases (app side)
+
+- Paywall from Us and from every premium preview: headline "One price for both of you", price lines "$39.99/year for both of you" and "$119.99 once, for both of you" (from the store, so localized), the 14-day trial for both when the pair has not used it, restore, and a footnote on what stays free and what happens if premium ends.
+- `RevenueCatPurchasesService` (StoreKit 2) logs in with our user id, so the RevenueCat webhook can give premium to the pair on the server. The app never decides premium from the local receipt: after a purchase it asks the server for the pair's premium, waiting up to 5 seconds for the webhook, and otherwise picks up the change from the pair's live updates.
+- Pending (Ask to Buy), cancelled and failed purchases all get calm copy. Settings shows who pays ("Premium for both of you. Paid by Ana.") and links to Apple's subscription management.
+- Downgrade: minutes are kept; custom challenges and extra schedules rest and come back (Core `PremiumRules`). After an unpair, premium stays with the person who paid.
+- Tests: Paywall 7, prices 3 and the simulated store 3 (unit); `UsUITests`: paywall trial purchase, restore and cancel. All 271 package tests and the 34 UI tests pass.
+- **Not verified, and the acceptance for this package:** sandbox purchases and the partner receiving premium need App Store Connect products, a RevenueCat project with the `premium` entitlement, and the webhook (WP-12 backend side). Until then the demo uses a simulated store; with no RevenueCat key configured, a real build shows the paywall as unavailable instead of selling.
+
 ## 2026-11-14 — WP-11 Real device Screen Time (code only)
 
 - Everything that can be done without a device is done: Release builds use `ScreenTimeBlockingService` (`BLOCKING_SERVICE = screentime`), Debug keeps the mock unless `-blockingService screentime` is passed, and the app plus its four Screen Time extensions carry Family Controls and the shared App Group (the five bundle IDs for the Family Controls request).
