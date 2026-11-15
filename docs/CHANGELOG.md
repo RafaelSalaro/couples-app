@@ -2,6 +2,23 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-15 — WP-12 Purchases (backend side)
+
+- `revenuecat_webhook`: checks RevenueCat's Authorization header (constant-time), applies each event once (`webhook_events`), maps purchase, renewal, trial, product change, cancellation (premium stays to the end of the period), billing issue, expiry, lifetime and transfer to `entitlements`, ignores events older than the newest applied, and recomputes the pair's coverage. Anonymous RevenueCat ids are skipped; the app logs in with our user id.
+- Pair premium from WP-3 (`recompute_coverage`, `is_premium`, the `pair_premium` view): one payer covers both, one trial per pair, the covered partner changes at most once per 30 days, the payer keeps premium after an unpair.
+- Tests: 2 Deno tests on the event mapping and secret check; pgTAP premium cases in `pairing_premium_test.sql`.
+- **Not verified:** against real RevenueCat events and App Store sandbox purchases (needs the accounts).
+
+## 2026-11-15 — WP-4 Edge Functions
+
+- 27 Edge Functions: the 22 signed-in functions the iPhone app calls (doc 05 §3 plus `revoke_invite`), each a thin wrapper that takes the caller from the JWT (never from the body), validates the body, calls its `api_*` SQL function and returns `{ok, data}` / `{ok:false, error:{code}}`; `waitlist_join` and `waitlist_confirm` for the website (CORS, rate limit, double opt-in, joining twice looks the same); `respond_unlock_by_token` for the web approve page (E8); `revenuecat_webhook`; `send_notifications`.
+- Delivery: SQL queues notifications (respecting muted categories); `send_notifications` renders them in the brand voice and sends push through APNs with token auth (ES256 provider token, time-sensitive and actionable categories the app registers, silent push for a rotated QR secret, dead tokens removed) and email through Resend (the fallback email with the approve link and the 6-digit code issued at send time, waitlist confirmation, the optional weekly report email). Failures retry 5 times with a growing pause.
+- Scheduled jobs (pg_cron, doc 05 §4): expire requests (every minute), expire minutes, expire completions and proposals, streak rollover, the 7 PM expiry reminder, the Sunday 7 PM weekly report (in the shape the app reads), pruning sent notifications, and the sender every minute through pg_net (needs two Vault secrets in a deployed project, see `supabase/README.md`).
+- Realtime (doc 05 §5): triggers broadcast `{table, id}` on `pair:<pair_id>` for every table the app listens to; the app reads the row through RLS. Checked on the local stack.
+- Bug found and fixed: account deletion failed when run as the service role ("permission denied for table minute_ledger"), because the ledger is immutable for that role; the deletion function now runs with the owner's rights, and a regression test runs it as the service role.
+- Tests: Deno 28 (26 unit: auth, validation, error mapping without leaking database details, result shapes, CORS, APNs JWT and headers, outbox retries and dead tokens, copy that never scolds, email escaping; 2 integration tests against the local stack with real users and JWTs: pairing, the QR secret read through RLS, ask and Go for it, an idempotent minutes unlock, error codes, unpair, account deletion). pgTAP 145 in 6 files (21 new on the outbox, jobs, approve link and waitlist). `./scripts/functions-test.sh` runs the Deno tests.
+- **Not verified:** real APNs and Resend delivery (need the Apple key and a Resend account), the deployed cron call (needs a Supabase project), and the iPhone app's `SupabaseBackend` against these functions end to end (the contract was matched by reading the app's calls; a run needs a configured project).
+
 ## 2026-11-15 — WP-3 Database: schema, RLS, SQL functions
 
 - Completes WP-3 (part 1, the schema and seeds, was already on `main`). Five migrations: schema; privileges and Row Level Security; the minutes engine and streaks; premium, pairing and unlocks; schedules, challenges, kudos, export and account deletion.

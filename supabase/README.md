@@ -27,6 +27,38 @@ Edge Function of doc 05 §3; see the header of each migration for the convention
 | `tests/` | pgTAP tests |
 | `functions/` | Edge Functions (Deno) |
 
+## Edge Functions
+
+One folder per function of doc 05 §3. The signed-in ones are thin wrappers (`_shared/api.ts`)
+around the SQL function `api_<name>`, which holds the rules (E14). Public ones: `waitlist_join`,
+`waitlist_confirm`, `respond_unlock_by_token`; system ones: `revenuecat_webhook`,
+`send_notifications` (the outbox sender, called by pg_cron).
+
+```sh
+./scripts/functions-test.sh   # Deno unit tests, plus integration tests when the local stack runs
+supabase functions serve      # run them locally on http://127.0.0.1:54321/functions/v1/<name>
+```
+
+Secrets (`supabase secrets set NAME=value`):
+
+| Secret | For |
+|---|---|
+| `APP_NAME`, `APP_DOMAIN`, `APP_URL_SCHEME` | Copy and links (never hard-code the name) |
+| `ALLOWED_ORIGINS` | Website origins allowed by CORS (default: `https://APP_DOMAIN`) |
+| `APNS_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_TOPIC` | Push (.p8 key contents, key id, team id, bundle id) |
+| `RESEND_API_KEY`, `EMAIL_FROM` | Email |
+| `REVENUECAT_WEBHOOK_AUTH` | The Authorization value set in RevenueCat's webhook settings |
+| `CRON_SECRET` | Shared with pg_cron so only it can call `send_notifications` |
+
+`revenuecat_webhook`, `waitlist_join`, `waitlist_confirm`, `respond_unlock_by_token` and
+`send_notifications` must be deployed with `--no-verify-jwt` (they check their own secret or
+are public); every other function keeps JWT verification on.
+
+For the sender to run every minute in a deployed project, store two Vault secrets once:
+`select vault.create_secret('https://<ref>.supabase.co/functions/v1', 'functions_url');` and
+`select vault.create_secret('<the CRON_SECRET value>', 'cron_secret');`. Without them the
+scheduled call does nothing (as locally).
+
 ## Challenge seeds
 
 Seed files insert **preset** challenges (rows with `pair_id` null) into `public.challenges`.

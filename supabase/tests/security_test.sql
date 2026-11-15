@@ -1,11 +1,11 @@
 -- Privileges and Row Level Security: docs/05 §2, docs/04 §4.
 begin;
 \ir _helpers.psql
-select plan(12);
+select plan(13);
 
 create temp table t as
 select tests.person('Rafa') as rafa, tests.person('Ana') as ana, tests.person('Eve') as eve;
-grant select on t to authenticated, anon;
+grant select on t to authenticated, anon, service_role;
 select public.api_accept_invite(ana, public.api_create_invite(rafa) ->> 'code') from t;
 
 -- Act as a signed-in client.
@@ -57,6 +57,11 @@ reset role;
 set local role anon;
 select throws_ok($q$select count(*) from public.profiles$q$, '42501', null, 'anonymous visitors cannot read profiles');
 select throws_ok($q$select count(*) from public.waitlist$q$, '42501', null, 'or the waitlist');
+
+-- Account deletion runs as the service role in production (regression: it once failed there).
+reset role;
+set local role service_role;
+select lives_ok(format($q$select public.api_delete_account(%L)$q$, (select eve from t)), 'the service role can delete an account');
 
 reset role;
 select * from finish();

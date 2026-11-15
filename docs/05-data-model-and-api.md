@@ -140,6 +140,9 @@ Each Edge Function is a thin wrapper around one SQL function `api_<name>(p_user,
 | `export_my_data` | — | JSON of the user's data | — |
 | `delete_account` | — | Unpair, anonymize, delete auth user | — |
 | `waitlist_join` (public) | `{email, source}` | Insert + double opt-in email | rate_limited |
+| `waitlist_confirm` (public, GET) | `?token=` | Confirms the address, redirects to `/waitlist/confirmed/` | — |
+| `respond_unlock_by_token` (public) | `{token, approve}` | The approve link in the fallback email; same as `respond_unlock_request` | invalid, expired |
+| `send_notifications` (cron only) | — | Delivers the outbox: APNs and Resend | unauthorized |
 
 All functions: idempotent where a `client_event_id` is given; return `{ok, data}` or `{ok:false, error:{code, message}}`.
 
