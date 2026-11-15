@@ -103,9 +103,9 @@ What each area must let people do. This is a checklist of required functions, no
 
 | Area | Functions |
 |---|---|
-| Onboarding | Welcome/philosophy · Sign in · Relationship type · Invite or join · Notifications permission · Screen Time permission · Choose apps guidance + picker · Protected time · Starting minutes & daily max · Ready |
-| Home | Both balances · protected-time status ring (time left or unlock countdown) · streak · "Unlock" button · today's activity feed |
-| Unlock sheet | Choose length · four methods: Scan partner's code, Ask partner, Use minutes, Emergency |
+| Onboarding | Welcome/philosophy · Sign in · Your name (only if Sign in with Apple did not share one) · Invite or join · Notifications permission · Screen Time permission · Choose apps guidance + picker · Protected time · Starting minutes & daily max · Ready |
+| Home | Both balances · protected-time status (time left or unlock countdown); tapping it opens the protected-time schedule · streak · "Unlock" button · today's activity feed |
+| Unlock sheet | Choose length · four methods: Scan partner's code, Ask partner, Use minutes, Emergency (shows emergency minutes left this week and when they renew) · end an active unlock early, with a confirmation that explains what happens to unused time |
 | Show my code | Full-screen rotating QR with a 30-second progress ring |
 | Scanner | Camera with guide frame, success animation |
 | Requests | Incoming request card (Go for it / Let's wait) · outgoing status · enter code |
@@ -114,7 +114,7 @@ What each area must let people do. This is a checklist of required functions, no
 | Kudos | Give kudos sheet · received celebration |
 | Reports | This week (individual + combined) · history (premium) · private Screen Time report |
 | Schedule | Protected time editor · pending change approvals |
-| Settings | Profile · partner & unpair · paused apps · daily max · notifications · subscription · export · delete account · support & safety |
+| Settings | Profile (name editable; no relationship-type line in v1) · partner & unpair · paused apps · daily max · notifications · subscription · export · delete account · support & safety |
 | Paywall | Headline "One price for both of you", benefits, yearly ($39.99/year for both of you) + lifetime ($119.99 once, for both of you), trial, restore |
 
 ## 7. Signature moments

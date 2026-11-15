@@ -34,7 +34,8 @@ CI: GitHub Actions (free for private repositories within monthly minutes). macOS
 - Request expires at 5 minutes; approval after expiry fails.
 - Accountability code: single use, 5 attempts max, hashed at rest.
 - Offline QR sync is idempotent; reused counter is rejected.
-- Emergency unlock once per rolling 7 days.
+- Emergency allowance: 15 minutes per rolling 7 days across sessions; ending early borrows only minutes used and keeps the rest; a second session uses the remainder; refused when the allowance is used up; streak breaks once per day.
+- Ending a minutes unlock early refunds unused whole minutes to their original lots.
 
 **Schedules**
 - 18:00–09:00 is "protected" at 23:00, 02:00, 08:59 and not at 09:00 or 17:59.
@@ -55,7 +56,7 @@ Run on: iPhone with the oldest supported iOS 17.x available, and one on the newe
 5. **Ask your partner:** approve from the lock-screen notification; requester unlocks within 10 seconds.
 6. **Email fallback:** partner with notifications off receives the email; code works once.
 7. **Minutes unlock** and daily maximum refusal.
-8. **Emergency unlock** with zero balance → balance negative; second attempt the same week refused.
+8. **Emergency unlock** with zero balance: end it after 2 minutes → balance is −2 and 13 emergency minutes remain; a second session uses the remainder; a third attempt the same week is refused.
 9. **Midnight crossing:** schedule 23:50–00:20 protects through midnight.
 10. **Website blocking:** instagram.com blocked in Safari during protected time.
 11. **Deny app removal:** cannot delete the app during protected time.

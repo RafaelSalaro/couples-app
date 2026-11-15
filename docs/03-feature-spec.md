@@ -22,7 +22,7 @@ This is the complete behavior of v1. It defines **what** the app does, not how i
 **Onboarding order (iPhone):**
 1. Welcome: the philosophy in one screen ("Not about control. About being here, together.").
 2. Sign in.
-3. Choose relationship type. v1 shows only "Couple" (the screen exists so friends/family can be added later without redesign).
+3. Your name: if Sign in with Apple shared the person's name, use it and skip this step. Otherwise (Apple name hidden or not shared, or email sign-in, which provides no name) ask "What should Ana call you?" with a first-name field. The name is required because it is what the partner sees; it can be changed later in Settings → Profile.
 4. Invite partner, or enter an invite code if the partner already invited you (see §3). User may continue alone; app features stay in "waiting for your partner" mode.
 5. Notification permission with a clear reason: "So your partner's requests and kudos reach you."
 6. Screen Time permission (Apple's individual authorization).
@@ -39,7 +39,7 @@ This is the complete behavior of v1. It defines **what** the app does, not how i
 - Invites expire after 72 hours and can be revoked.
 - Partner B accepts; both see "You're now paired with Ana." Pairing requires both to confirm.
 - Pairing creates the pair's shared QR secret (§6.1) and its challenge library.
-- Both partners choose the relationship type during pairing (both see the same choice; v1 only "Couple").
+- The relationship type is not shown anywhere in v1 (couples only); pairs are created as `romantic`. A choice appears only when the friends/family type launches.
 - A user can be in only one active pair. Inviting while paired is disabled.
 
 **Unpairing**
@@ -70,6 +70,8 @@ When a paused app opens during protected time, Apple shows our custom pause scre
 
 Every unlock: the user picks a length (15, 30 or 60 minutes; default 30; free-form in 15-minute steps for premium). Paused apps open immediately for that window, then protected time resumes automatically. A Live Activity and widget show the countdown. Unlocking again while unlocked extends the current window.
 
+**Ending an unlock early:** the user can end any unlock before its time is up, with a short confirmation that says what happens to the unused time. Unused time is never silently lost: minutes unlocks refund the unused whole minutes to the balance (they keep their original expiry), emergency time stays available (§6.4), and free unlocks (QR, partner approval) simply end.
+
 ### 6.1 In-person QR (works offline)
 - The partner opens "Show my code". Their phone shows a QR code that changes every 30 seconds (time-based one-time code from a secret shared at pairing, stored in each phone's Keychain).
 - The requester scans it in the app. The code is verified on the phone, offline. A used code cannot be reused.
@@ -91,8 +93,13 @@ Every unlock: the user picks a length (15, 30 or 60 minutes; default 30; free-fo
 
 ### 6.4 Emergency unlock
 - Always available, partner or not, even with zero minutes.
-- 15 minutes, once per rolling 7 days. Borrows 15 minutes: the balance can go negative and must be earned back before minutes can be spent again.
-- The partner sees a neutral note: "Ana used an emergency unlock." No approval needed.
+- **An allowance of 15 emergency minutes per rolling 7 days** (the 7 days start at the first emergency use). The allowance can be used in one session or split across several; each session runs until the remaining allowance is used up or the person ends it.
+- **Only time actually used is borrowed:** the balance goes negative by the minutes used (rounded up to the whole minute), not by the full 15. It must be earned back before minutes can be spent again.
+- **Ending early:** a confirmation shows what remains, for example "You've used 2 of your 15 emergency minutes this week. The other 13 stay available until Friday." Ending keeps the remainder; nothing is lost.
+- The unlock sheet shows the emergency minutes left this week and when the allowance renews.
+- The shared streak breaks on the first emergency use of a day, not again for each session that day.
+- Apple's 15-minute minimum for Device Activity monitors (decision T6) applies. If a remaining amount under 15 minutes cannot be enforced reliably on a device, record it in `13-risks-and-open-questions.md` and ask the founder before choosing a workaround.
+- The partner sees a neutral note per session: "Ana used an emergency unlock." No approval needed.
 
 ## 7. Minutes economy (exact rules)
 
@@ -139,7 +146,7 @@ Every unlock: the user picks a length (15, 30 or 60 minutes; default 30; free-fo
 
 ## 10. Reports
 
-**Live:** home screen shows both balances, today's protected time, current streak, and recent activity.
+**Live:** home screen shows both balances, today's protected time, current streak, and recent activity. Tapping the protected-time status or its time opens the protected-time schedule, where it can be managed.
 
 **Weekly report (Sunday evening, push and in-app; email optional):**
 - Individual, side by side: minutes earned, spent, expired; challenges completed; requests sent, approved; kudos given and received.
@@ -183,7 +190,7 @@ Users can mute each category except unlock requests and schedule requests. Quiet
 
 ## 13. Settings
 
-Profile (name, photo), partner and unpair, relationship type, schedules, paused apps, daily maximum, notification categories, subscription, export my data, delete account, privacy policy, terms, support.
+Profile (name, prefilled from Sign in with Apple or the onboarding name step, editable; photo), partner and unpair, schedules, paused apps, daily maximum, notification categories, subscription, export my data, delete account, privacy policy, terms, support.
 
 ## 14. Account deletion
 

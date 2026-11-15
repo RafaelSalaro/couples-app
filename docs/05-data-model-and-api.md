@@ -7,7 +7,7 @@ Postgres on Supabase. All timestamps `timestamptz` in UTC. All IDs `uuid` (`gen_
 ### Identity and pairing
 
 **profiles** — one per user (`id` = `auth.users.id`)
-`id, display_name text, photo_path text null, time_zone text (IANA), locale text, created_at, deleted_at null`
+`id, display_name text not null (from Sign in with Apple when shared, else the onboarding name step), photo_path text null, time_zone text (IANA), locale text, created_at, deleted_at null`
 
 **pairs**
 `id, relationship_type enum('romantic','friends_family') default 'romantic', status enum('active','ended'), standard_reset_minutes int default 30, qr_secret_version int default 1, created_at, ended_at null, ended_by uuid null`
@@ -55,7 +55,9 @@ Rules implemented in SQL functions (called only by Edge Functions):
 `id, pair_id, requester_id, minutes int, reason text null (max 140), status enum('pending','approved','declined','expired','cancelled','redeemed'), expires_at (5 min), code_hash text null, code_attempts int default 0, push_sent_at, email_sent_at null, responded_by null, responded_at null, created_at`
 
 **unlocks**
-`id, user_id, pair_id, method enum('qr','partner_approval','accountability_code','minutes','emergency'), minutes int, started_at, ends_at, request_id null, client_event_id uuid unique (idempotency for offline sync), created_at`
+`id, user_id, pair_id, method enum('qr','partner_approval','accountability_code','minutes','emergency'), minutes int, started_at, ends_at, ended_early_at null, minutes_used int null, request_id null, client_event_id uuid unique (idempotency for offline sync), created_at`
+
+Emergency allowance per user: 15 minutes per rolling 7-day window starting at the first emergency use in that window; remaining = 15 − minutes used by emergency unlocks in the window.
 
 **qr_redemptions**
 `pair_id, user_id, counter bigint, redeemed_at` · unique (pair_id, counter)
@@ -129,7 +131,8 @@ Each Edge Function is a thin wrapper around one SQL function `api_<name>(p_user,
 | `respond_unlock_request` | `{request_id, approve}` | Approve → unlock row + push to requester; decline → push | expired, not_partner |
 | `redeem_accountability_code` | `{request_id, code}` | Verifies hashed code, creates unlock | invalid, expired, too_many_attempts |
 | `spend_minutes_unlock` | `{minutes, client_event_id}` | Spend FIFO, create unlock | insufficient, over_daily_max, in_debt |
-| `emergency_unlock` | `{client_event_id}` | Borrow 15, unlock 15, note to partner, mark day | used_this_week |
+| `emergency_unlock` | `{client_event_id}` | Start a session for the remaining weekly emergency allowance; note to partner; mark the day (streak) once | allowance_used_up |
+| `end_unlock_early` | `{unlock_id, client_event_id}` | Ends an active unlock. Emergency: borrow only the minutes used (rounded up) and keep the rest of the allowance. Minutes: refund unused whole minutes to their original lots. QR / partner approval: end only | not_active |
 | `sync_qr_unlocks` | `[{counter, minutes, started_at, client_event_id}]` | Idempotent insert of offline QR unlocks | duplicate_counter |
 | `complete_challenge` | `{challenge_id, note?, photo?}` | Completion awaiting confirmation + push | premium_required |
 | `confirm_completion` | `{completion_id}` | Grants minutes (both if shared) | not_partner, expired |
