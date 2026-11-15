@@ -110,12 +110,17 @@ create policy "members read" on unlock_requests for select using (is_pair_member
 ```
 Exceptions where clients may write directly: `profiles` (own row), `user_settings` (own row, except values validated by check constraints), `push_tokens` (own rows), `events` (insert own).
 
+Reads beyond the pattern (E14): current pair members may read their pair's row in `pair_secrets` (both phones need the QR secret; the inviter never calls `accept_invite`). The view `pair_premium` shows the caller's own current pair while its premium is on.
+
+Each Edge Function is a thin wrapper around one SQL function `api_<name>(p_user, …)` in the migrations, which holds the rules and is executable only by the service role (E14).
+
 ## 3. Edge Functions (HTTPS, JSON, caller's JWT required)
 
 | Function | Input | Effect | Errors |
 |---|---|---|---|
 | `create_invite` | — | Returns `{code, link}`; stores hashes | already_paired |
 | `accept_invite` | `{code \| link_token}` | Creates pair, members, starting grants, coverage if any, returns pair + QR secret | invalid, expired, already_paired |
+| `revoke_invite` | — | Cancels the caller's open invite | — |
 | `unpair` | — | Ends pair, resets active minutes, cancels pending items, notifies partner | not_paired |
 | `rotate_qr_secret` | — | New secret version, pushes to both | — |
 | `create_unlock_request` | `{minutes, reason?}` | Request + push to partner; schedules email fallback | rate_limited, partner_missing |

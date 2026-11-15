@@ -11,7 +11,12 @@ Docker is provided by OrbStack: `export PATH="$HOME/.orbstack/bin:$PATH"` first.
 supabase start        # from the repository root; applies migrations and seeds
 supabase db reset     # re-apply migrations and seeds from scratch
 supabase test db      # pgTAP database tests (supabase/tests)
+./scripts/db-concurrency-test.sh    # two sessions spending at once (needs the running stack)
 ```
+
+Shared test helpers live in `tests/_helpers.psql` (a person, a pair, local times) and are
+included by each test file with `\ir`. The rules are SQL functions named `api_<name>`, one per
+Edge Function of doc 05 §3; see the header of each migration for the conventions.
 
 ## Layout
 

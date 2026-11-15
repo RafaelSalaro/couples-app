@@ -1,0 +1,42 @@
+-- Shared test helpers. Included at the top of each test file with \ir (after "begin;"),
+-- so they live only inside that file's transaction and are rolled back with it.
+-- Named .psql, not .sql, so pg_prove does not run it as a test of its own.
+
+create extension if not exists pgtap with schema extensions;
+create schema if not exists tests;
+
+-- A person: an auth user (which creates the profile, settings and debt rows) in a time zone.
+create or replace function tests.person(p_name text, p_time_zone text default 'America/New_York')
+returns uuid language plpgsql as $$
+declare v_id uuid := gen_random_uuid();
+begin
+  insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, created_at, updated_at)
+  values (v_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+          lower(p_name) || '-' || left(v_id::text, 8) || '@example.com',
+          jsonb_build_object('full_name', p_name), now(), now());
+  update public.profiles set time_zone = p_time_zone where id = v_id;
+  return v_id;
+end $$;
+
+-- An active pair of two people, created at p_at.
+create or replace function tests.pair(p_a uuid, p_b uuid, p_at timestamptz default now())
+returns uuid language plpgsql as $$
+declare v_pair uuid;
+begin
+  insert into public.pairs (created_at) values (p_at) returning id into v_pair;
+  insert into public.pair_members (pair_id, user_id, joined_at) values (v_pair, p_a, p_at), (v_pair, p_b, p_at);
+  return v_pair;
+end $$;
+
+-- A fixed moment in a named time zone, for readable tests: tests.at('2026-11-10 23:30', 'America/New_York').
+create or replace function tests.at(p_local text, p_time_zone text default 'America/New_York')
+returns timestamptz language sql immutable as $$
+  select (p_local::timestamp at time zone p_time_zone);
+$$;
+
+-- Open lots of a user, soonest-expiring first, as "remaining@expires_at" text for compact checks.
+create or replace function tests.lots(p_user uuid)
+returns text[] language sql stable as $$
+  select coalesce(array_agg(remaining::text order by expires_at, created_at), '{}')
+  from public.minute_lots where user_id = p_user and closed_at is null and remaining > 0;
+$$;
