@@ -2,6 +2,13 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-11 Real device Screen Time (code only)
+
+- Everything that can be done without a device is done: Release builds use `ScreenTimeBlockingService` (`BLOCKING_SERVICE = screentime`), Debug keeps the mock unless `-blockingService screentime` is passed, and the app plus its four Screen Time extensions carry Family Controls and the shared App Group (the five bundle IDs for the Family Controls request).
+- New check: an unsigned Release build for a real iPhone (`IOS_DESTINATION="generic/platform=iOS" ./scripts/ios-build.sh -configuration Release`, now in `ios/README.md`). It succeeds. It showed one warning the Simulator build does not: "All interface orientations must be supported unless the app requires full screen". The app is iPhone-only and portrait-only, so it now declares `UIRequiresFullScreen`; the device and Simulator builds have no warnings from our code.
+- Midnight crossing and the 15-minute minimum are covered by unit tests (WP-7); the midnight split is ready to switch on if a device shows one interval does not fire.
+- **Open, and the acceptance for this package:** device scripts 1–17 in `ios/README.md`, on two iPhones, once the Apple developer account and the Family Controls entitlement exist. WP-11 stays open until they pass.
+
 ## 2026-11-14 — WP-10 Home, schedule, reports, settings
 
 - Home scene (Tonight): both balances, today's protected time on the evening arc, the shared streak and recent activity, under the sky that follows protected time. The partner's status is neutral ("Protected time is off on Ana's phone"), never usage.

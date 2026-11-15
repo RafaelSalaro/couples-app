@@ -21,6 +21,7 @@ From the repository root:
 ./scripts/ios-test.sh -skip-testing:CouplesAppUITests   # package tests only (about a minute)
 ./scripts/ios-test.sh -only-testing:CouplesAppUITests   # UI tests only (about ten minutes)
 ./scripts/ios-strings.sh   # update the String Catalogs from the code (--check to verify)
+IOS_DESTINATION="generic/platform=iOS" ./scripts/ios-build.sh -configuration Release   # device build with real Screen Time, unsigned
 ```
 
 Snapshot references live next to the tests in `__Snapshots__/`. To re-record one, delete

@@ -78,6 +78,8 @@ targets:
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        # Portrait only, iPhone only: declare full screen so Xcode does not ask for every orientation.
+        UIRequiresFullScreen: true
         UIBackgroundModes:
           - remote-notification
         NSSupportsLiveActivities: true
