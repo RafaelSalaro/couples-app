@@ -45,9 +45,11 @@ public struct TestApp {
     ///   - paired: whether the two are paired (implies signed in).
     ///   - ready: whether onboarding is done, Screen Time is granted and apps are chosen.
     ///   - start: the current time; the default (Tuesday 8 PM) is inside the default protected time.
+    ///   - launch: whether to run the launch (`bootstrap`) as the root view would; false leaves it
+    ///     to whatever arrives first, like a notification tap on a cold launch.
     public init(
         signedIn: Bool = true, paired: Bool = true, premium: Bool = false, ready: Bool = true,
-        start: Date = testDate(2026, 11, 10, 20, 0)
+        start: Date = testDate(2026, 11, 10, 20, 0), launch: Bool = true
     ) async {
         let clock = TestClock(start)
         self.clock = clock
@@ -83,7 +85,7 @@ public struct TestApp {
                 }
             }
         ))
-        await model.bootstrap()
+        if launch { await model.bootstrap() }
     }
 
     /// Lets queued event handling (the model's listening task) run.

@@ -1,4 +1,5 @@
 import ActivityKit
+import Blocking
 import Core
 import FeatureSupport
 import UIKit
@@ -56,11 +57,14 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
         let content = response.notification.request.content
         let action = response.actionIdentifier == UNNotificationDefaultActionIdentifier ? nil : response.actionIdentifier
         let payload = Self.payload(content.userInfo)
-        let category = content.categoryIdentifier
-        await MainActor.run {
-            guard let intent = PushIntent.parse(category: category, action: action, payload: payload, urlScheme: AppBrand.urlScheme) else { return }
-            Task { await self.model?.perform(intent) }
-        }
+        // Awaited, not fired off: a button such as "Go for it" can launch the app in the
+        // background, and iOS may suspend it as soon as this returns.
+        await handle(category: content.categoryIdentifier, action: action, payload: payload)
+    }
+
+    private func handle(category: String, action: String?, payload: [String: String]) async {
+        guard let intent = PushIntent.parse(category: category, action: action, payload: payload, urlScheme: AppBrand.urlScheme) else { return }
+        await model?.perform(intent)
     }
 
     /// While the app is open the scene itself shows what happened; refresh and keep the banner quiet
@@ -69,7 +73,11 @@ final class NotificationCoordinator: NSObject, UNUserNotificationCenterDelegate 
         _ center: UNUserNotificationCenter, willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
         Task { @MainActor in await self.model?.refresh() }
-        return [.banner, .list, .sound]
+        return Self.foregroundOptions(identifier: notification.request.identifier)
+    }
+
+    nonisolated static func foregroundOptions(identifier: String) -> UNNotificationPresentationOptions {
+        identifier == ShieldPrompt.identifier ? [.banner, .list, .sound] : [.list]
     }
 }
 

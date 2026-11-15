@@ -122,7 +122,18 @@ public final class AppModel {
 
     // MARK: Lifecycle
 
+    /// Runs the launch once. A notification tap or link can arrive before the root view's
+    /// `.task` starts it (a cold launch from the lock screen); both then wait for the same launch.
     public func bootstrap() async {
+        if let launchTask { return await launchTask.value }
+        let task = Task { await self.launch() }
+        launchTask = task
+        await task.value
+    }
+
+    private var launchTask: Task<Void, Never>?
+
+    private func launch() async {
         session = await deps.backend.currentSession()
         if let session {
             // Purchases are tied to our user id so the server can share premium with the partner.
@@ -514,6 +525,7 @@ public final class AppModel {
 
     /// Carries out what a notification (or one of its buttons) asked for (06 §9).
     public func perform(_ intent: PushIntent) async {
+        await bootstrap()
         do {
             switch intent {
             case .answerUnlockRequest(let id, let approve):
@@ -539,6 +551,7 @@ public final class AppModel {
 
     /// Handles `couplesapp://…` links, invite universal links and the magic-link callback.
     public func open(_ url: URL) async {
+        await bootstrap()
         guard let link = DeepLink.parse(url, scheme: deps.brand.urlScheme, domain: deps.brand.websiteDomain) else { return }
         switch link {
         case .unlock:

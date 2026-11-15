@@ -2,6 +2,17 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-8 Unlock methods
+
+- One unlock sheet for every method (feature spec §6): pick a length (15, 30 or 60 minutes, default 30; premium steps in 15-minute increments), then scan your partner's code, ask your partner, type an accountability code, use your minutes, or take the emergency unlock. Unlocking while unlocked extends the window.
+- In person: "Show my code" shows a QR that changes every 30 seconds (TOTP from the pair secret in the Keychain). Scanning verifies it on the phone with no network, refuses a code already used, and records the unlock locally to sync later. Free, no limit.
+- Ask your partner: optional reason, the partner gets "Go for it" / "Let's wait" in the app and as notification buttons. "Let's wait" reads "Ana says let's wait — maybe later?"; no answer in 5 minutes reads "No answer this time. You can try again or use your minutes." The 6-digit accountability code from the email fallback can be typed in; too many wrong tries ends that request gently.
+- Minutes: spent from the balance, refused gently when the balance or the daily maximum would not allow it. Emergency: always offered, 15 minutes, once per rolling 7 days, may borrow; the partner sees a neutral note.
+- The Live Activity counts the window down; extending updates the running activity instead of starting a second one.
+- Fixes in this package: (1) answering from a notification button now waits for the answer to reach the server before returning to iOS, which can suspend an app it launched in the background as soon as the handler returns; (2) a notification tap or link that arrives on a cold launch, before the root view has started the launch, now waits for it instead of being dropped (the pause-screen "Ask Ana" → notification → unlock sheet path, device script 3); (3) while the app is open only the pause-screen prompt shows a banner, as the code's comment always said; other notifications go to the list and the scene shows what happened.
+- Tests: TOTP, QR unlock, ask-partner state machine and unlock rules in Core, QRCode and UnlockFeature; 1 new test for the cold-launch tap. UI tests for each method (`UnlockUITests`, 8): pause screen → unlock sheet, ask with "Go for it", ask with "Let's wait", accountability code, scan the partner's code, use minutes, emergency unlock without a partner, answering an incoming request. All 270 package tests and the 34 UI tests pass.
+- **Not verified:** actionable notifications and the Live Activity on a device; the email fallback, the 2-minute resend and the 3-requests-per-hour limit are server-side and wait for WP-4; the camera scanner (the Simulator stands in with a sample code).
+
 ## 2026-11-14 — WP-7 Blocking service
 
 - `BlockingService` with two implementations: `MockBlockingService` (the Simulator, the demo and every UI test) and `ScreenTimeBlockingService` (FamilyControls, ManagedSettings, DeviceActivity). Which one runs comes from `BLOCKING_SERVICE` in the xcconfig files or the `-blockingService` launch argument; the Simulator always uses the mock.

@@ -7,6 +7,19 @@ import Testing
 @testable import FeatureSupport
 
 @MainActor @Suite struct AppModelLifecycleTests {
+    /// Tapping the pause-screen notification can launch the app cold: the tap arrives before the
+    /// root view starts the launch, and must still open the unlock sheet.
+    @Test func notificationTapOnColdLaunchOpensTheUnlockSheet() async throws {
+        let app = await TestApp(launch: false)
+        #expect(app.model.phase == .launching)
+        await app.model.perform(.open(try #require(URL(string: "couplesapp://unlock"))))
+        #expect(app.model.phase == .ready)
+        #expect(app.model.sheet == .unlock)
+        // The root view's own launch afterwards is the same launch, not a second one.
+        await app.model.bootstrap()
+        #expect(app.model.sheet == .unlock)
+    }
+
     @Test func signedOutStartsOnboarding() async {
         let app = await TestApp(signedIn: false, paired: false, ready: false)
         #expect(app.model.phase == .onboarding && app.model.session == nil)
