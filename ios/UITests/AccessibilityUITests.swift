@@ -21,6 +21,24 @@ final class AccessibilityUITests: XCTestCase {
         "Profile, notifications, subscription, your data": "6.3:1 (row subtitle on paper)",
         "What shall we do?": "12.7:1 (display title on the dusk sky)",
         "Close": "8.5:1 (cream on the bar's glass button, BarButton)",
+        // Remaining screens (onboarding, Us, paywall, kudos), measured the same way:
+        "Up to 3 protected times with premium": "5.3:1",
+        "You both see the same choice.": "5.7:1",
+        "No passwords. Use your Apple ID, or we'll email you a link.": "5.7:1",
+        "Which apps you pause stays on your phone. Your partner never sees it.": "5.8:1",
+        "Minutes earned": "6.3:1",
+        "Off unless you turn it on": "6.3:1",
+        "One of you subscribes. Both of you get everything.": "6.4:1",
+        "Tap Social, and add any other apps you want paused. Phone, Messages, Maps and your bank are best left out.": "6.8:1",
+        "Everything here is mutual. You both get the same powers, and either of you can unpair at any time.": "6.8:1",
+        "So your partner's requests and kudos reach you.": "6.8:1",
+        "Your starting minutes arrive when you and your partner pair.": "8.4:1",
+        "Every day, your paused apps rest during these hours. You can change this later.": "8.9:1",
+        "Minutes open your paused apps during protected time. You earn more together, and each one lasts 7 days.": "8.9:1",
+        "Your protected time": "12.6:1",
+        "Let protected time pause your apps": "12.9:1",
+        "Tell Ana you noticed.": "13.0:1",
+        "Who are you pairing with?": "14.5:1",
         "60 min left to spend today (daily maximum 60 min).": "6.3:1 (caption on paper)",
         "5 more ideas, your own challenges and kudos": "13.0:1 (row title on the premium card)",
         "Pause the apps that pull you away, on a schedule you share. Unlock time together, never alone against the clock.":
@@ -58,11 +76,15 @@ final class AccessibilityUITests: XCTestCase {
                     print("A11Y-UNATTRIBUTED | \(screen) | contrast finding without an element")
                     return true
                 }
-                // System navigation-bar buttons cap their own text size; not ours to change.
-                if issue.auditType == .dynamicType, issue.element?.elementType == .button,
-                   ["unlock.close"].contains(issue.element?.identifier ?? "") { return true }
+                // System navigation-bar buttons (Close, Done) cap their own text size; not ours to change.
+                if issue.auditType == .dynamicType, let e = issue.element, e.elementType == .button,
+                   ["Close", "Done"].contains(e.label), e.frame.maxY < 140 { return true }
+                // Disabled controls are exempt from contrast requirements (WCAG 1.4.3, inactive
+                // components); their faded look tells the person they cannot be used yet.
+                if issue.auditType == .contrast, let e = issue.element, !e.isEnabled { return true }
                 let element = issue.element.map { "\($0.elementType.rawValue) id='\($0.identifier)' label='\($0.label)'" } ?? "none"
-                print("A11Y-ISSUE | \(screen) | \(issue.compactDescription) | \(element) | \(issue.detailedDescription)")
+                let frame = issue.element.map { f in "\(Int(f.frame.minX)),\(Int(f.frame.minY)),\(Int(f.frame.maxX)),\(Int(f.frame.maxY))" } ?? ""
+                print("A11Y-ISSUE | \(screen) | \(issue.compactDescription) | \(element) | frame=\(frame) | \(issue.detailedDescription)")
                 return false
             }
         } catch {
@@ -104,6 +126,92 @@ final class AccessibilityUITests: XCTestCase {
         let large = XCUIApplication.launched(scenario: "fresh", Self.largestText)
         large.waitFor("onboarding.start")
         audit(large, "Welcome, largest text")
+    }
+
+    /// Runs `body` at the default text size, then at the largest accessibility size.
+    @MainActor
+    private func atBothSizes(_ body: ([String], String) -> Void) {
+        body([], "")
+        body(Self.largestText, ", largest text")
+    }
+
+    @MainActor
+    func testUsScreens() {
+        atBothSizes { extra, size in
+            let week = XCUIApplication.launched(scenario: "paired", ["-partner", "silent"] + extra)
+            week.tap("place.us")
+            week.tap("us.week")
+            week.waitFor("report.together")
+            audit(week, "Our week" + size)
+
+            let schedule = XCUIApplication.launched(scenario: "paired", ["-partner", "silent"] + extra)
+            schedule.tap("place.us")
+            schedule.tap("us.schedule")
+            schedule.waitFor("schedule.row")
+            audit(schedule, "Protected time" + size)
+            schedule.tap("schedule.row")
+            schedule.waitFor("schedule.save")
+            audit(schedule, "Schedule editor" + size)
+
+            let settings = XCUIApplication.launched(scenario: "paired", ["-partner", "silent"] + extra)
+            settings.tap("place.us")
+            settings.tap("us.settings")
+            settings.waitFor("settings.name")
+            audit(settings, "Settings" + size)
+        }
+    }
+
+    @MainActor
+    func testPaywallAndKudos() {
+        atBothSizes { extra, size in
+            let paywall = XCUIApplication.launched(scenario: "paired", ["-partner", "silent"] + extra)
+            paywall.tap("place.together")
+            paywall.tap("challenges.premium")
+            paywall.waitFor("paywall.headline")
+            audit(paywall, "Paywall" + size)
+
+            let kudos = XCUIApplication.launched(scenario: "paired", ["-premium", "1", "-partner", "silent"] + extra)
+            kudos.tap("place.together")
+            kudos.tap("together.kudos")
+            kudos.waitFor("kudos.give")
+            audit(kudos, "Give kudos" + size)
+        }
+    }
+
+    /// Every onboarding step, from welcome to ready.
+    @MainActor
+    func testOnboardingSteps() {
+        atBothSizes { extra, size in
+            let app = XCUIApplication.launched(scenario: "fresh", ["-partner", "silent"] + extra)
+            app.tap("onboarding.start")
+            app.waitFor("signin.apple")
+            audit(app, "Sign in" + size)
+            app.tap("signin.apple")
+            app.waitFor("relationship.couple")
+            audit(app, "Relationship" + size)
+            app.tap("onboarding.next")
+            app.waitFor("pairing.invite")
+            audit(app, "Invite" + size)
+            app.tap("onboarding.next")
+            app.waitFor("onboarding.next")
+            audit(app, "Notifications" + size)
+            app.tap("onboarding.next")
+            app.waitFor("onboarding.next")
+            audit(app, "Screen Time" + size)
+            app.tap("onboarding.next")
+            app.waitFor("picker.category.social")
+            audit(app, "Choose apps" + size)
+            app.tap("picker.category.social")
+            app.tap("onboarding.next")
+            app.waitFor("schedule.start")
+            audit(app, "Protected time setup" + size)
+            app.tap("onboarding.next")
+            app.waitFor("minutes.starting")
+            audit(app, "Starting minutes" + size)
+            app.tap("onboarding.next")
+            app.waitFor("ready.line")
+            audit(app, "Ready" + size)
+        }
     }
 
     @MainActor

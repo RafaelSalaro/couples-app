@@ -24,6 +24,7 @@ public struct DSButtonStyle: ButtonStyle {
         configuration.label
             .textRole(.heading)
             .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true) // wrap, never cut off
             .foregroundStyle(foreground)
             .padding(.horizontal, Spacing.lg)
             .padding(.vertical, Spacing.sm)
@@ -44,8 +45,9 @@ public struct DSButtonStyle: ButtonStyle {
         switch kind {
         case .primary: .onHearth
         case .secondary: .ink
-        // On a dark sky a quiet button is cream, so it stays legible.
-        case .quiet: skyMoment != nil && SkyInk(moment: skyMoment, scheme: scheme).isDark ? SkyInk(moment: skyMoment, scheme: scheme).primary : .hearth
+        // On a sky a quiet button takes the sky's own text color (cream at dusk, deep brown in
+        // daylight and golden hour), so it stays legible over the whole gradient; Hearth on paper.
+        case .quiet: skyMoment != nil ? SkyInk(moment: skyMoment, scheme: scheme).primary : .hearth
         case .glow: .onGlow
         case .onDusk: .dusk
         case .destructive: .surfaceRaised

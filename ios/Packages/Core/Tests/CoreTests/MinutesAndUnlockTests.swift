@@ -383,3 +383,61 @@ import Testing
         #expect(BackendError(rawCode: "weird").code == .unknown)
     }
 }
+
+/// Edge cases kept in step with supabase/tests/edge_cases_test.sql, so the phone's mirror of
+/// the ledger and the schedule agree with the server at the corners.
+@Suite struct LedgerAndPhaseEdgeTests {
+    let calendar = Calendar.gregorian(in: newYork)
+
+    /// 1 November 2026: clocks go back in New York, so the local day lasts 25 hours.
+    @Test func dailyMaximumHoldsAcrossTheFallBackDay() throws {
+        var l = MinutesLedger(userID: UUID())
+        let morning = local(2026, 10, 31, 12, 0)
+        l.grant(60, type: .earnChallenge, now: morning, calendar: calendar)
+        l.grant(60, type: .earnChallenge, now: morning, calendar: calendar)
+        let earlyFallBack = Date(timeIntervalSince1970: 1_793_507_400) // 2026-11-01 04:30 UTC = 00:30 EDT
+        try l.spend(45, dailyMax: 60, now: earlyFallBack, calendar: calendar)
+        let lateFallBack = local(2026, 11, 1, 23, 30) // 25 hours of local day later, still 1 November
+        #expect(throws: MinutesError.overDailyMax) { try l.spend(30, dailyMax: 60, now: lateFallBack, calendar: calendar) }
+        try l.spend(15, dailyMax: 60, now: local(2026, 11, 2, 0, 10), calendar: calendar)
+    }
+
+    @Test func aCreditExactlyEqualToTheDebtLeavesZero() {
+        var l = MinutesLedger(userID: UUID())
+        let t0 = local(2026, 10, 10, 20, 0)
+        l.borrow(15, now: t0, calendar: calendar)
+        l.grant(15, type: .earnKudos, now: t0.addingTimeInterval(86400), calendar: calendar)
+        #expect(l.debt == 0 && l.balance == 0 && l.openLots.isEmpty)
+        #expect(throws: MinutesError.insufficient) { try l.spend(15, dailyMax: 60, now: t0.addingTimeInterval(86400), calendar: calendar) }
+    }
+
+    @Test func expiryIsExactToTheInstant() throws {
+        var l = MinutesLedger(userID: UUID())
+        let t0 = local(2026, 10, 5, 21, 0)
+        l.grant(20, type: .earnKudos, now: t0, calendar: calendar)
+        let expiry = t0.addingTimeInterval(7 * 86400)
+        #expect(throws: MinutesError.insufficient) { try l.spend(15, dailyMax: 60, now: expiry, calendar: calendar) }
+        var earlier = MinutesLedger(userID: UUID())
+        earlier.grant(20, type: .earnKudos, now: t0, calendar: calendar)
+        try earlier.spend(15, dailyMax: 60, now: expiry.addingTimeInterval(-1), calendar: calendar)
+    }
+
+    /// An unlock that runs past the end of protected time ends with protected time: apps are
+    /// open either way, and widgets see one change at 9:00, not a second one when the unlock ends.
+    @Test func anUnlockOutlastingProtectedTimeEndsWithIt() {
+        var state = SharedState()
+        state.schedules = [.standard()]
+        state.protectionConfigured = true
+        let start = local(2026, 11, 11, 8, 30)
+        state.activeUnlock = ActiveUnlock(id: UUID(), startedAt: start, endsAt: start.addingTimeInterval(60 * 60))
+        let nine = local(2026, 11, 11, 9, 0)
+        #expect(state.phase(at: start.addingTimeInterval(60), timeZone: newYork) == .unlocked(until: nine))
+        guard case .open = state.phase(at: nine.addingTimeInterval(60), timeZone: newYork) else {
+            Issue.record("after 9:00 protected time is over")
+            return
+        }
+        let changes = state.phaseChanges(after: start.addingTimeInterval(60), timeZone: newYork, limit: 2)
+        #expect(changes.first == nine)
+        #expect(changes.count == 2 && changes[1] == local(2026, 11, 11, 18, 0))
+    }
+}

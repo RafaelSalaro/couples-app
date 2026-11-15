@@ -8,9 +8,7 @@ Everything is on `main`; there is no work in progress on any branch.
 
 | Branch | State |
 |---|---|
-| `main` | All finished and tested work. Last commit: `WP-4: Edge Functions; WP-12 backend side` |
-| `lane-a-wip`, `lane-b-wip`, `wp4-wip`, `w3-redesign` (GitHub) | Merged into `main` (squashed); can be deleted |
-| `.claude/worktrees/agent-*` | Local checkouts of those branches; can be removed |
+| `main` | All finished and tested work; the only branch (the merged lane branches and worktrees were removed on 2026-11-15) |
 
 ## 2. Work packages
 
@@ -29,7 +27,7 @@ Everything is on `main`; there is no work in progress on any branch.
 | WP-14 Accessibility, App Store package | Done in code: accessibility audit (4 UI tests), privacy manifests, demo-account script; reviewer sign-in, screen recording and device checks open |
 | Backend security review | Not started |
 
-Test counts at this state: iOS 271 package tests and 38 UI tests, no warnings from our code (Simulator and an unsigned Release device build); backend 145 pgTAP assertions, the concurrency script, 28 Deno tests including 2 integration tests against the local stack.
+Test counts at this state: iOS 275 package tests and 41 UI tests, no warnings from our code (Simulator and an unsigned Release device build); backend 169 pgTAP assertions, the concurrency script, 28 Deno tests including 2 integration tests against the local stack.
 
 ## 3. Next steps, in order
 
@@ -51,6 +49,7 @@ Unchanged from the previous handoff (analytics, the word "block" for SEO, App St
 
 - **Photo on a completed challenge** (spec §8) and the **profile photo**: both need a storage contract in doc 05.
 - **Ranges** for the reset amount and the starting balance: bounded 0–60 minutes as a placeholder (E14).
+- **Emergency unlock with minutes in hand:** the server takes the 15 minutes from the balance first and records debt only for any shortfall (with 40 minutes: balance 25, no debt, spending allowed). The iPhone app's offline mirror (`MinutesLedger`, used by the demo) records the full 15 as debt (balance 25, spending blocked until 15 are earned back). Spec §6.4 ("the balance can go negative and must be earned back") reads most naturally as the server's behaviour, but does not say. Production follows the server; decide, and the other side is changed to match.
 
 ## 6. Founder to-do (not code)
 

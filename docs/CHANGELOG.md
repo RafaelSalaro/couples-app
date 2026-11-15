@@ -2,6 +2,19 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-15 — Accessibility on every screen, edge-case tests, cleanup
+
+- The accessibility audit now covers every screen: added the weekly report, protected time and its editor, settings, the paywall, the kudos sheet and every onboarding step, each at the default and the largest text size (3 new UI tests, 7 in all, all passing).
+- Real problems found and fixed:
+  - On every onboarding step that uses the standard layout, the bottom button and its caption were cut off at accessibility sizes ("Continue on my own for…"). The actions now scroll with the content at those sizes, and button labels wrap rather than truncate.
+  - Quiet buttons ("Not now", "Email me a link") were Hearth red on the golden-hour sky, about 3:1; on any sky they now take the sky's own text color (9.2:1 measured).
+  - The simulated app picker's note used the paper text color on the sky (4.35:1); it now uses the sky's muted ink.
+- Audit rules added: disabled controls are exempt from contrast (WCAG 1.4.3, inactive components), and the system's size cap on navigation-bar Close/Done buttons is accepted in every sheet. Contrast findings on the new screens were measured from the screenshots, each element's frame read from the audit, and listed in the test with their ratios (lowest 5.3:1).
+- Strings: the String Catalogs were missing 17 strings, nearly all that name the partner, because the extraction pattern ended a string at a quote inside an interpolation (`\(partnerName ?? "")`); English still showed, but translators would never have seen them and `--check` could not notice. `scripts/ios-strings.sh` now reads Swift string literals properly and checks itself on every run.
+- Edge-case tests (docs/12 §6 item 1): 24 pgTAP assertions in `edge_cases_test.sql` (expiry exact to the instant, the daily maximum exactly at the limit and on the 25-hour fall-back day, a lowered maximum, debt at its boundaries, a ledger-integrity check that every person's ledger rows explain their balance after a long mixed history and after unpairing, an expired request refusing the right code, QR counters per pair, a window starting in the skipped spring-forward hour, the kudos cap by the giver's local day); the integrity check was itself shown to catch a stray ledger row. 4 matching Core tests on the iPhone side. Backend: 169 pgTAP assertions pass.
+- Found while writing them, **a question for the founder, not changed**: with minutes in hand, the server's emergency unlock takes the 15 minutes from the balance (debt only for a shortfall), while the iPhone app's offline mirror of the ledger records the full 15 as debt and blocks spending until it is earned back. Production follows the server. Recorded in `docs/HANDOFF.md` §5.
+- Cleanup: the merged branches `lane-a-wip`, `lane-b-wip`, `wp4-wip` and `w3-redesign` were deleted on GitHub and locally, and the three worktrees removed, after checking that every file each branch touched is on `main` (identical, or later changed on `main` with the branch's version in its history).
+
 ## 2026-11-15 — WP-14 Accessibility and App Store package
 
 - Accessibility audit: `AccessibilityUITests` runs Xcode's audit (contrast, labels, element size, Dynamic Type, clipped text, traits) on Tonight, the unlock sheet, Together, Us, Minutes, the welcome screen and Tonight before protected time, at the default text size and the largest accessibility size. All 4 tests pass. Each audited screen is attached to the test result as a screenshot.

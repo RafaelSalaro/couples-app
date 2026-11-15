@@ -64,19 +64,27 @@ public struct CenteredScaffold<Content: View, Actions: View>: View {
         self.actions = actions()
     }
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     public var body: some View {
+        let pinned = !typeSize.isAccessibilitySize
         VStack(spacing: 0) {
             GeometryReader { proxy in
                 ScrollView {
-                    VStack(spacing: Spacing.lg) { content }
-                        .padding(Spacing.lg)
-                        .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+                    VStack(spacing: Spacing.lg) {
+                        content
+                        if !pinned { VStack(spacing: Spacing.xs) { actions } }
+                    }
+                    .padding(Spacing.lg)
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }
                 .scrollBounceBehavior(.basedOnSize)
             }
-            VStack(spacing: Spacing.xs) { actions }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.bottom, Spacing.lg)
+            if pinned {
+                VStack(spacing: Spacing.xs) { actions }
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.bottom, Spacing.lg)
+            }
         }
     }
 }
@@ -94,20 +102,30 @@ public struct StepScaffold<Content: View, Actions: View>: View {
         self.actions = actions()
     }
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     public var body: some View {
+        // The actions sit below the scrolling content; at accessibility sizes they would take
+        // most of the screen and be cut off, so they scroll with the content instead.
+        let pinned = !typeSize.isAccessibilitySize
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: Spacing.md) {
                     SkyText(title, role: .title).accessibilityAddTraits(.isHeader)
                     if let subtitle { SkyText(subtitle, role: .body, muted: true) }
                     content
+                    if !pinned {
+                        VStack(spacing: Spacing.xs) { actions }.padding(.top, Spacing.md)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(Spacing.lg)
             }
-            VStack(spacing: Spacing.xs) { actions }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.sm)
+            if pinned {
+                VStack(spacing: Spacing.xs) { actions }
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.sm)
+            }
         }
     }
 }

@@ -58,9 +58,12 @@ struct MockPausedAppsPicker: View {
                 .accessibilityAddTraits(isOn ? [.isSelected] : [])
                 .accessibilityIdentifier("picker.\(item.id)")
             }
-            Text(L("Simulated list. On a real iPhone this is Apple's app picker."))
-                .textRole(.caption)
-                .foregroundStyle(Color.inkMuted)
+            // On the sky (onboarding) the sky's muted ink keeps 4.5:1 across the gradient; on paper it is inkMuted.
+            SkyReader { ink in
+                Text(L("Simulated list. On a real iPhone this is Apple's app picker."))
+                    .textRole(.caption)
+                    .foregroundStyle(ink.muted)
+            }
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
