@@ -133,7 +133,7 @@ Links were valid for 60 minutes and could be re-sent every second. They are now 
 
 ## Production checklist (outside the repository)
 
-1. Supabase dashboard → Authentication: confirm email on; magic link expiry 15 minutes; email rate limit as in `config.toml`; site URL the real domain; redirect URLs the real domain and `<scheme>://login-callback` only; Apple provider configured; custom SMTP (Resend) so auth emails are not capped by the default sender.
+1. *(Done 2026-11-15 except the real domain, custom SMTP and Apple, which wait for those accounts.)* Supabase dashboard → Authentication: confirm email on; magic link expiry 15 minutes; email rate limit as in `config.toml`; site URL the real domain; redirect URLs the real domain and `<scheme>://login-callback` only; Apple provider configured; custom SMTP (Resend) so auth emails are not capped by the default sender.
 2. Secrets: set every value in `supabase/README.md` (the APNs `.p8` contents, Resend, RevenueCat webhook value, `CRON_SECRET`). Rotate any that were shared in chat or email.
 3. Vault: `functions_url` and `cron_secret` for the scheduled sender.
 4. Deploy functions with `config.toml` (F7), and confirm the five public functions answer without a JWT and every other function refuses without one.
