@@ -26,16 +26,16 @@ Everything is on `main`; there is no work in progress on any branch.
 | WP-11 Real device Screen Time | Code-only part done; device scripts 1–17 open |
 | WP-12 Purchases | App and backend done; sandbox purchases open |
 | WP-13 Widgets and notifications | Done; manual device checks open |
-| WP-14 Accessibility, App Store package | Not started |
+| WP-14 Accessibility, App Store package | Done in code: accessibility audit (4 UI tests), privacy manifests, demo-account script; reviewer sign-in, screen recording and device checks open |
 | Backend security review | Not started |
 
-Test counts at this state: iOS 271 package tests and 34 UI tests, no warnings from our code (Simulator and an unsigned Release device build); backend 145 pgTAP assertions, the concurrency script, 28 Deno tests including 2 integration tests against the local stack.
+Test counts at this state: iOS 271 package tests and 38 UI tests, no warnings from our code (Simulator and an unsigned Release device build); backend 145 pgTAP assertions, the concurrency script, 28 Deno tests including 2 integration tests against the local stack.
 
 ## 3. Next steps, in order
 
 1. **Backend security review** (`docs/security-review-backend.md`, not written yet). `CLAUDE.md` reserves security reviews for Fable. Worth a close look: every `security definer` function, the public functions (`waitlist_join`, `waitlist_confirm`, `respond_unlock_by_token`), the public realtime channel (E15), the `pair_secrets` read (E14), and that no `api_*` function trusts anything the client sends beyond its own id.
 2. **Run the iPhone app against a real Supabase project.** `SupabaseBackend` was matched to the functions by reading its calls, and the integration tests cover the main path, but the app has never talked to the real backend. Needs a Supabase project (founder).
-3. **WP-14**: accessibility audit, privacy manifest, review notes, demo accounts.
+3. **App Review leftovers** (WP-14): a reviewer sign-in path without a mailbox (founder question 5), then run  on production and record the screen video.
 4. With the Apple developer account: WP-11 device scripts, WP-12 sandbox purchases, WP-13 manual checks, APNs key.
 
 ## 4. Useful facts
