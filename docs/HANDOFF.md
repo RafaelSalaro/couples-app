@@ -35,7 +35,7 @@ Test counts at this state: iOS 271 package tests and 38 UI tests, no warnings fr
 
 1. **Backend security review** (`docs/security-review-backend.md`, not written yet). `CLAUDE.md` reserves security reviews for Fable. Worth a close look: every `security definer` function, the public functions (`waitlist_join`, `waitlist_confirm`, `respond_unlock_by_token`), the public realtime channel (E15), the `pair_secrets` read (E14), and that no `api_*` function trusts anything the client sends beyond its own id.
 2. **Run the iPhone app against a real Supabase project.** `SupabaseBackend` was matched to the functions by reading its calls, and the integration tests cover the main path, but the app has never talked to the real backend. Needs a Supabase project (founder).
-3. **App Review leftovers** (WP-14): a reviewer sign-in path without a mailbox (founder question 5), then run  on production and record the screen video.
+3. **App Review leftovers** (WP-14): a reviewer sign-in path without a mailbox (founder question 5), then run `supabase/demo/review_accounts.sql` on production and record the screen video.
 4. With the Apple developer account: WP-11 device scripts, WP-12 sandbox purchases, WP-13 manual checks, APNs key.
 
 ## 4. Useful facts
