@@ -31,7 +31,7 @@ Test counts at this state: iOS 275 package tests and 41 UI tests, no warnings fr
 
 ## 3. Next steps, in order
 
-1. **Run the iPhone app against a real Supabase project**, then work through the production checklist in `docs/security-review-backend.md`. `SupabaseBackend` was matched to the functions by reading its calls, and the integration tests cover the main path, but the app has never talked to the real backend. Needs a Supabase project (founder).
+1. **Supabase project is live** (free plan, see `supabase/README.md` → Production project): migrations, seeds and the 27 functions deployed; 185 pgTAP assertions pass against production; `./scripts/live-smoke.sh` runs the app's main path against the deployed functions and passes. The Debug build of the app now uses it (`ios/Config/Secrets.xcconfig.local`, git-ignored). **Founder:** set four Auth values in the dashboard (Authentication → URL Configuration: site URL, redirect `couplesapp://login-callback`; Sign In / Providers → Email: link expiry 900 seconds, minimum password length 12); then add APNs, Resend and RevenueCat when those accounts exist, and only then the two Vault secrets for the scheduled sender.
 2. **App Review leftovers** (WP-14): a reviewer sign-in path without a mailbox (founder question 5), then run `supabase/demo/review_accounts.sql` on production and record the screen video.
 3. With the Apple developer account: WP-11 device scripts, WP-12 sandbox purchases, WP-13 manual checks, APNs key.
 
