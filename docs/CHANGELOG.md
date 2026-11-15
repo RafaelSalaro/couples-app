@@ -2,6 +2,16 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-15 — Backend security review
+
+- Full review of the database (grants, RLS, every function clients can call, every `security definer` function), the Edge Functions, Supabase Auth settings and secrets: `docs/security-review-backend.md`. Done with Opus at the founder's request (CLAUDE.md reserves reviews for Fable).
+- **Most important finding: four of the app's direct database calls would fail in production with 403** — registering a push token (so no push would ever arrive), saving settings, reporting that protected time is off, and reading unlock requests. Found by replaying the app's exact calls against the local REST API with a real user token; fixed (the request secrets moved to a server-only table, two column grants, the app saves settings with an update) and replayed again: all succeed.
+- Fixed: invite codes could be guessed without limit (now 10 tries an hour, failed tries included); accounts could be created for an unproven email address (confirmation now required; magic links last 15 minutes, one per minute); the partner was never told when protected time goes off and the day did not break the streak (server trigger, which also stamps the time); the waitlist rate limit trusted a client header; deploy relied on remembering `--no-verify-jwt` for five functions (now in `config.toml`); kudos could point at another pair's challenge; unbounded schedule proposals; rate-limit rows never removed; the anonymous role could execute the RLS helpers.
+- Verified unchanged: no client can call the minutes engine; every `security definer` function pins its `search_path`; RLS on every table; secrets stored only as hashes; the JWT, not the body, names the caller; no secrets in the repository.
+- Accepted risks, listed with reasons in the report: public realtime channels (only table and id), push-token takeover by someone who knows a device token, unlimited own `events` rows, time-zone changes moving "today", debt forgiven by unpairing, offline QR unlocks taken on the phone's word, two-step account deletion.
+- Tests: 16 new regression tests (`security_review_test.sql`); 185 pgTAP assertions, the concurrency script and 28 Deno tests (with the integration tests) pass; the iPhone app builds and its 43 Backend tests pass.
+- **Production checklist** in the report (dashboard Auth settings, secrets, Vault, deploy check, backups) — needs the Supabase project.
+
 ## 2026-11-15 — Accessibility on every screen, edge-case tests, cleanup
 
 - The accessibility audit now covers every screen: added the weekly report, protected time and its editor, settings, the paywall, the kudos sheet and every onboarding step, each at the default and the largest text size (3 new UI tests, 7 in all, all passing).

@@ -115,9 +115,9 @@ public final class SupabaseBackend: Backend, @unchecked Sendable {
         return try await mapped {
             let found = try rows(UserProfile.self, try await client.from("profiles").select().eq("id", value: me).execute().data)
             if let profile = found.first { return profile }
-            let fresh = UserProfile(id: me, timeZone: timeZone().identifier, locale: Locale.current.identifier)
-            try await client.from("profiles").upsert(fresh, onConflict: "id").execute()
-            return fresh
+            // The profile row is created with the account (database trigger); clients cannot
+            // insert one. Until it is visible, work from the defaults.
+            return UserProfile(id: me, timeZone: timeZone().identifier, locale: Locale.current.identifier)
         }
     }
 
@@ -147,12 +147,13 @@ public final class SupabaseBackend: Backend, @unchecked Sendable {
     public func updateSettings(_ settings: UserSettings) async throws {
         let me = try userID()
         let row: [String: JSONValue] = [
-            "user_id": .string(me.uuidString),
             "daily_max_minutes": .int(settings.dailyMaxMinutes),
             "starting_minutes": .int(settings.startingMinutes),
             "notification_prefs": .from(settings.notificationPrefs),
         ]
-        try await mapped { try await client.from("user_settings").upsert(row, onConflict: "user_id").execute() }
+        // An update, not an upsert: the settings row is created with the account, and clients
+        // may update their own row but not insert one.
+        try await mapped { try await client.from("user_settings").update(row).eq("user_id", value: me).execute() }
     }
 
     // MARK: Pairing

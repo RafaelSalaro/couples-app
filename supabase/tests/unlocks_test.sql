@@ -14,7 +14,7 @@ create temp table req as
 select (public.api_create_unlock_request(rafa, 30, 'Reply to a client', tests.at('2026-11-10 20:00')) ->> 'id')::uuid as id from t;
 select is((select expires_at from public.unlock_requests where id = (select id from req)),
   tests.at('2026-11-10 20:05'), 'a request is valid for 5 minutes');
-select is((select code_hash from public.unlock_requests where id = (select id from req)), null,
+select is((select code_hash from public.unlock_request_secrets where request_id = (select id from req)), null,
   'no accountability code exists until the email fallback is sent');
 select is((select count(*)::int from public.notifications_outbox where kind = 'unlock_request' and user_id = (select ana from t)),
   1, 'the partner gets a push');
@@ -63,7 +63,7 @@ select (public.api_create_unlock_request(ana, 15, null, tests.at('2026-11-11 20:
 create temp table code as
 select public.issue_unlock_email_secrets(id, tests.at('2026-11-11 20:02')) ->> 'code' as code from req3;
 select matches((select code from code), '^[0-9]{6}$', 'the email carries a 6-digit code');
-select is((select code_hash from public.unlock_requests where id = (select id from req3)),
+select is((select code_hash from public.unlock_request_secrets where request_id = (select id from req3)),
   public.sha256_hex((select code from code)), 'only its hash is stored');
 select is(public.issue_unlock_email_secrets((select id from req3), tests.at('2026-11-11 20:03')), null,
   'the code is issued once');

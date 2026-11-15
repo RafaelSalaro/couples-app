@@ -112,6 +112,8 @@ Exceptions where clients may write directly: `profiles` (own row), `user_setting
 
 Reads beyond the pattern (E14): current pair members may read their pair's row in `pair_secrets` (both phones need the QR secret; the inviter never calls `accept_invite`). The view `pair_premium` shows the caller's own current pair while its premium is on.
 
+The accountability code's hash and the email approve token's hash live in `unlock_request_secrets`, which no client can read; members read the whole `unlock_requests` row (security review F1). A phone reports protected time off by writing `profiles.protected_time_off_since`; the server stamps the time, tells the partner and breaks the day's streak (F4).
+
 Each Edge Function is a thin wrapper around one SQL function `api_<name>(p_user, …)` in the migrations, which holds the rules and is executable only by the service role (E14).
 
 ## 3. Edge Functions (HTTPS, JSON, caller's JWT required)
@@ -119,7 +121,7 @@ Each Edge Function is a thin wrapper around one SQL function `api_<name>(p_user,
 | Function | Input | Effect | Errors |
 |---|---|---|---|
 | `create_invite` | — | Returns `{code, link}`; stores hashes | already_paired |
-| `accept_invite` | `{code \| link_token}` | Creates pair, members, starting grants, coverage if any, returns pair + QR secret | invalid, expired, already_paired |
+| `accept_invite` | `{code \| link_token}` | Creates pair, members, starting grants, coverage if any, returns pair + QR secret; at most 10 tries per person per hour | invalid, expired, already_paired, rate_limited |
 | `revoke_invite` | — | Cancels the caller's open invite | — |
 | `unpair` | — | Ends pair, resets active minutes, cancels pending items, notifies partner | not_paired |
 | `rotate_qr_secret` | — | New secret version, pushes to both | — |

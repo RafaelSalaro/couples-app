@@ -4,7 +4,10 @@ import { ApiError, fromDatabaseError, readBody, respond } from "../_shared/http.
 import { adminClient } from "../_shared/supabase.ts";
 
 async function clientKey(req: Request): Promise<string> {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? req.headers.get("cf-connecting-ip") ?? "unknown";
+  // The first X-Forwarded-For entry is whatever the client sent; the last one was added by
+  // the platform's proxy in front of the function, so it is the one to rate-limit on.
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
+  const ip = forwarded.at(-1) ?? req.headers.get("cf-connecting-ip") ?? "unknown";
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`waitlist:${ip}`));
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }

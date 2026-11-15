@@ -15,12 +15,10 @@ select is((select code_hash from public.invites where id = (select (v ->> 'id'):
   public.sha256_hex((select v ->> 'code' from inv)), 'only hashes of the code and link are stored');
 select is((select expires_at from public.invites where id = (select (v ->> 'id')::uuid from inv)),
   tests.at('2026-11-04 10:00'), 'an invite lasts 72 hours');
-select throws_ok(
-  format($q$select public.api_accept_invite(%L, %L, %L)$q$, (select rafa from t), (select v ->> 'code' from inv), tests.at('2026-11-01 10:05')),
-  'CAERR', 'invalid', 'nobody can accept their own invite');
-select throws_ok(
-  format($q$select public.api_accept_invite(%L, %L, %L)$q$, (select ana from t), (select v ->> 'code' from inv), tests.at('2026-11-04 10:00')),
-  'CAERR', 'expired', 'an invite cannot be used after 72 hours');
+select is(public.api_accept_invite((select rafa from t), (select v ->> 'code' from inv), tests.at('2026-11-01 10:05')) ->> 'error',
+  'invalid', 'nobody can accept their own invite');
+select is(public.api_accept_invite((select ana from t), (select v ->> 'code' from inv), tests.at('2026-11-04 10:00')) ->> 'error',
+  'expired', 'an invite cannot be used after 72 hours');
 
 create temp table acc as
 select public.api_accept_invite(ana, lower(v ->> 'code'), tests.at('2026-11-01 10:10')) as v from t, inv;
