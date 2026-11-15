@@ -2,6 +2,16 @@
 
 Newest first. One short entry per work package.
 
+## 2026-11-14 — WP-10 Home, schedule, reports, settings
+
+- Home scene (Tonight): both balances, today's protected time on the evening arc, the shared streak and recent activity, under the sky that follows protected time. The partner's status is neutral ("Protected time is off on Ana's phone"), never usage.
+- Us place: one list leading to minutes, the week, protected time and settings.
+- Schedule editor: start, end, days. Stricter changes (more hours, more days, more apps) apply now; looser ones ask the partner ("Ana would like protected time to start at 7 PM"), who can approve or "Let's talk". Unpaired, every change applies now. Premium allows up to 3 schedules. Paused apps open Apple's picker (the simulated one in the Simulator); fewer apps counts as looser.
+- Weekly report: side by side and combined numbers, current week only on free; history, highlights and a trend on premium. The private card shows the person's own time in their paused apps through Apple's report extension, drawn inside its sandbox and never sent anywhere (decision T4); in the Simulator it explains what it will show.
+- Settings: name, partner and unpair, relationship, daily maximum (15–240), notification categories (unlock and schedule requests cannot be muted), the weekly report email (off by default), subscription, export my data (a JSON file to share), delete account in two steps with the note that an Apple subscription is not cancelled and where to cancel it, privacy policy, terms, support and relationship safety, sign out.
+- Tests: Reports 4, Schedule 7, Settings 9 model tests; `UsUITests` 10: home scene, neutral partner status, schedule editor and approval, the partner's schedule request, paused apps, weekly report, settings, delete account, paywall trial purchase, restore and cancel. All 271 package tests and the 34 UI tests pass.
+- **Not verified:** account deletion against the real backend (acceptance asks for it; only the in-memory backend exists until WP-4, so `deleteAccount` is verified there, including that the partner is unpaired); the report extension on a device. The 24-hour expiry of pending schedule changes is a server rule (WP-3/4). Profile photo is still not built (needs a storage contract in doc 05).
+
 ## 2026-11-14 — WP-9 Minutes, challenges, kudos
 
 - Together, the third place: the challenge library by category (the 5 free presets; the full library for premium, a calm preview otherwise), challenge detail with "Done" and an optional note (280 characters), the partner's completions to confirm with one tap, and kudos.
