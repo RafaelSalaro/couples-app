@@ -101,8 +101,12 @@ final class UnlockUITests: XCTestCase {
         app.waitFor("unlock.started")
         app.tap("unlock.done")
         XCTAssertEqual(app.waitFor("home.myBalance").label, "You: 15 min")
+        // Ending early asks first and says the unused minutes come back (P26).
         app.tap("home.endUnlock")
+        app.waitForText("go back to your balance")
+        app.tap("home.endUnlock.confirm")
         app.waitFor("home.ring.protected")
+        XCTAssertEqual(app.waitFor("home.myBalance").label, "You: 29 min") // 1 minute counted as used
     }
 
     /// Emergency unlock: always available, even alone with zero minutes; once a week; balance goes negative.
@@ -114,14 +118,22 @@ final class UnlockUITests: XCTestCase {
         // Partner methods say what is missing.
         XCTAssertFalse(app.waitFor("unlock.method.ask").isEnabled)
         app.tap("unlock.method.emergency")
+        app.waitForText("15 min of your 15 min emergency minutes left this week")
         app.tap("emergency.use")
         app.waitFor("unlock.started")
         app.tap("unlock.done")
-        XCTAssertEqual(app.waitFor("home.myBalance").label, "You: -15 min")
-        app.tap("home.unlock")
-        app.tap("unlock.method.emergency")
-        XCTAssertFalse(app.waitFor("emergency.use").isEnabled)
-        app.waitForText("Used this week")
+        // Nothing is borrowed while it runs (P14).
+        XCTAssertEqual(app.waitFor("home.myBalance").label, "You: 0 min")
+        // Ending early: a confirmation says what stays available, then only the minute used is borrowed.
+        app.tap("home.endUnlock")
+        app.waitForText("of your 15 min emergency minutes this week")
+        app.tap("home.endUnlock.confirm")
+        let balance = app.waitFor("home.myBalance")
+        expectation(for: NSPredicate(format: "label == %@", "You: -1 min"), evaluatedWith: balance)
+        waitForExpectations(timeout: 10)
+        app.tap("home.emergency")
+        app.waitForText("14 min of your 15 min emergency minutes left this week")
+        XCTAssertTrue(app.element("unlock.method.emergency").isEnabled)
     }
 
     /// The partner asks; the user answers "Go for it" from the request card.

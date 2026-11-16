@@ -30,6 +30,7 @@ Deno.test("every function of doc 05 §3 the app calls has an endpoint", () => {
     "respond_unlock_request", "redeem_accountability_code", "spend_minutes_unlock", "emergency_unlock", "sync_qr_unlocks",
     "complete_challenge", "confirm_completion", "create_custom_challenge", "respond_challenge_value", "give_kudos",
     "propose_reset", "respond_reset", "propose_schedule_change", "respond_schedule_change", "export_my_data", "delete_account",
+    "end_unlock_early",
   ];
   assertEquals(Object.keys(endpoints).sort(), expected.sort());
   for (const name of expected) assertEquals(endpoints[name].rpc, `api_${name}`);
@@ -115,4 +116,14 @@ Deno.test("only POST; CORS preflight answers for allowed origins only", async ()
   assertEquals((await apiHandler("unpair", deps)(new Request("http://x", { method: "GET" }))).status, 405);
   assertEquals(corsHeaders("https://example.com", ["https://example.com"])["access-control-allow-origin"], "https://example.com");
   assertEquals(corsHeaders("https://evil.test", ["https://example.com"])["access-control-allow-origin"], undefined);
+});
+
+Deno.test("end_unlock_early takes the unlock id and returns the ended unlock", async () => {
+  const UNLOCK = "33333333-3333-4333-8333-333333333333";
+  const { deps, calls } = fakeDeps({ data: { unlock: { id: UNLOCK, minutes_used: 2 }, refunded: 0, emergency: { remaining: 13 } } });
+  const res = await apiHandler("end_unlock_early", deps)(post({ unlock_id: UNLOCK, client_event_id: ME }));
+  assertEquals(calls[0], { fn: "api_end_unlock_early", args: { p_user: ME, p_unlock: UNLOCK } });
+  assertEquals((await res.json()).data, { id: UNLOCK, minutes_used: 2 });
+  const missing = await apiHandler("end_unlock_early", deps)(post({}));
+  assertEquals((await missing.json()).error.code, "invalid_input");
 });

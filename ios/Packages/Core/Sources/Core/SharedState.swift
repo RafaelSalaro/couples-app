@@ -200,7 +200,8 @@ public struct BackendError: Error, Equatable, Sendable {
         case insufficient
         case overDailyMax = "over_daily_max"
         case inDebt = "in_debt"
-        case usedThisWeek = "used_this_week"
+        case allowanceUsedUp = "allowance_used_up"
+        case notActive = "not_active"
         case duplicateCounter = "duplicate_counter"
         case premiumRequired = "premium_required"
         case dailyCap = "daily_cap"

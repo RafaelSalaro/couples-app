@@ -63,6 +63,16 @@ Deno.test({ name: "pairing, asking, answering and spending through the real func
   // Errors arrive as codes the app knows.
   assertEquals((await call("spend_minutes_unlock", ana, { minutes: 60, client_event_id: crypto.randomUUID() })).error?.code, "insufficient");
   assertEquals((await call("give_kudos", ana, { minutes: 10, message: "Thanks" })).error?.code, "premium_required");
+
+  // Emergency (P14, P26): a session for the allowance; ending early borrows only what was used.
+  const emergency = await call("emergency_unlock", ana, { client_event_id: crypto.randomUUID() });
+  assert(emergency.ok && emergency.data!.minutes === 15, JSON.stringify(emergency));
+  const ended = await call("end_unlock_early", ana, { unlock_id: emergency.data!.id });
+  assert(ended.ok && ended.data!.minutes_used === 1, JSON.stringify(ended));
+  const { data: after } = await adminClient().rpc("balance_of", { p_user: ana.id });
+  assertEquals(after, 14, "15 left, 1 borrowed for the minute used");
+  const { data: status } = await adminClient().rpc("emergency_status", { p_user: ana.id });
+  assertEquals((status as { remaining: number }).remaining, 14);
   assertEquals((await call("spend_minutes_unlock", ana, { minutes: "lots" })).error?.code, "invalid_input");
 
   // Unpair, then delete both accounts (also cleans up).

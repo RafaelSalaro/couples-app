@@ -69,7 +69,10 @@ public final class AppModel {
     public private(set) var challenges: [Challenge] = []
     public private(set) var completions: [ChallengeCompletion] = []
     public private(set) var activity: [ActivityItem] = []
-    public private(set) var lastEmergencyUnlock: Date?
+    /// The weekly emergency allowance: used, left, renewal (P14).
+    public private(set) var emergency = EmergencyAllowance.fresh
+    /// Unlocks granted by the server that are opening the paused apps now; ending early ends each (P26).
+    public private(set) var runningUnlocks: [Unlock] = []
     public private(set) var outgoingUpdate: OutgoingRequestUpdate?
     public private(set) var blockingStatus: BlockingAuthorization
     public private(set) var isOffline = false
@@ -85,6 +88,8 @@ public final class AppModel {
     public var notice: String?
     /// An invite token or code that arrived by link before the person could use it.
     public var pendingInvite: String?
+    /// The address the last sign-in link went to, to send a fresh one if it has expired.
+    public var lastMagicLinkEmail: String?
     public var focusedChallengeID: UUID?
 
     private var listenTask: Task<Void, Never>?
@@ -147,29 +152,67 @@ public final class AppModel {
         await checkProtection()
     }
 
-    /// Called by onboarding once sign-in succeeds.
+    /// Called by onboarding once sign-in succeeds. Everything is restored from the server; a
+    /// returning user whose onboarding is done (on any phone) goes straight to the app unless
+    /// something that lives on this phone is missing (P29).
+    /// True while signedIn() is loading the account: the session is set but the profile and
+    /// settings are not yet known, so nothing should route on them.
+    public private(set) var isLoadingAccount = false
+
     public func signedIn(_ session: AuthSession) async {
+        isLoadingAccount = true
+        defer { isLoadingAccount = false }
         self.session = session
         await deps.purchases.signIn(userID: session.userID)
         await refresh()
         startListening()
-        if deps.flags.string(onboardingKey(session.userID)) == "1" { phase = .ready }
+        if settings.onboardedAt != nil { deps.flags.set("1", for: onboardingKey(session.userID)) }
+        if deps.flags.string(onboardingKey(session.userID)) == "1", hasName, phoneIsReady {
+            phase = .ready
+            await checkProtection()
+        }
     }
+
+    /// The partner sees this name; it is required (P27).
+    public var hasName: Bool { !(profile?.displayName?.trimmingCharacters(in: .whitespaces).isEmpty ?? true) }
+
+    /// What only this phone holds: Screen Time access and the chosen apps (a new phone asks again).
+    public var phoneIsReady: Bool {
+        deps.blocking.authorizationStatus == .approved && !(deps.blocking.currentSelection()?.isEmpty ?? true)
+    }
+
+    /// Whether this account finished onboarding before (on this phone or another).
+    public var isReturning: Bool { settings.onboardedAt != nil }
 
     public func finishOnboarding() async {
         guard let myID else { return }
         deps.flags.set("1", for: onboardingKey(myID))
+        if settings.onboardedAt == nil {
+            let at = deps.now()
+            try? await updateSettings { $0.onboardedAt = at }
+        }
         phase = .ready
         await refresh()
         await checkProtection()
         await deps.backend.logEvent("onboarding_completed", props: [:])
     }
 
+
+    /// Signing out keeps the pair; protected time pauses on this phone until signing back in,
+    /// and the partner sees the neutral "protected time is off" status (P30).
     public func signOut() async {
         listenTask?.cancel()
+        if await attempt({ try await deps.backend.setProtectedTimeOff(true) }) != nil {
+            deps.flags.set("1", for: Self.reportedOffKey)
+        }
+        if let active = deps.store.load().activeUnlock { try? deps.blocking.endUnlockEarly(id: active.id) }
+        try? deps.blocking.applySchedule([])
+        await deps.unlockActivity.end()
+        runningUnlocks.removeAll()
         await deps.purchases.signOut()
         try? await deps.backend.signOut()
         clearAccountState()
+        place = .tonight // signing back in starts on Tonight, not where you left off
         phase = .onboarding
     }
 
@@ -242,9 +285,13 @@ public final class AppModel {
         await refreshChallenges()
         if let value = await attempt({ try await deps.backend.fetchStreak() }) { streak = value }
         if let value = await attempt({ try await deps.backend.fetchActivity(limit: 30) }) { activity = value }
-        if let value = await attempt({ try await deps.backend.lastEmergencyUnlock() }) { lastEmergencyUnlock = value }
+        await refreshEmergency()
         await syncPendingQRUnlocks()
         syncDevice()
+    }
+
+    public func refreshEmergency() async {
+        if let value = await attempt({ try await deps.backend.emergencyStatus() }) { emergency = value }
     }
 
     public func refreshPair() async {
@@ -314,11 +361,13 @@ public final class AppModel {
 
     /// Checks Screen Time access on launch and whenever the app becomes active (06 §4) and
     /// tells the server when protected time goes off or comes back, so the partner sees a neutral status.
+    static let reportedOffKey = "protection.reportedOff"
+
     public func checkProtection() async {
         blockingStatus = deps.blocking.authorizationStatus
         guard phase == .ready, session != nil else { return }
         let isOff = blockingStatus != .approved
-        let key = "protection.reportedOff"
+        let key = Self.reportedOffKey
         guard (deps.flags.string(key) == "1") != isOff else { return }
         if await attempt({ try await deps.backend.setProtectedTimeOff(isOff) }) != nil {
             deps.flags.set(isOff ? "1" : nil, for: key)
@@ -441,18 +490,49 @@ public final class AppModel {
             await deps.unlockActivity.start(endsAt: active.endsAt, partnerName: partnerName)
         }
         deps.reloadWidgets()
-        if unlock.method == .emergency { lastEmergencyUnlock = unlock.startedAt }
+        runningUnlocks.removeAll { !$0.isActive(at: deps.now()) }
+        runningUnlocks.append(unlock)
+        if unlock.method == .emergency { await refreshEmergency() }
         await refreshMinutes()
         await refreshActivity()
     }
 
-    /// Ends the current unlock now; protected time resumes.
+    /// What ending now means for the unused time, for the confirmation (P26). Nil when nothing runs.
+    public var endEarlySummary: String? {
+        let now = deps.now()
+        let running = runningUnlocks.filter { $0.isActive(at: now) }
+        guard deps.store.load().activeUnlock?.isActive(at: now) == true else { return nil }
+        if let session = running.first(where: { $0.method == .emergency }) {
+            let used = emergency.used - session.minutes + min(session.minutes, UnlockRules.minutesUsed(from: session.startedAt, to: now))
+            let left = max(0, emergency.allowance - used)
+            if let renews = emergency.renewsAt {
+                return L("You've used \(MinutesText.short(used)) of your \(MinutesText.short(emergency.allowance)) emergency minutes this week. The other \(MinutesText.short(left)) stay available until \(ScheduleText.weekday(renews, timeZone: deps.timeZone())).")
+            }
+            return L("You've used \(MinutesText.short(used)) of your \(MinutesText.short(emergency.allowance)) emergency minutes this week. The rest stay available.")
+        }
+        let refund = running.filter { $0.method == .minutes }.reduce(0) { $0 + UnlockRules.unusedWholeMinutes(endsAt: $1.endsAt, now: now) }
+        if refund > 0 {
+            return L("The \(MinutesText.short(refund)) you haven't used go back to your balance. Protected time comes back now.")
+        }
+        return L("Protected time comes back now.")
+    }
+
+    /// Ends the current unlock now; protected time resumes. Each running unlock is ended on the
+    /// server too, so unused minutes come back and an emergency session borrows only what was used (P26).
     public func endUnlockEarly() async {
         guard let active = deps.store.load().activeUnlock else { return }
+        let now = deps.now()
+        for unlock in runningUnlocks where unlock.isActive(at: now) && unlock.method != .qr {
+            _ = await attempt({ try await deps.backend.endUnlockEarly(unlockID: unlock.id) })
+        }
+        runningUnlocks.removeAll()
         try? deps.blocking.endUnlockEarly(id: active.id)
         await deps.unlockActivity.end()
         deps.reloadWidgets()
         unlockStartCount += 1
+        await refreshMinutes()
+        await refreshEmergency()
+        await refreshActivity()
     }
 
     /// Unpairs right away. Either partner can, with no approval from the other (feature spec §3).
@@ -578,8 +658,15 @@ public final class AppModel {
             guard session == nil else { return }
             do {
                 await signedIn(try await deps.backend.completeMagicLink(url: url))
+            } catch let error as BackendError where error.code == .expired {
+                // An old link: send a fresh one to the same address and say so (P29).
+                if let email = lastMagicLinkEmail, (try? await deps.backend.sendMagicLink(email: email)) != nil {
+                    notice = Friendly.signInMessage(for: error, resentTo: email)
+                } else {
+                    notice = Friendly.signInMessage(for: error)
+                }
             } catch {
-                notice = Friendly.message(for: error)
+                notice = Friendly.signInMessage(for: error)
             }
         }
     }

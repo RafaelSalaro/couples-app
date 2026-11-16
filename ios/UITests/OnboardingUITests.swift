@@ -10,8 +10,7 @@ final class OnboardingUITests: XCTestCase {
         app.waitForText("Not about control. About being here, together.")
         app.tap("onboarding.start")
         app.tap("signin.apple")
-        app.waitFor("relationship.couple")
-        app.tap("onboarding.next")
+        // Apple shared the name, so no name step; no relationship step either (P3, P27).
         // Invite or join: continue alone for now.
         app.waitFor("pairing.invite")
         app.tap("onboarding.next")
@@ -51,7 +50,13 @@ final class OnboardingUITests: XCTestCase {
         app.tap("signin.sendLink")
         app.waitFor("signin.sent")
         app.tap("signin.demoLink")
-        app.waitFor("relationship.couple")
+        // Email never provides a name: "What should we call you?" right after sign-in (P27).
+        let name = app.waitFor("name.field")
+        name.tap()
+        XCTAssertFalse(app.element("onboarding.next").isEnabled) // required
+        name.typeText("Sam")
+        app.tap("onboarding.next")
+        app.waitFor("pairing.invite")
     }
 
     @MainActor
@@ -59,7 +64,6 @@ final class OnboardingUITests: XCTestCase {
         let app = XCUIApplication.launched(scenario: "fresh", ["-partner", "silent", "-screenTime", "deny"])
         app.tap("onboarding.start")
         app.tap("signin.apple")
-        app.tap("onboarding.next") // relationship
         app.tap("onboarding.next") // continue alone
         app.tap("onboarding.skip") // notifications: not now
         app.tap("onboarding.next") // Screen Time: declined

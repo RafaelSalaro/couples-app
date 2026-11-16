@@ -169,7 +169,7 @@ public enum Friendly {
             return L("Something didn't work. Please try again.")
         }
         switch error.code {
-        case .offline: return L("You're offline. This needs a connection — try again when you're back.")
+        case .offline: return L("No connection. Try again when you're online.")
         case .alreadyPaired: return L("You're already paired.")
         case .invalid: return L("That didn't match. Check it and try again.")
         case .expired: return L("That one has expired. You can start a new one.")
@@ -180,12 +180,27 @@ public enum Friendly {
         case .insufficient: return L("You don't have enough minutes for that yet.")
         case .overDailyMax: return L("That would go past the daily maximum you set.")
         case .inDebt: return L("You borrowed minutes for an emergency unlock. Earn them back first.")
-        case .usedThisWeek: return L("You've used this week's emergency unlock.")
+        case .allowanceUsedUp: return L("You've used this week's emergency minutes.")
+        case .notActive: return L("That unlock has already ended.")
         case .duplicateCounter: return L("That code was already used.")
         case .premiumRequired: return L("This is part of premium.")
         case .dailyCap: return L("You've given all of today's kudos. More tomorrow.")
         case .notSignedIn: return L("Please sign in again.")
         case .unknown: return L("Something didn't work. Please try again.")
+        }
+    }
+
+    /// Signing in has its own wording (P29): a rate limit is about emails, "invalid" is the address.
+    public static func signInMessage(for error: Error, resentTo email: String? = nil) -> String {
+        guard let code = (error as? BackendError)?.code else { return L("We couldn't sign you in. Try again in a moment.") }
+        switch code {
+        case .offline: return L("No connection. Try again when you're online.")
+        case .rateLimited: return L("Too many sign-in emails just now. Wait a minute, then try again.")
+        case .invalid: return L("That email address doesn't look right. Check it and try again.")
+        case .expired:
+            if let email { return L("That link has expired. We've sent you a new one at \(email).") }
+            return L("That link has expired. Ask for a new one below.")
+        default: return L("We couldn't sign you in. Try again in a moment.")
         }
     }
 

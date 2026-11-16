@@ -86,9 +86,14 @@ struct MockFixture {
         #expect(f.store.load().activeUnlock == nil)
     }
 
-    @Test func minimumFifteenMinutesAndExtension() throws {
+    @Test func shortEmergencyWindowsInTheMockAndExtension() throws {
         let f = MockFixture()
-        #expect(throws: BlockingError.unlockTooShort) { try f.service.startUnlock(id: UUID(), minutes: 10) }
+        #expect(throws: BlockingError.unlockTooShort) { try f.service.startUnlock(id: UUID(), minutes: 0) }
+        // An emergency remainder (here 13 minutes) opens the simulated pause (P14).
+        let short = UUID()
+        try f.service.startUnlock(id: short, minutes: 13)
+        #expect(f.store.load().activeUnlock?.endsAt == at(2026, 11, 10, 20, 13))
+        try f.service.endUnlockEarly(id: short)
         try f.service.startUnlock(id: UUID(), minutes: 30)
         f.clock.now += 600
         let second = UUID()

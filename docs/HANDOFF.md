@@ -27,7 +27,7 @@ Everything is on `main`; there is no work in progress on any branch.
 | WP-14 Accessibility, App Store package | Done in code: accessibility audit (4 UI tests), privacy manifests, demo-account script; reviewer sign-in, screen recording and device checks open |
 | Backend security review | Done (Opus): `docs/security-review-backend.md`; production checklist needs the Supabase project |
 
-Test counts at this state: iOS 275 package tests and 41 UI tests, no warnings from our code (Simulator and an unsigned Release device build); backend 185 pgTAP assertions, the concurrency script, 28 Deno tests including 2 integration tests against the local stack.
+Test counts at this state: iOS 288 package tests and 45 UI tests, no warnings from our code (Simulator and an unsigned Release device build); backend 225 pgTAP assertions, the concurrency script, 28 Deno tests including 2 integration tests against the local stack.
 
 ## 3. Next steps, in order
 
@@ -48,7 +48,7 @@ Unchanged from the previous handoff (analytics, the word "block" for SEO, App St
 
 - **Photo on a completed challenge** (spec §8) and the **profile photo**: both need a storage contract in doc 05.
 - **Ranges** for the reset amount and the starting balance: bounded 0–60 minutes as a placeholder (E14).
-- **Emergency unlock with minutes in hand:** the server takes the 15 minutes from the balance first and records debt only for any shortfall (with 40 minutes: balance 25, no debt, spending allowed). The iPhone app's offline mirror (`MinutesLedger`, used by the demo) records the full 15 as debt (balance 25, spending blocked until 15 are earned back). Spec §6.4 ("the balance can go negative and must be earned back") reads most naturally as the server's behaviour, but does not say. Production follows the server; decide, and the other side is changed to match.
+- **An emergency remainder under 15 minutes on a real iPhone (O13):** pick one of the options in `13-risks-and-open-questions.md`. (The earlier question about borrowing with minutes in hand is settled: the app now borrows like the server, E17.)
 
 ## 6. Founder to-do (not code)
 

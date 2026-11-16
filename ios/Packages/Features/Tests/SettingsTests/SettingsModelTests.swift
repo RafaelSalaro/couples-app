@@ -201,3 +201,24 @@ import Testing
         #expect(try await app.partner.fetchPremium().isPremium)
     }
 }
+
+@MainActor @Suite struct AllowanceAndSignOutTests {
+    /// P14: emergency minutes are chosen next to the daily maximum; only 15/30/45/60.
+    @Test func emergencyAllowanceSetting() async {
+        let app = await TestApp()
+        let model = SettingsModel(app: app.model)
+        #expect(model.emergencyAllowance == 15)
+        await model.setEmergencyAllowance(45)
+        #expect(app.model.settings.emergencyAllowanceMinutes == 45 && app.model.emergency.remaining == 45)
+        await model.setEmergencyAllowance(20) // not a choice: ignored
+        #expect(app.model.settings.emergencyAllowanceMinutes == 45)
+    }
+
+    /// P30: the confirmation says what signing out means before it happens.
+    @Test func signOutExplanation() async {
+        let paired = SettingsModel(app: await TestApp().model)
+        #expect(paired.signOutExplanation == "Protected time pauses on this phone until you sign back in. You stay paired with Ana, and Ana will see that protected time is off on your phone.")
+        let alone = SettingsModel(app: await TestApp(paired: false).model)
+        #expect(alone.signOutExplanation == "Protected time pauses on this phone until you sign back in.")
+    }
+}

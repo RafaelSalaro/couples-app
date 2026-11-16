@@ -97,7 +97,10 @@ public final class MockBlockingService: BlockingService, @unchecked Sendable {
     }
 
     public func startUnlock(id: UUID, minutes: Int) throws {
-        guard minutes >= UnlockRules.minimumLength else { throw BlockingError.unlockTooShort }
+        // The simulated pause has no Device Activity minimum, so an emergency remainder under
+        // 15 minutes (P14) works here. On a device ScreenTimeBlockingService still needs 15
+        // (decision T6); see docs/13-risks-and-open-questions.md, founder decision pending.
+        guard minutes >= 1 else { throw BlockingError.unlockTooShort }
         let date = now()
         store.update { $0.activeUnlock = ActiveUnlock.starting(id: id, minutes: minutes, now: date, current: $0.activeUnlock) }
         refresh()

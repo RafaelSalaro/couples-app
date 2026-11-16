@@ -56,6 +56,7 @@ public struct HomeView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var justUnlocked = false
+    @State private var confirmingEnd = false
 
     public init(app: AppModel) { self.app = app }
 
@@ -137,6 +138,12 @@ public struct HomeView: View {
             )
             .frame(height: diameter * 0.95)
             .padding(.horizontal, Spacing.md)
+            // Tapping the protected-time status opens the schedule (P28).
+            .contentShape(Rectangle())
+            .onTapGesture { openSchedule() }
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint(L("Opens protected time"))
+            .accessibilityAction { openSchedule() }
             .accessibilityIdentifier("home.ring.\(status.mode)")
 
             TwoLights(closeness: closeness, diameter: diameter, overlap: 0.14, glow: status.mode == .protected ? 0.9 : (justUnlocked ? 1 : 0.4)) {
@@ -171,13 +178,25 @@ public struct HomeView: View {
         .accessibilityIdentifier(identifier)
     }
 
+    private func openSchedule() {
+        app.usDestination = .schedule
+        app.place = .us
+    }
+
     private func statusText(_ status: RingStatus) -> some View {
         VStack(spacing: Spacing.xxs) {
-            SkyText(status.value, role: .numeralLarge)
-                .contentTransition(.numericText())
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-            SkyText(status.caption, role: .callout, muted: true)
+            Button { openSchedule() } label: {
+                VStack(spacing: Spacing.xxs) {
+                    SkyText(status.value, role: .numeralLarge)
+                        .contentTransition(.numericText())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    SkyText(status.caption, role: .callout, muted: true)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(L("Opens protected time"))
+            .accessibilityIdentifier("home.status")
             if app.isPaired {
                 // The only "cost" in the app is a streak that starts again, and it is never red (§9).
                 SkyReader { ink in
@@ -218,8 +237,17 @@ public struct HomeView: View {
                 Button(L("Add more time")) { app.sheet = .unlock }
                     .buttonStyle(.dsSecondary)
                     .accessibilityIdentifier("home.unlock")
-                AsyncButton(L("End unlock now"), kind: .quiet) { await app.endUnlockEarly() }
+                // A confirmation says what happens to the unused time first (P26).
+                Button(L("End unlock now")) { confirmingEnd = true }
+                    .buttonStyle(.dsQuiet)
                     .accessibilityIdentifier("home.endUnlock")
+                    .confirmationDialog(L("End this unlock now?"), isPresented: $confirmingEnd, titleVisibility: .visible) {
+                        Button(L("End now")) { Task { await app.endUnlockEarly() } }
+                            .accessibilityIdentifier("home.endUnlock.confirm")
+                        Button(L("Keep it open"), role: .cancel) {}
+                    } message: {
+                        Text(app.endEarlySummary ?? L("Protected time comes back now."))
+                    }
             case .open, .off:
                 EmptyView()
             }

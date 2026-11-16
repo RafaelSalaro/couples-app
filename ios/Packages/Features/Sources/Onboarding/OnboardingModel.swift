@@ -9,14 +9,18 @@ func L(_ key: String.LocalizationValue) -> String { String(localized: key, bundl
 
 /// The onboarding order of feature spec §2.
 public enum OnboardingStep: String, CaseIterable, Sendable {
-    case welcome, signIn, relationship, invite, notifications, screenTime, chooseApps, protectedTime, minutes, ready
+    case welcome, signIn, name, invite, notifications, screenTime, chooseApps, protectedTime, minutes, ready
 }
 
 @MainActor @Observable
 public final class OnboardingModel {
     public let app: AppModel
     public private(set) var step: OnboardingStep
-    public var relationship: RelationshipType = .romantic
+    /// "What should we call you?" when Sign in with Apple did not share a name (P27).
+    public var name = ""
+    /// "Already have an account? Sign in": the same options, with returning-user wording (P29).
+    public var returning = false
+    public var emergencyAllowance = EmergencyRules.defaultAllowance
     public var schedule: ProtectedSchedule = .standard()
     public var startingMinutes = MinutesRules.defaultStartingMinutes
     public var dailyMax = MinutesRules.defaultDailyMax
@@ -32,7 +36,7 @@ public final class OnboardingModel {
         self.app = app
         if let user = app.myID {
             let saved = app.deps.flags.string(Self.stepKey(user)).flatMap(OnboardingStep.init(rawValue:))
-            step = saved ?? .relationship
+            step = saved ?? .invite
         } else {
             step = .welcome
         }
@@ -45,6 +49,8 @@ public final class OnboardingModel {
         if let existing = app.schedules.first { schedule = existing }
         startingMinutes = app.settings.startingMinutes
         dailyMax = app.settings.dailyMaxMinutes
+        emergencyAllowance = app.settings.emergencyAllowanceMinutes
+        if name.isEmpty { name = app.profile?.displayName ?? "" }
         selection = app.deps.blocking.currentSelection()
     }
 
@@ -54,26 +60,41 @@ public final class OnboardingModel {
         return Double((all.firstIndex(of: step) ?? 0) + 1) / Double(all.count)
     }
 
+    /// Where a signed-in person starts: the name if none is known, then for someone who finished
+    /// onboarding before only what this phone is missing; otherwise the usual order (P27, P29).
+    func firstStepAfterSignIn() -> OnboardingStep {
+        if !app.hasName { return .name }
+        return app.isReturning ? firstPhoneStep() : .invite
+    }
+
+    /// For a returning person: Screen Time access and the chosen apps live on the phone.
+    func firstPhoneStep() -> OnboardingStep {
+        if app.blockingStatus != .approved { return .screenTime }
+        if app.deps.blocking.currentSelection()?.isEmpty ?? true { return .chooseApps }
+        return .ready
+    }
+
     func next(after step: OnboardingStep) -> OnboardingStep {
         switch step {
-        case .welcome: app.session == nil ? .signIn : .relationship
-        case .signIn: .relationship
-        case .relationship: .invite
+        case .welcome: app.session == nil ? .signIn : firstStepAfterSignIn()
+        case .signIn: firstStepAfterSignIn()
+        case .name: app.isReturning ? firstPhoneStep() : .invite
         case .invite: .notifications
         case .notifications: .screenTime
         // Without Screen Time access there is nothing to choose yet; the home screen offers to turn it on later.
-        case .screenTime: app.blockingStatus == .approved ? .chooseApps : .protectedTime
-        case .chooseApps: .protectedTime
+        case .screenTime: app.blockingStatus == .approved ? .chooseApps : (app.isReturning ? .ready : .protectedTime)
+        case .chooseApps: app.isReturning ? .ready : .protectedTime
         case .protectedTime: .minutes
         case .minutes, .ready: .ready
         }
     }
 
     func previous(before step: OnboardingStep) -> OnboardingStep? {
-        switch step {
-        case .welcome, .relationship: nil // signing in cannot be undone by going back
+        if app.isReturning, step != .signIn { return nil } // nothing to revisit: it is all done already
+        return switch step {
+        case .welcome, .name: nil // signing in cannot be undone by going back
         case .signIn: .welcome
-        case .invite: .relationship
+        case .invite: app.hasName ? nil : .name
         case .notifications: .invite
         case .screenTime: .notifications
         case .chooseApps: .screenTime
@@ -100,11 +121,16 @@ public final class OnboardingModel {
         do {
             let credential = try await app.deps.appleSignIn.credential()
             let session = try await app.deps.backend.signInWithApple(idToken: credential.idToken, nonce: credential.nonce, fullName: credential.fullName)
-            await didSignIn(session)
+            await app.signedIn(session)
+            // Apple shares the name only the first time, and only if the person allows it (P27).
+            if !app.hasName, let shared = credential.fullName?.trimmingCharacters(in: .whitespacesAndNewlines), !shared.isEmpty {
+                try? await app.updateDisplayName(shared)
+            }
+            sessionChanged()
         } catch SignInError.cancelled {
             // Changing your mind is fine; say nothing.
         } catch {
-            message = Friendly.message(for: error)
+            message = Friendly.signInMessage(for: error)
         }
     }
 
@@ -119,9 +145,10 @@ public final class OnboardingModel {
         do {
             try await app.deps.backend.sendMagicLink(email: address)
             magicLinkSentTo = address
+            app.lastMagicLinkEmail = address
             message = nil
         } catch {
-            message = Friendly.message(for: error)
+            message = Friendly.signInMessage(for: error)
         }
     }
 
@@ -138,18 +165,32 @@ public final class OnboardingModel {
         sessionChanged()
     }
 
-    private func didSignIn(_ session: AuthSession) async {
-        await app.signedIn(session)
-        sessionChanged()
-    }
-
     /// The session appeared (Apple, or the magic link opened the app): move on from the sign-in step.
     public func sessionChanged() {
-        guard let user = app.myID, step == .welcome || step == .signIn else { return }
+        // Routing on a half-loaded account would ask for a name it already has.
+        guard !app.isLoadingAccount, let user = app.myID, step == .welcome || step == .signIn else { return }
         guard app.phase == .onboarding else { return } // a returning user goes straight to the app
         let saved = app.deps.flags.string(Self.stepKey(user)).flatMap(OnboardingStep.init(rawValue:))
         loadDrafts()
-        go(to: saved ?? .relationship)
+        // A step saved from an earlier attempt still counts, unless the name is missing.
+        go(to: app.hasName && !app.isReturning ? (saved ?? firstStepAfterSignIn()) : firstStepAfterSignIn())
+    }
+
+    // MARK: Name
+
+    public var canSaveName: Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed.count <= 60
+    }
+
+    public func saveName() async {
+        guard canSaveName else { return }
+        do {
+            try await app.updateDisplayName(name.trimmingCharacters(in: .whitespacesAndNewlines))
+            advance()
+        } catch {
+            message = Friendly.message(for: error)
+        }
     }
 
     // MARK: Permissions
@@ -207,10 +248,11 @@ public final class OnboardingModel {
 
     public func saveMinutes() async {
         do {
-            let start = startingMinutes, max = dailyMax
+            let start = startingMinutes, max = dailyMax, emergency = emergencyAllowance
             try await app.updateSettings {
                 $0.startingMinutes = start
                 $0.dailyMaxMinutes = max
+                $0.emergencyAllowanceMinutes = emergency
             }
             advance()
         } catch {

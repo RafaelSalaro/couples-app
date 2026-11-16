@@ -32,7 +32,9 @@ import Testing
         await model.load()
         #expect(model.timelineSummary(.me) == "Nothing expires in the next 7 days.")
         #expect(model.balanceLine(.me) == "60 min left to spend today (daily maximum 60 min).")
+        // An emergency session borrows only what it used, once it ends (P14): here it runs out.
         _ = try await app.backend.emergencyUnlock(clientEventID: UUID())
+        app.clock.advance(15 * 60)
         await model.load()
         #expect(model.balanceLine(.me) == "You borrowed 15 min for an emergency unlock. New minutes repay it first.")
         #expect(model.summary(.partner) == nil)

@@ -58,7 +58,8 @@ public struct UnlockSheet: View {
                 methodRow(.ask, title: L("Ask \(model.partnerName)"), subtitle: model.isPaired ? L("They answer with one tap.") : L("Invite your partner to use this."), icon: "bubble.left.and.bubble.right", enabled: model.isPaired)
                 methodRow(.minutes, title: L("Use your minutes"), subtitle: model.minutesNote, icon: "hourglass", enabled: true)
                 // An emergency unlock is always available, partner or not (feature spec §6.4).
-                methodRow(.emergency, title: L("Emergency unlock"), subtitle: L("15 minutes, always there if you need it."), icon: "lifepreserver", enabled: true)
+                // The sheet shows what is left this week and when it renews (P14).
+                methodRow(.emergency, title: L("Emergency unlock"), subtitle: model.emergencyLeftLine, icon: "lifepreserver", enabled: true)
             }
             .padding(Spacing.md)
         }
@@ -307,6 +308,10 @@ struct EmergencyStep: View {
                     Text(L("For when you really need your phone."))
                         .textRole(.heading)
                         .foregroundStyle(Color.ink)
+                    Text(model.emergencyLeftLine)
+                        .textRole(.callout)
+                        .foregroundStyle(Color.ink)
+                        .accessibilityIdentifier("emergency.left")
                     Text(model.emergencyNote)
                         .textRole(.callout)
                         .foregroundStyle(Color.inkMuted)
@@ -320,8 +325,8 @@ struct EmergencyStep: View {
             }
             MessageNote(message: model.message)
             Spacer()
-            AsyncButton(L("Unlock 15 min now")) { await model.useEmergency() }
-                .disabled(model.emergencyAvailableAt != nil)
+            AsyncButton(L("Unlock \(MinutesText.short(model.emergency.remaining)) now")) { await model.useEmergency() }
+                .disabled(model.emergency.isUsedUp)
                 .accessibilityIdentifier("emergency.use")
         }
         .padding(Spacing.md)

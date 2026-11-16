@@ -26,10 +26,11 @@
 | O3 | ~~Are all three unlock methods free?~~ | **Resolved 2026-11-13: yes, all free** | — |
 | O4 | ~~Prices~~ | **Resolved: $39.99/yr and $119.99 lifetime, one price for both partners**; still test willingness to pay in the beta survey | — |
 | O5 | ~~Partner sees "Protected time is off"?~~ | **Resolved: yes, neutral wording** | — |
-| O6 | ~~Emergency unlock rules~~ | **Resolved: 15 min, once per 7 days, borrows minutes, breaks streak**; revisit after beta | — |
+| O6 | ~~Emergency unlock rules~~ | **Resolved, then changed 2026-11-15 (P14):** a weekly allowance of 15/30/45/60 minutes across sessions, borrowing only the minutes used; see O13 for the device limit | — |
 | O7 | ~~Custom challenge approval~~ | **Resolved: yes, partner approves the value** | — |
 | O8 | ~~Unlock lengths~~ | **Resolved: 15/30/60 free, any 15-minute step premium** | — |
 | O9 | Final app name | Shortlist: Linger (trademark check pending), Our Hours, Fica; decide after USPTO search | Before App Store listing and logo |
 | O10 | Domain to buy now | A neutral domain that can redirect later, or the front-runner name's domain if available | This week |
 | O11 | ~~Weekly report email on by default?~~ | **Resolved 2026-11-13: off by default (push only); opt-in email** | — |
 | O12 | Beta couples: who? | Friends/family first, then waitlist | Phase 5 |
+| O13 | **An emergency remainder under 15 minutes on a real iPhone** (P14 vs decision T6) | Apple's Device Activity monitors need at least 15 minutes, and today an unlock relies on one to bring the pause back. A remainder such as 13 minutes therefore cannot be scheduled: `ScreenTimeBlockingService` refuses it ("Unlocks are at least 15 minutes"), while the server and the Simulator already allow it. Options: (a) start a 15-minute monitor and have the app re-apply the pause at the true end time, accepting that if the app is not running the pause returns up to 14 minutes late (borrowing is still exact, it is settled on the server); (b) round the last session up to 15 minutes; (c) refuse remainders under 15 minutes (the allowance then effectively comes in 15-minute pieces). Recommendation: (a). **Founder to choose**; nothing is built for it yet | Before device testing (WP-11) |

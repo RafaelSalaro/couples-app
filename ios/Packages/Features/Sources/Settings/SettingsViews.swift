@@ -7,6 +7,8 @@ import SwiftUI
 public struct SettingsScreen: View {
     @State private var model: SettingsModel
     @State private var deleting = false
+    @State private var confirmingSignOut = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     public init(app: AppModel) { _model = State(initialValue: SettingsModel(app: app)) }
 
@@ -18,28 +20,49 @@ public struct SettingsScreen: View {
                     VStack(alignment: .leading, spacing: Spacing.sm) {
                         TextField(L("Your name"), text: $model.name)
                             .textContentType(.givenName)
+                            .autocorrectionDisabled()
                             .dsField()
                             .accessibilityIdentifier("settings.name")
                         if model.canSaveName {
                             AsyncButton(L("Save name"), kind: .secondary) { await model.saveName() }
                                 .accessibilityIdentifier("settings.saveName")
                         }
-                        DSRow(L("Relationship"), subtitle: L("Couple"), systemImage: "heart")
                     }
                 }
 
                 SectionHeader(L("Minutes"))
                 Card {
-                    Stepper(
-                        value: Binding(get: { model.dailyMax }, set: { value in Task { await model.setDailyMax(value) } }),
-                        in: MinutesRules.dailyMaxRange, step: MinutesRules.dailyMaxStep
-                    ) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(L("Most you'll spend in a day")).textRole(.body).foregroundStyle(Color.ink)
+                    // Daily maximum and emergency minutes side by side (spec §13); stacked at
+                    // accessibility sizes.
+                    let layout = typeSize.isAccessibilitySize
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.md))
+                        : AnyLayout(HStackLayout(alignment: .top, spacing: Spacing.md))
+                    layout {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(L("Most you'll spend in a day")).textRole(.callout).foregroundStyle(Color.ink)
                             Text(MinutesText.short(model.dailyMax)).textRole(.heading).foregroundStyle(Color.glowStrong)
+                            Stepper(L("Daily maximum"),
+                                    value: Binding(get: { model.dailyMax }, set: { value in Task { await model.setDailyMax(value) } }),
+                                    in: MinutesRules.dailyMaxRange, step: MinutesRules.dailyMaxStep)
+                                .labelsHidden()
+                                .accessibilityLabel(L("Daily maximum, \(MinutesText.short(model.dailyMax))"))
+                                .accessibilityIdentifier("settings.dailyMax")
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(L("Emergency minutes a week")).textRole(.callout).foregroundStyle(Color.ink)
+                            Text(MinutesText.short(model.emergencyAllowance)).textRole(.heading).foregroundStyle(Color.glowStrong)
+                            Picker(L("Emergency minutes a week"),
+                                   selection: Binding(get: { model.emergencyAllowance }, set: { value in Task { await model.setEmergencyAllowance(value) } })) {
+                                ForEach(EmergencyRules.allowanceChoices, id: \.self) { minutes in
+                                    Text(verbatim: "\(minutes)").tag(minutes)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .accessibilityIdentifier("settings.emergency")
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .accessibilityIdentifier("settings.dailyMax")
                 }
 
                 SectionHeader(L("Notifications"))
@@ -115,8 +138,17 @@ public struct SettingsScreen: View {
                         link(L("Terms"), model.app.deps.brand.termsURL, icon: "doc.text", id: "settings.terms")
                     }
                 }
-                AsyncButton(L("Sign out"), kind: .quiet) { await model.signOut() }
+                // Visible, not hidden in a menu, with one confirmation (P30).
+                Button(L("Sign out")) { confirmingSignOut = true }
+                    .buttonStyle(.dsSecondary)
                     .accessibilityIdentifier("settings.signOut")
+                    .confirmationDialog(L("Sign out?"), isPresented: $confirmingSignOut, titleVisibility: .visible) {
+                        Button(L("Sign out")) { Task { await model.signOut() } }
+                            .accessibilityIdentifier("settings.signOut.confirm")
+                        Button(L("Stay signed in"), role: .cancel) {}
+                    } message: {
+                        Text(model.signOutExplanation)
+                    }
                 if let message = model.message { NoteBanner(message, tone: .neutral) }
             }
             .padding(Spacing.md)

@@ -49,6 +49,27 @@ public final class SettingsModel {
         }
     }
 
+    /// Weekly emergency minutes, chosen next to the daily maximum (P14).
+    public var emergencyAllowance: Int { app.settings.emergencyAllowanceMinutes }
+
+    public func setEmergencyAllowance(_ minutes: Int) async {
+        guard EmergencyRules.allowanceChoices.contains(minutes) else { return }
+        do {
+            try await app.updateSettings { $0.emergencyAllowanceMinutes = minutes }
+            await app.refreshEmergency()
+        } catch {
+            message = Friendly.message(for: error)
+        }
+    }
+
+    /// What signing out means, said before it happens (P30).
+    public var signOutExplanation: String {
+        if let partner = app.partnerName {
+            return L("Protected time pauses on this phone until you sign back in. You stay paired with \(partner), and \(partner) will see that protected time is off on your phone.")
+        }
+        return L("Protected time pauses on this phone until you sign back in.")
+    }
+
     // MARK: Notifications
 
     public static func title(_ kind: NotificationKind) -> String {
@@ -143,7 +164,6 @@ public final class SettingsModel {
     }
 
     public func signOut() async {
-        await app.deps.purchases.signOut()
         await app.signOut()
     }
 }

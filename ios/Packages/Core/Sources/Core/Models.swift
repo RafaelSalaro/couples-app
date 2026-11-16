@@ -263,17 +263,36 @@ public struct NotificationPrefs: Codable, Hashable, Sendable {
 
 public struct UserSettings: Codable, Hashable, Sendable {
     public var dailyMaxMinutes: Int
+    /// Weekly emergency allowance: 15, 30, 45 or 60 (P14).
+    public var emergencyAllowanceMinutes: Int
     public var startingMinutes: Int
     public var notificationPrefs: NotificationPrefs
+    /// When onboarding was finished on any phone; a returning user skips what is done (P29).
+    public var onboardedAt: Date?
 
     public init(
         dailyMaxMinutes: Int = MinutesRules.defaultDailyMax,
+        emergencyAllowanceMinutes: Int = EmergencyRules.defaultAllowance,
         startingMinutes: Int = MinutesRules.defaultStartingMinutes,
-        notificationPrefs: NotificationPrefs = NotificationPrefs()
+        notificationPrefs: NotificationPrefs = NotificationPrefs(),
+        onboardedAt: Date? = nil
     ) {
         self.dailyMaxMinutes = dailyMaxMinutes
+        self.emergencyAllowanceMinutes = emergencyAllowanceMinutes
         self.startingMinutes = startingMinutes
         self.notificationPrefs = notificationPrefs
+        self.onboardedAt = onboardedAt
+    }
+
+    enum CodingKeys: String, CodingKey { case dailyMaxMinutes, emergencyAllowanceMinutes, startingMinutes, notificationPrefs, onboardedAt }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        dailyMaxMinutes = try c.decodeIfPresent(Int.self, forKey: .dailyMaxMinutes) ?? MinutesRules.defaultDailyMax
+        emergencyAllowanceMinutes = try c.decodeIfPresent(Int.self, forKey: .emergencyAllowanceMinutes) ?? EmergencyRules.defaultAllowance
+        startingMinutes = try c.decodeIfPresent(Int.self, forKey: .startingMinutes) ?? MinutesRules.defaultStartingMinutes
+        notificationPrefs = try c.decodeIfPresent(NotificationPrefs.self, forKey: .notificationPrefs) ?? NotificationPrefs()
+        onboardedAt = try c.decodeIfPresent(Date.self, forKey: .onboardedAt)
     }
 }
 
@@ -407,6 +426,8 @@ public enum LedgerType: String, Codable, Sendable, CaseIterable {
     case reset
     case expire
     case adminAdjust = "admin_adjust"
+    /// Minutes given back when a minutes unlock ends early (P26).
+    case unlockRefund = "unlock_refund"
 }
 
 public struct MinuteLot: Codable, Identifiable, Hashable, Sendable {
@@ -546,10 +567,14 @@ public struct Unlock: Codable, Identifiable, Hashable, Sendable {
     public var endsAt: Date
     public var requestID: UUID?
     public var clientEventID: UUID?
+    /// Set when the unlock was ended before its time (P26).
+    public var endedEarlyAt: Date?
+    /// Whole minutes actually used, once it ended early or (emergency) was settled.
+    public var minutesUsed: Int?
 
     public init(
         id: UUID, userID: UUID, method: UnlockMethod, minutes: Int, startedAt: Date, endsAt: Date,
-        requestID: UUID? = nil, clientEventID: UUID? = nil
+        requestID: UUID? = nil, clientEventID: UUID? = nil, endedEarlyAt: Date? = nil, minutesUsed: Int? = nil
     ) {
         self.id = id
         self.userID = userID
@@ -559,7 +584,14 @@ public struct Unlock: Codable, Identifiable, Hashable, Sendable {
         self.endsAt = endsAt
         self.requestID = requestID
         self.clientEventID = clientEventID
+        self.endedEarlyAt = endedEarlyAt
+        self.minutesUsed = minutesUsed
     }
+
+    public func isActive(at date: Date) -> Bool { startedAt <= date && date < endsAt }
+
+    /// What it counts against an allowance: what was used once known, else its full length.
+    public var minutesCounted: Int { minutesUsed ?? minutes }
 }
 
 /// An offline QR unlock waiting to be synced (`sync_qr_unlocks`).

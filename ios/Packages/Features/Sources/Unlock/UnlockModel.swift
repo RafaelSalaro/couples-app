@@ -76,17 +76,25 @@ public final class UnlockModel {
         }
     }
 
-    /// Nil when the emergency unlock is available; otherwise when it comes back.
-    public var emergencyAvailableAt: Date? {
-        UnlockRules.emergencyAvailableAt(lastUsed: app.lastEmergencyUnlock, now: app.deps.now())
+    /// The weekly emergency allowance (P14).
+    public var emergency: EmergencyAllowance { app.emergency }
+
+    private var renewDay: String? {
+        emergency.renewsAt.map { ScheduleText.weekday($0, timeZone: app.deps.timeZone()) }
+    }
+
+    /// "13 of your 15 emergency minutes left this week · renews Friday".
+    public var emergencyLeftLine: String {
+        if emergency.isUsedUp, let day = renewDay {
+            return L("You've used this week's \(MinutesText.short(emergency.allowance)) emergency minutes. They renew on \(day).")
+        }
+        let left = L("\(MinutesText.short(emergency.remaining)) of your \(MinutesText.short(emergency.allowance)) emergency minutes left this week")
+        if let day = renewDay { return L("\(left) · renews \(day)") }
+        return left
     }
 
     public var emergencyNote: String {
-        if let date = emergencyAvailableAt {
-            let day = date.formatted(.dateTime.weekday(.wide))
-            return L("Used this week. Available again on \(day).")
-        }
-        return L("15 minutes, once a week. It borrows 15 minutes that you earn back, and your shared streak starts again.")
+        L("Only the time you use is borrowed, and you earn it back. End it whenever you like and the rest stays available. Your shared streak starts again.")
     }
 
     // MARK: Ask your partner

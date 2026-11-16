@@ -73,6 +73,12 @@ export const endpoints: Record<string, Endpoint> = {
     args: (b) => ({ p_client_event_id: v.uuid(b, "client_event_id") }),
     result: pick("unlock"),
   },
+  // Doc 05 lists a client_event_id too; ending is idempotent by unlock id, so it is accepted and not needed.
+  end_unlock_early: {
+    rpc: "api_end_unlock_early",
+    args: (b) => { v.optionalUuid(b, "client_event_id"); return { p_unlock: v.uuid(b, "unlock_id") }; },
+    result: pick("unlock"),
+  },
   sync_qr_unlocks: {
     rpc: "api_sync_qr_unlocks",
     args: (b) => ({ p_items: v.array(b, "unlocks", 50) }),

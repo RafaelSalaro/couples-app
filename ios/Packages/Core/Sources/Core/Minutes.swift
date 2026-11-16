@@ -38,9 +38,10 @@ public struct MinutesLedger: Sendable, Equatable {
 
     public var balance: Int { openLots.reduce(0) { $0 + $1.remaining } - debt }
 
+    /// Minutes spent on unlocks during the local day, net of refunds from unlocks ended early.
     public func spentToday(now: Date, calendar: Calendar) -> Int {
         let today = LocalDay(now, calendar: calendar)
-        return -entries.filter { $0.type == .spendUnlock && $0.localDay == today }.reduce(0) { $0 + $1.minutes }
+        return -entries.filter { ($0.type == .spendUnlock || $0.type == .unlockRefund) && $0.localDay == today }.reduce(0) { $0 + $1.minutes }
     }
 
     public func summary(now: Date, calendar: Calendar, dailyMax: Int) -> MinutesSummary {
@@ -89,11 +90,46 @@ public struct MinutesLedger: Sendable, Equatable {
         }
     }
 
-    /// Emergency unlock: borrows minutes; the balance can go negative.
+    /// Emergency unlock: takes the minutes used from the balance, soonest-expiring first; only a
+    /// shortfall becomes debt, so the balance can go negative (P14). Matches `borrow_minutes`.
     public mutating func borrow(_ minutes: Int, unlockID: UUID? = nil, now: Date, calendar: Calendar) {
         expire(now: now, calendar: calendar)
-        debt += minutes
-        log(.emergencyBorrow, -minutes, source: unlockID, now: now, calendar: calendar)
+        var left = minutes
+        for lot in openLots where left > 0 {
+            guard let index = lots.firstIndex(where: { $0.id == lot.id }) else { continue }
+            let take = min(lots[index].remaining, left)
+            lots[index].remaining -= take
+            if lots[index].remaining == 0 { lots[index].closedAt = now }
+            left -= take
+            log(.emergencyBorrow, -take, lot: lot.id, source: unlockID, now: now, calendar: calendar)
+        }
+        guard left > 0 else { return }
+        debt += left
+        log(.emergencyBorrow, -left, source: unlockID, now: now, calendar: calendar)
+    }
+
+    /// Gives back up to `minutes` an unlock spent, to the lots they came from (keeping their
+    /// expiry), latest-expiring first; expired lots are skipped. Returns the minutes refunded (P26).
+    @discardableResult
+    public mutating func refund(_ minutes: Int, unlockID: UUID, now: Date, calendar: Calendar) -> Int {
+        expire(now: now, calendar: calendar)
+        var spentByLot: [UUID: (minutes: Int, day: LocalDay)] = [:]
+        for entry in entries where entry.type == .spendUnlock && entry.sourceID == unlockID {
+            guard let lot = entry.lotID else { continue }
+            spentByLot[lot] = ((spentByLot[lot]?.minutes ?? 0) - entry.minutes, entry.localDay)
+        }
+        var left = minutes
+        let order = lots.filter { spentByLot[$0.id] != nil && $0.expiresAt > now }.sorted { $0.expiresAt > $1.expiresAt }
+        for lot in order where left > 0 {
+            guard let index = lots.firstIndex(where: { $0.id == lot.id }), let spent = spentByLot[lot.id] else { continue }
+            let back = min(spent.minutes, left)
+            lots[index].remaining += back
+            lots[index].closedAt = nil
+            left -= back
+            entries.append(LedgerEntry(userID: userID, type: .unlockRefund, minutes: back, lotID: lot.id, sourceID: unlockID,
+                                       localDay: spent.day, createdAt: now))
+        }
+        return minutes - left
     }
 
     /// Closes lots past their expiry and writes `expire` entries.

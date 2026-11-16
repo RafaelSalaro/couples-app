@@ -248,20 +248,72 @@ func expectCode(_ code: BackendError.Code, _ body: () async throws -> Void) asyn
         _ = try await f.me.spendMinutesUnlock(minutes: 15, clientEventID: UUID())
     }
 
-    /// 07 §3 and device script 8: emergency with zero balance goes negative; second attempt the same week is refused.
-    @Test func emergencyUnlock() async throws {
+    /// Device script 8 (P14): zero balance, end after 2 minutes → −2 and 13 left; a second
+    /// session uses the remainder; a third the same week is refused.
+    @Test func emergencyAllowance() async throws {
         let f = Fixture(paired: false)
-        #expect(try await f.me.fetchMinutes().mine.balance == 0)
-        #expect(try await f.me.lastEmergencyUnlock() == nil)
-        let unlock = try await f.me.emergencyUnlock(clientEventID: UUID())
-        #expect(unlock.minutes == 15 && unlock.method == .emergency)
-        #expect(try await f.me.fetchMinutes().mine.balance == -15)
-        #expect(try await f.me.lastEmergencyUnlock() == f.clock.now)
-        await expectCode(.usedThisWeek) { _ = try await f.me.emergencyUnlock(clientEventID: UUID()) }
+        #expect(try await f.me.emergencyStatus().remaining == 15)
+        let first = try await f.me.emergencyUnlock(clientEventID: UUID())
+        #expect(first.minutes == 15 && first.method == .emergency)
+        #expect(try await f.me.fetchMinutes().mine.balance == 0) // nothing borrowed while it runs
+        f.clock.advance(120)
+        let ended = try await f.me.endUnlockEarly(unlockID: first.id)
+        #expect(ended.minutesUsed == 2 && ended.endedEarlyAt == f.clock.now)
+        #expect(try await f.me.fetchMinutes().mine.balance == -2)
+        let status = try await f.me.emergencyStatus()
+        #expect(status.remaining == 13 && status.renewsAt == at(2026, 11, 17, 20, 0))
+        // Ending the same unlock again changes nothing; an unlock that is over cannot be ended.
+        #expect(try await f.me.endUnlockEarly(unlockID: first.id).minutesUsed == 2)
+        let second = try await f.me.emergencyUnlock(clientEventID: UUID())
+        #expect(second.minutes == 13)
+        f.clock.advance(13 * 60)
+        await expectCode(.notActive) { _ = try await f.me.endUnlockEarly(unlockID: second.id) }
+        #expect(try await f.me.fetchMinutes().mine.balance == -15) // ran out: all 13 borrowed
+        await expectCode(.allowanceUsedUp) { _ = try await f.me.emergencyUnlock(clientEventID: UUID()) }
         await expectCode(.inDebt) { _ = try await f.me.spendMinutesUnlock(minutes: 15, clientEventID: UUID()) }
-        f.clock.advance(7 * 86400)
-        _ = try await f.me.emergencyUnlock(clientEventID: UUID())
-        #expect(try await f.me.fetchMinutes().mine.balance == -30)
+        f.clock.set(at(2026, 11, 17, 20, 0))
+        #expect(try await f.me.emergencyStatus().remaining == 15)
+    }
+
+    /// P14: a change applies right away; remaining = new allowance − used, never below zero.
+    @Test func changingTheEmergencyAllowance() async throws {
+        let f = Fixture(paired: false)
+        let session = try await f.me.emergencyUnlock(clientEventID: UUID())
+        f.clock.advance(5 * 60)
+        _ = try await f.me.endUnlockEarly(unlockID: session.id)
+        var settings = try await f.me.fetchSettings()
+        settings.emergencyAllowanceMinutes = 30
+        try await f.me.updateSettings(settings)
+        #expect(try await f.me.emergencyStatus().remaining == 25)
+        _ = try await f.me.emergencyUnlock(clientEventID: UUID()) // reserves all 25
+        settings.emergencyAllowanceMinutes = 15
+        try await f.me.updateSettings(settings)
+        #expect(try await f.me.emergencyStatus().remaining == 0)
+    }
+
+    /// P26: ending a minutes unlock early gives back the unused whole minutes.
+    @Test func endingAMinutesUnlockEarlyRefunds() async throws {
+        let f = Fixture()
+        let before = try await f.me.fetchMinutes().mine.balance
+        let unlock = try await f.me.spendMinutesUnlock(minutes: 30, clientEventID: UUID())
+        f.clock.advance(9 * 60 + 30)
+        let ended = try await f.me.endUnlockEarly(unlockID: unlock.id)
+        #expect(ended.minutesUsed == 10)
+        #expect(try await f.me.fetchMinutes().mine.balance == before - 10)
+        #expect(try await f.me.fetchMinutes().mine.spentToday == 10)
+    }
+
+    /// P27, P29: email sign-in never provides a name; signing in again with the same email is the same account.
+    @Test func emailSignInHasNoNameAndReturnsToTheSameAccount() async throws {
+        let world = FakeWorld()
+        let backend = FakeBackend(world: world)
+        try await backend.sendMagicLink(email: "sam@example.com")
+        let first = try await backend.completeMagicLink(url: FakeBackend.magicLink(for: "sam@example.com", scheme: "couplesapp"))
+        #expect(try await backend.fetchProfile().displayName == nil)
+        try await backend.signOut()
+        try await backend.sendMagicLink(email: "Sam@Example.com")
+        let again = try await backend.completeMagicLink(url: FakeBackend.magicLink(for: "Sam@Example.com", scheme: "couplesapp"))
+        #expect(again.userID == first.userID)
     }
 
     @Test func emergencyBreaksTheSharedStreakAndTellsThePartner() async throws {

@@ -83,11 +83,15 @@ public protocol Backend: Sendable {
     func respondUnlockRequest(id: UUID, approve: Bool) async throws
     func redeemAccountabilityCode(requestID: UUID, code: String) async throws -> Unlock
     func spendMinutesUnlock(minutes: Int, clientEventID: UUID) async throws -> Unlock
+    /// Starts an emergency session for the remaining weekly allowance (P14); `allowance_used_up` when none is left.
     func emergencyUnlock(clientEventID: UUID) async throws -> Unlock
+    /// Ends a running unlock early (P26): emergency borrows only the minutes used, minutes are refunded, others just end.
+    func endUnlockEarly(unlockID: UUID) async throws -> Unlock
     func syncQRUnlocks(_ events: [QRUnlockEvent]) async throws
     func fetchPendingUnlockRequests() async throws -> [UnlockRequest]
     func fetchUnlock(requestID: UUID) async throws -> Unlock?
-    func lastEmergencyUnlock() async throws -> Date?
+    /// The weekly emergency allowance: used, left and when it renews (P14).
+    func emergencyStatus() async throws -> EmergencyAllowance
 
     // Challenges and kudos
     func fetchChallenges() async throws -> [Challenge]

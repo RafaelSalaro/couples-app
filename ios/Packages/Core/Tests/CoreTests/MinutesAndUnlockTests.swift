@@ -73,14 +73,33 @@ import Testing
         #expect(l.balance == 0)
     }
 
-    @Test func borrowingWithABalanceStillBlocksSpendingUntilRepaid() {
+    /// Matches the server's borrow_minutes: minutes in hand are used first; only a shortfall is debt.
+    @Test func borrowingUsesTheBalanceFirstAndOnlyTheShortfallIsDebt() throws {
         var l = ledger()
         l.grant(40, type: .earnChallenge, now: t0, calendar: calendar)
         l.borrow(15, now: t0, calendar: calendar)
-        #expect(l.balance == 25)
+        #expect(l.balance == 25 && l.debt == 0)
+        try l.spend(15, dailyMax: 60, now: t0, calendar: calendar)
+        // The borrow does not count toward the daily maximum; only the spend does.
+        #expect(l.spentToday(now: t0, calendar: calendar) == 15)
+        l.borrow(15, now: t0, calendar: calendar)
+        #expect(l.balance == -5 && l.debt == 5)
         #expect(throws: MinutesError.inDebt) { try l.spend(15, dailyMax: 60, now: t0, calendar: calendar) }
-        // An emergency borrow is not a spend and does not count toward the daily maximum.
-        #expect(l.spentToday(now: t0, calendar: calendar) == 0)
+    }
+
+    /// P26: ending a minutes unlock early gives back the unused whole minutes to their lots.
+    @Test func refundGoesBackToTheLotsWithTheirExpiry() throws {
+        var l = ledger()
+        l.grant(10, type: .earnKudos, now: t0, calendar: calendar)
+        l.grant(50, type: .earnKudos, now: t0.addingTimeInterval(86400), calendar: calendar)
+        let unlock = UUID()
+        try l.spend(30, dailyMax: 60, unlockID: unlock, now: t0.addingTimeInterval(2 * 86400), calendar: calendar)
+        #expect(l.balance == 30)
+        let back = l.refund(20, unlockID: unlock, now: t0.addingTimeInterval(2 * 86400 + 600), calendar: calendar)
+        #expect(back == 20 && l.balance == 50)
+        // The latest-expiring lot got the minutes back, with its original expiry.
+        #expect(l.openLots.last?.remaining == 50 && l.openLots.last?.expiresAt == t0.addingTimeInterval(8 * 86400))
+        #expect(l.spentToday(now: t0.addingTimeInterval(2 * 86400 + 600), calendar: calendar) == 10)
     }
 
     /// 07 §3: reset expires everything (lots and debt) first, then grants the standard amount.
@@ -176,12 +195,39 @@ import Testing
         #expect(!UnlockRules.isValidLength(10, isPremium: true))
     }
 
-    /// 07 §3: emergency unlock once per rolling 7 days.
-    @Test func emergencyCooldownIsRollingSevenDays() {
-        let used = local(2026, 11, 10, 12)
-        #expect(UnlockRules.emergencyAvailableAt(lastUsed: nil, now: used) == nil)
-        #expect(UnlockRules.emergencyAvailableAt(lastUsed: used, now: used.addingTimeInterval(6 * 86400)) == used.addingTimeInterval(7 * 86400))
-        #expect(UnlockRules.emergencyAvailableAt(lastUsed: used, now: used.addingTimeInterval(7 * 86400)) == nil)
+    /// P14, P26: use is counted in whole minutes, rounded up; refunds count whole unused minutes.
+    @Test func minutesAreCountedRoundedUp() {
+        let start = local(2026, 11, 10, 20, 0)
+        #expect(UnlockRules.minutesUsed(from: start, to: start.addingTimeInterval(2)) == 1)
+        #expect(UnlockRules.minutesUsed(from: start, to: start.addingTimeInterval(120)) == 2)
+        #expect(UnlockRules.minutesUsed(from: start, to: start.addingTimeInterval(121)) == 3)
+        #expect(UnlockRules.unusedWholeMinutes(endsAt: start.addingTimeInterval(30 * 60), now: start.addingTimeInterval(570)) == 20)
+    }
+
+    /// P14: a weekly allowance across sessions, from the first use; changes apply right away.
+    @Test func emergencyAllowanceAcrossSessions() {
+        let user = UUID()
+        let first = local(2026, 11, 10, 20, 0)
+        func session(_ start: Date, minutes: Int, used: Int?) -> Unlock {
+            Unlock(id: UUID(), userID: user, method: .emergency, minutes: minutes, startedAt: start,
+                   endsAt: start.addingTimeInterval(Double(used ?? minutes) * 60), minutesUsed: used)
+        }
+        #expect(EmergencyRules.status(allowance: 15, sessions: [], now: first).remaining == 15)
+        let ended = session(first, minutes: 15, used: 2)
+        let status = EmergencyRules.status(allowance: 15, sessions: [ended], now: first.addingTimeInterval(600))
+        #expect(status.used == 2 && status.remaining == 13)
+        #expect(status.renewsAt == first.addingTimeInterval(7 * 86400))
+        // A running session reserves what it may still use.
+        let running = session(first.addingTimeInterval(86400), minutes: 13, used: nil)
+        #expect(EmergencyRules.status(allowance: 15, sessions: [ended, running], now: first.addingTimeInterval(86400 + 60)).isUsedUp)
+        // Raising the allowance mid-week; lowering it never goes below zero.
+        #expect(EmergencyRules.status(allowance: 30, sessions: [ended], now: first.addingTimeInterval(600)).remaining == 28)
+        #expect(EmergencyRules.status(allowance: 15, sessions: [ended, running], now: first.addingTimeInterval(86400 + 60)).remaining == 0)
+        // After 7 days the window closes; the next use opens a new one.
+        #expect(EmergencyRules.status(allowance: 15, sessions: [ended, running], now: first.addingTimeInterval(7 * 86400)).remaining == 15)
+        let later = session(first.addingTimeInterval(8 * 86400), minutes: 15, used: 5)
+        let next = EmergencyRules.status(allowance: 15, sessions: [ended, running, later], now: first.addingTimeInterval(8 * 86400 + 600))
+        #expect(next.used == 5 && next.renewsAt == first.addingTimeInterval(15 * 86400))
     }
 
     @Test func unlockingAgainExtendsTheWindow() {

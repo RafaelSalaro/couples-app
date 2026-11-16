@@ -11,8 +11,6 @@ public enum UnlockRules {
     public static let requestValidity: TimeInterval = 5 * 60
     public static let emailFallbackDelay: TimeInterval = 2 * 60
     public static let maxRequestsPerHour = 3
-    public static let emergencyMinutes = 15
-    public static let emergencyCooldown: TimeInterval = 7 * 24 * 3600
     public static let accountabilityCodeLength = 6
     public static let maxCodeAttempts = 5
 
@@ -24,12 +22,55 @@ public enum UnlockRules {
         allowedLengths(isPremium: isPremium).contains(minutes)
     }
 
-    /// When the next emergency unlock becomes available, or nil if it is available now.
-    public static func emergencyAvailableAt(lastUsed: Date?, now: Date) -> Date? {
-        guard let lastUsed else { return nil }
-        let next = lastUsed.addingTimeInterval(emergencyCooldown)
-        return next > now ? next : nil
+    /// Whole minutes between two instants, rounded up, at least 1 (how use is counted, P14, P26).
+    public static func minutesUsed(from start: Date, to end: Date) -> Int {
+        max(1, Int((end.timeIntervalSince(start) / 60).rounded(.up)))
     }
+
+    /// Unused whole minutes of an unlock ending early at `now` (refunded for minutes unlocks, P26).
+    public static func unusedWholeMinutes(endsAt: Date, now: Date) -> Int {
+        max(0, Int((endsAt.timeIntervalSince(now) / 60).rounded(.down)))
+    }
+}
+
+/// The weekly emergency allowance (feature spec §6.4, decision P14).
+public enum EmergencyRules {
+    public static let allowanceChoices = [15, 30, 45, 60]
+    public static let defaultAllowance = 15
+    public static let window: TimeInterval = 7 * 24 * 3600
+
+    /// The current window: it opens at the first emergency use and lasts 7 days; the next use
+    /// after it closes opens a new one. Matches `emergency_window` on the server.
+    public static func status(allowance: Int, sessions: [Unlock], now: Date) -> EmergencyAllowance {
+        let emergencies = sessions.filter { $0.method == .emergency && $0.startedAt <= now }.sorted { $0.startedAt < $1.startedAt }
+        var anchor: Date?
+        for session in emergencies where anchor.map({ session.startedAt >= $0.addingTimeInterval(window) }) ?? true {
+            anchor = session.startedAt
+        }
+        guard let start = anchor, now < start.addingTimeInterval(window) else {
+            return EmergencyAllowance(allowance: allowance, used: 0, renewsAt: nil)
+        }
+        let used = emergencies.filter { $0.startedAt >= start }.reduce(0) { $0 + $1.minutesCounted }
+        return EmergencyAllowance(allowance: allowance, used: used, renewsAt: start.addingTimeInterval(window))
+    }
+}
+
+/// What the unlock sheet shows about the emergency allowance this week.
+public struct EmergencyAllowance: Codable, Hashable, Sendable {
+    public var allowance: Int
+    public var used: Int
+    /// When the full allowance comes back; nil while no window is open.
+    public var renewsAt: Date?
+
+    public init(allowance: Int, used: Int, renewsAt: Date?) {
+        self.allowance = allowance
+        self.used = used
+        self.renewsAt = renewsAt
+    }
+
+    public var remaining: Int { max(0, allowance - used) }
+    public var isUsedUp: Bool { remaining == 0 }
+    public static let fresh = EmergencyAllowance(allowance: EmergencyRules.defaultAllowance, used: 0, renewsAt: nil)
 }
 
 /// The window during which paused apps are open.

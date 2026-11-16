@@ -134,7 +134,7 @@ import Testing
         app.backend.setOffline(true)
         let model = UnlockModel(app: app.model)
         await model.askPartner()
-        #expect(model.message == "You're offline. This needs a connection — try again when you're back.")
+        #expect(model.message == "No connection. Try again when you're online.")
         await model.useMinutes()
         #expect(model.started == nil)
     }
@@ -151,20 +151,45 @@ import Testing
         #expect(app.store.load().activeUnlock?.endsAt == app.clock.now.addingTimeInterval(900))
     }
 
-    @Test func emergencyWorksWithZeroMinutesAndNoPartnerOncePerWeek() async {
+    /// P14, P26: the sheet shows what is left; a session uses the remainder; ending early
+    /// borrows only what was used, with a confirmation that says so.
+    @Test func emergencyAllowanceAndEndingEarly() async {
         let app = await TestApp(paired: false)
         let model = UnlockModel(app: app.model)
-        #expect(model.emergencyAvailableAt == nil)
+        #expect(model.emergencyLeftLine == "15 min of your 15 min emergency minutes left this week")
         await model.useEmergency()
         #expect(model.started?.method == .emergency)
-        #expect(app.model.myMinutes?.balance == -15)
+        #expect(app.model.myMinutes?.balance == 0) // nothing borrowed while it runs
         #expect(app.store.load().activeUnlock?.endsAt == app.clock.now.addingTimeInterval(900))
+        app.clock.advance(120)
+        #expect(app.model.endEarlySummary == "You've used 2 min of your 15 min emergency minutes this week. The other 13 min stay available until Tuesday.")
+        await app.model.endUnlockEarly()
+        #expect(app.store.load().activeUnlock == nil || app.store.load().activeUnlock?.isActive(at: app.clock.now) == false)
+        #expect(app.model.myMinutes?.balance == -2)
         let again = UnlockModel(app: app.model)
-        #expect(again.emergencyAvailableAt == app.clock.now.addingTimeInterval(7 * 86400))
-        #expect(again.emergencyNote == "Used this week. Available again on Tuesday.")
+        #expect(again.emergencyLeftLine == "13 min of your 15 min emergency minutes left this week · renews Tuesday")
         await again.useEmergency()
-        #expect(again.started == nil && again.message == "You've used this week's emergency unlock.")
-        #expect(again.minutesAvailability == .inDebt(15))
+        #expect(again.started?.method == .emergency && app.store.load().activeUnlock?.endsAt == app.clock.now.addingTimeInterval(13 * 60))
+        app.clock.advance(13 * 60)
+        await app.model.refreshEmergency()
+        let third = UnlockModel(app: app.model)
+        #expect(third.emergency.isUsedUp)
+        #expect(third.emergencyLeftLine == "You've used this week's 15 min emergency minutes. They renew on Tuesday.")
+        await third.useEmergency()
+        #expect(third.started == nil && third.message == "You've used this week's emergency minutes.")
+    }
+
+    /// P26: ending a minutes unlock early says the unused minutes come back, then refunds them.
+    @Test func endingAMinutesUnlockEarlyRefunds() async {
+        let app = await TestApp()
+        let model = UnlockModel(app: app.model)
+        model.length = 30
+        await model.useMinutes()
+        #expect(app.model.myMinutes?.balance == 0)
+        app.clock.advance(9 * 60 + 30)
+        #expect(app.model.endEarlySummary == "The 20 min you haven't used go back to your balance. Protected time comes back now.")
+        await app.model.endUnlockEarly()
+        #expect(app.model.myMinutes?.balance == 20)
     }
 
     @Test func unlockingAgainExtendsTheWindow() async {

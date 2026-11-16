@@ -19,7 +19,6 @@ public final class FakeWorld: @unchecked Sendable {
         var schedules: [ProtectedSchedule] = []
         var pushEnabled = true
         var entitlement: (kind: EntitlementKind, expiresAt: Date?)?
-        var lastEmergency: Date?
         var pushTokens: [String] = []
     }
 
@@ -71,6 +70,12 @@ public final class FakeWorld: @unchecked Sendable {
     // MARK: Seeding
 
     @discardableResult
+    /// Marks onboarding as finished on the "server" (settings.onboarded_at), as for an account
+    /// that has been set up before: signing back in then skips it (P29).
+    public func seedOnboarded(_ user: UUID, at date: Date = Date()) {
+        lock.withLock { people[user]?.settings.onboardedAt = date }
+    }
+
     public func addPerson(id: UUID = UUID(), name: String?, email: String, timeZone: TimeZone = .current) -> UUID {
         lock.withLock {
             people[id] = Person(
@@ -501,6 +506,7 @@ public final class FakeWorld: @unchecked Sendable {
     // MARK: Minutes
 
     private func summary(_ user: UUID) -> MinutesSummary? {
+        settleEmergencies(user)
         guard let person = people[user], let cal = calendar(user) else { return nil }
         return person.ledger.summary(now: now(), calendar: cal, dailyMax: person.settings.dailyMaxMinutes)
     }
@@ -561,9 +567,61 @@ public final class FakeWorld: @unchecked Sendable {
 
     // MARK: Unlocks
 
-    private func recordUnlock(_ user: UUID, method: UnlockMethod, minutes: Int, startedAt: Date? = nil, requestID: UUID? = nil, clientEventID: UUID? = nil) -> Unlock {
+    // MARK: Emergency allowance (P14) and ending early (P26)
+
+    /// Emergency sessions that ran to their end borrow the minutes they lasted (the server's
+    /// settle_emergency_unlocks). Caller holds the lock.
+    private func settleEmergencies(_ user: UUID) {
+        let t = now()
+        guard let cal = calendar(user) else { return }
+        for index in unlocks.indices where unlocks[index].userID == user && unlocks[index].method == .emergency
+            && unlocks[index].minutesUsed == nil && unlocks[index].endsAt <= t {
+            unlocks[index].minutesUsed = unlocks[index].minutes
+            people[user]?.ledger.borrow(unlocks[index].minutes, unlockID: unlocks[index].id, now: unlocks[index].endsAt, calendar: cal)
+        }
+    }
+
+    private func emergencyStatusLocked(_ user: UUID) -> EmergencyAllowance {
+        let allowance = people[user]?.settings.emergencyAllowanceMinutes ?? EmergencyRules.defaultAllowance
+        return EmergencyRules.status(allowance: allowance, sessions: unlocks.filter { $0.userID == user }, now: now())
+    }
+
+    func emergencyStatus(_ user: UUID) throws -> EmergencyAllowance {
+        try locked {
+            _ = try requirePerson(user)
+            settleEmergencies(user)
+            return emergencyStatusLocked(user)
+        }
+    }
+
+    func endUnlockEarly(_ user: UUID, unlockID: UUID) throws -> Unlock {
+        try locked {
+            guard let index = unlocks.firstIndex(where: { $0.id == unlockID && $0.userID == user }) else { throw BackendError(.invalid) }
+            let unlock = unlocks[index]
+            if unlock.endedEarlyAt != nil { return unlock } // ending again changes nothing
+            let t = now()
+            guard unlock.isActive(at: t), let cal = calendar(user) else { throw BackendError(.notActive) }
+            var used = min(unlock.minutes, UnlockRules.minutesUsed(from: unlock.startedAt, to: t))
+            switch unlock.method {
+            case .emergency:
+                people[user]?.ledger.borrow(used, unlockID: unlock.id, now: t, calendar: cal)
+            case .minutes:
+                let refunded = people[user]?.ledger.refund(UnlockRules.unusedWholeMinutes(endsAt: unlock.endsAt, now: t), unlockID: unlock.id, now: t, calendar: cal) ?? 0
+                used = unlock.minutes - refunded
+            default:
+                break
+            }
+            unlocks[index].endedEarlyAt = t
+            unlocks[index].endsAt = t
+            unlocks[index].minutesUsed = used
+            emit(.minutesChanged, to: both(user))
+            return unlocks[index]
+        }
+    }
+
+    private func recordUnlock(_ user: UUID, method: UnlockMethod, minutes: Int, startedAt: Date? = nil, requestID: UUID? = nil, clientEventID: UUID? = nil, id: UUID? = nil) -> Unlock {
         let start = startedAt ?? now()
-        let unlock = Unlock(id: UUID(), userID: user, method: method, minutes: minutes, startedAt: start, endsAt: start.addingTimeInterval(Double(minutes) * 60), requestID: requestID, clientEventID: clientEventID)
+        let unlock = Unlock(id: id ?? UUID(), userID: user, method: method, minutes: minutes, startedAt: start, endsAt: start.addingTimeInterval(Double(minutes) * 60), requestID: requestID, clientEventID: clientEventID)
         unlocks.append(unlock)
         activity.append((pairID(of: user), ActivityItem(kind: method == .emergency ? .emergencyUnlock : .unlock, actorID: user, minutes: minutes, date: start)))
         return unlock
@@ -631,8 +689,10 @@ public final class FakeWorld: @unchecked Sendable {
             let person = try requirePerson(user)
             if let existing = unlocks.first(where: { $0.clientEventID == clientEventID }) { return existing }
             guard validLength(minutes), let cal = calendar(user) else { throw BackendError(.invalid) }
+            settleEmergencies(user)
+            let unlockID = UUID()
             do {
-                try people[user]?.ledger.spend(minutes, dailyMax: person.settings.dailyMaxMinutes, now: now(), calendar: cal)
+                try people[user]?.ledger.spend(minutes, dailyMax: person.settings.dailyMaxMinutes, unlockID: unlockID, now: now(), calendar: cal)
             } catch let error as MinutesError {
                 switch error {
                 case .insufficient: throw BackendError(.insufficient)
@@ -640,23 +700,27 @@ public final class FakeWorld: @unchecked Sendable {
                 case .inDebt: throw BackendError(.inDebt)
                 }
             }
-            let unlock = recordUnlock(user, method: .minutes, minutes: minutes, clientEventID: clientEventID)
+            let unlock = recordUnlock(user, method: .minutes, minutes: minutes, clientEventID: clientEventID, id: unlockID)
             emit(.minutesChanged, to: both(user))
             return unlock
         }
     }
 
+    /// Starts an emergency session for what is left of the weekly allowance (P14). Nothing is
+    /// borrowed now; the minutes used are borrowed when it ends. A running session is returned.
     func emergencyUnlock(_ user: UUID, clientEventID: UUID) throws -> Unlock {
         try locked {
-            let person = try requirePerson(user)
+            _ = try requirePerson(user)
             if let existing = unlocks.first(where: { $0.clientEventID == clientEventID }) { return existing }
-            guard UnlockRules.emergencyAvailableAt(lastUsed: person.lastEmergency, now: now()) == nil, let cal = calendar(user) else {
-                throw BackendError(.usedThisWeek)
+            settleEmergencies(user)
+            let t = now()
+            if let running = unlocks.first(where: { $0.userID == user && $0.method == .emergency && $0.endedEarlyAt == nil && $0.isActive(at: t) }) {
+                return running
             }
-            people[user]?.lastEmergency = now()
-            people[user]?.ledger.borrow(UnlockRules.emergencyMinutes, now: now(), calendar: cal)
-            let unlock = recordUnlock(user, method: .emergency, minutes: UnlockRules.emergencyMinutes, clientEventID: clientEventID)
-            if let id = pairID(of: user) { breakStreak(id) }
+            let status = emergencyStatusLocked(user)
+            guard !status.isUsedUp else { throw BackendError(.allowanceUsedUp) }
+            let unlock = recordUnlock(user, method: .emergency, minutes: status.remaining, clientEventID: clientEventID)
+            if let id = pairID(of: user) { breakStreak(id) } // once per day: breaking again the same day changes nothing
             emit(.minutesChanged, to: both(user))
             emit(.partnerStatusChanged, to: partners(of: user))
             return unlock
@@ -689,7 +753,6 @@ public final class FakeWorld: @unchecked Sendable {
     }
 
     func unlock(forRequest id: UUID) -> Unlock? { locked { unlocks.first { $0.requestID == id } } }
-    func lastEmergency(_ user: UUID) -> Date? { locked { people[user]?.lastEmergency } }
     public func unlocks(of user: UUID) -> [Unlock] { locked { unlocks.filter { $0.userID == user } } }
 
     // MARK: Challenges and kudos

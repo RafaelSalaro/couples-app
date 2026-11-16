@@ -56,8 +56,8 @@ public final class FakeBackend: Backend, @unchecked Sendable {
     public func completeMagicLink(url: URL) async throws -> AuthSession {
         guard let email = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first(where: { $0.name == "email" })?.value,
               world.sentMagicLinks.contains(email) else { throw BackendError(.invalid) }
-        let name = email.split(separator: "@").first.map { String($0).capitalized }
-        let new = world.signIn(email: email, name: name, preferredID: email == appleIdentity.email ? appleIdentity.id : nil)
+        // Email sign-in never provides a name (P27): the app asks for one right after.
+        let new = world.signIn(email: email, name: nil, preferredID: email == appleIdentity.email ? appleIdentity.id : nil)
         lock.withLock { session = new }
         return new
     }
@@ -111,13 +111,14 @@ public final class FakeBackend: Backend, @unchecked Sendable {
         try world.spendMinutesUnlock(user(), minutes: minutes, clientEventID: clientEventID)
     }
     public func emergencyUnlock(clientEventID: UUID) async throws -> Unlock { try world.emergencyUnlock(user(), clientEventID: clientEventID) }
+    public func endUnlockEarly(unlockID: UUID) async throws -> Unlock { try world.endUnlockEarly(user(), unlockID: unlockID) }
     public func syncQRUnlocks(_ events: [QRUnlockEvent]) async throws { try world.syncQRUnlocks(user(), events) }
     public func fetchPendingUnlockRequests() async throws -> [UnlockRequest] { try world.pendingUnlockRequests(user()) }
     public func fetchUnlock(requestID: UUID) async throws -> Unlock? {
         _ = try user()
         return world.unlock(forRequest: requestID)
     }
-    public func lastEmergencyUnlock() async throws -> Date? { world.lastEmergency(try user()) }
+    public func emergencyStatus() async throws -> EmergencyAllowance { try world.emergencyStatus(user()) }
 
     // Challenges and kudos
     public func fetchChallenges() async throws -> [Challenge] { try world.challenges(user()) }

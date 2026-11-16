@@ -90,6 +90,16 @@ Deno.test({ name: "live: the app's whole main path against the deployed project"
     assertEquals(balances[0]?.balance, 15, "30 starting minutes, 15 spent once");
     assertEquals((await fn("give_kudos", ana, { minutes: 10, message: "Thanks" })).error?.code, "premium_required");
 
+    // Emergency (P14, P26): a session for the allowance; ending early borrows only the minute used.
+    const emergency = await fn("emergency_unlock", ana, { client_event_id: crypto.randomUUID() });
+    assert(emergency.ok && emergency.data!.minutes === 15, `emergency_unlock: ${emergency.raw}`);
+    const ended = await fn("end_unlock_early", ana, { unlock_id: emergency.data!.id, client_event_id: crypto.randomUUID() });
+    assert(ended.ok && ended.data!.minutes_used === 1, `end_unlock_early: ${ended.raw}`);
+    const afterEmergency = await (await rest(ana, `balances?select=balance&user_id=eq.${ana.id}`)).json();
+    assertEquals(afterEmergency[0]?.balance, 14, "15 left, 1 borrowed for the minute used");
+    const allowance = await (await rest(ana, `user_settings?select=emergency_allowance_minutes&user_id=eq.${ana.id}`)).json();
+    assertEquals(allowance[0]?.emergency_allowance_minutes, 15, "the default allowance reads back");
+
     // Unpair and delete both accounts through the app's own calls.
     assert((await fn("unpair", ana)).ok, "unpair");
     assert((await fn("delete_account", rafa)).ok, "delete_account");

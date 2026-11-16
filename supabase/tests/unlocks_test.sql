@@ -28,7 +28,7 @@ select is(public.api_respond_unlock_request((select ana from t), id, true, tests
   'expired', 'approving at 5 minutes fails: the request has expired') from req;
 select is((select status::text from public.unlock_requests where id = (select id from req)), 'expired',
   'the request is marked expired');
-select is((select count(*)::int from public.unlocks), 0, 'no unlock was created');
+select is((select count(*)::int from public.unlocks where pair_id = (select pair from t)), 0, 'no unlock was created');
 
 -- In time: Go for it creates the unlock for the requester.
 insert into public.push_tokens (user_id, platform, token) select ana, 'ios', 'token-ana-0001' from t;
@@ -117,16 +117,15 @@ select is(
   'invalid', 'a counter that does not match the start time is rejected') from qr;
 
 -- ---------------------------------------------------------------------------
--- Emergency unlock: once per rolling 7 days, may borrow
+-- Emergency unlock: a weekly allowance; nothing is borrowed until the session ends
+-- (the full behaviour is in emergency_allowance_test.sql)
 -- ---------------------------------------------------------------------------
-select is(public.api_emergency_unlock(rafa, gen_random_uuid(), tests.at('2026-11-13 22:00')) ->> 'balance',
-  '-15', 'an emergency unlock with no minutes borrows 15') from t;
+select is(public.api_emergency_unlock(rafa, gen_random_uuid(), tests.at('2026-11-13 22:00')) -> 'unlock' ->> 'minutes',
+  '15', 'an emergency session runs for the remaining allowance (15 by default)') from t;
+select is(public.balance_of(rafa, tests.at('2026-11-13 22:01')), 0, 'nothing is borrowed while it runs') from t;
 select throws_ok(
-  format($q$select public.api_emergency_unlock(%L, %L, %L)$q$, rafa, gen_random_uuid(), tests.at('2026-11-20 21:59')),
-  'CAERR', 'used_this_week', 'a second one within 7 days is refused') from t;
-select lives_ok(
-  format($q$select public.api_emergency_unlock(%L, %L, %L)$q$, rafa, gen_random_uuid(), tests.at('2026-11-20 22:01')),
-  'after 7 days it is available again') from t;
+  format($q$select public.api_emergency_unlock(%L, %L, %L)$q$, rafa, gen_random_uuid(), tests.at('2026-11-14 22:00')),
+  'CAERR', 'allowance_used_up', 'once the allowance is used up the same week, it is refused') from t;
 
 select * from finish();
 rollback;

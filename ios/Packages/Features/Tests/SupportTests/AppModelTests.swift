@@ -58,8 +58,22 @@ import Testing
         await app.model.signOut()
         #expect(app.model.phase == .onboarding && app.model.session == nil && app.model.pair == nil)
         #expect(app.store.load().partnerName == nil && app.store.load().myBalance == nil)
-        // Protected time stays on the phone.
-        #expect(app.store.load().schedules.count == 1)
+    }
+
+    /// P30: signing out keeps the pair, pauses protected time on this phone, and the partner
+    /// sees the neutral status; signing back in brings protected time back.
+    @Test func signOutPausesProtectedTimeAndTellsThePartner() async throws {
+        let app = await TestApp() // 8 PM, inside protected time
+        #expect(app.blocking.isProtectedNow())
+        app.model.place = .us
+        await app.model.signOut()
+        #expect(app.model.place == .tonight)
+        #expect(!app.blocking.isProtectedNow() && app.store.load().schedules.isEmpty)
+        #expect(try await app.partner.fetchPairState()?.partner.protectedTimeOffSince != nil) // still paired; status visible
+        let session = try await app.backend.signInWithApple(idToken: "demo", nonce: nil, fullName: nil)
+        await app.model.signedIn(session)
+        #expect(app.model.phase == .ready && app.blocking.isProtectedNow())
+        #expect(try await app.partner.fetchPairState()?.partner.protectedTimeOffSince == nil)
     }
 
     @Test func offlineKeepsTheLastKnownState() async {

@@ -40,8 +40,26 @@ public final class SupabaseBackend: Backend, @unchecked Sendable {
             throw BackendError(.unknown, message: error.localizedDescription)
         } catch let error as URLError {
             throw BackendError(.offline, message: error.localizedDescription)
+        } catch let error as AuthError {
+            throw Self.translate(error)
         } catch {
             throw BackendError(.unknown, message: error.localizedDescription)
+        }
+    }
+
+    /// Supabase Auth errors become codes the app can explain (P29: specific messages).
+    static func translate(_ error: AuthError) -> BackendError {
+        if case .pkceGrantCodeExchange = error { return BackendError(.expired, message: error.localizedDescription) }
+        if case .implicitGrantRedirect = error { return BackendError(.expired, message: error.localizedDescription) }
+        switch error.errorCode.rawValue {
+        case "otp_expired", "flow_state_expired", "flow_state_not_found", "bad_code_verifier":
+            return BackendError(.expired, message: error.localizedDescription)
+        case "over_email_send_rate_limit", "over_request_rate_limit":
+            return BackendError(.rateLimited, message: error.localizedDescription)
+        case "validation_failed", "email_address_invalid":
+            return BackendError(.invalid, message: error.localizedDescription)
+        default:
+            return BackendError(.unknown, message: error.localizedDescription)
         }
     }
 
@@ -146,11 +164,13 @@ public final class SupabaseBackend: Backend, @unchecked Sendable {
 
     public func updateSettings(_ settings: UserSettings) async throws {
         let me = try userID()
-        let row: [String: JSONValue] = [
+        var row: [String: JSONValue] = [
             "daily_max_minutes": .int(settings.dailyMaxMinutes),
+            "emergency_allowance_minutes": .int(settings.emergencyAllowanceMinutes),
             "starting_minutes": .int(settings.startingMinutes),
             "notification_prefs": .from(settings.notificationPrefs),
         ]
+        if let onboardedAt = settings.onboardedAt { row["onboarded_at"] = .string(ISO8601DateFormatter().string(from: onboardedAt)) }
         // An update, not an upsert: the settings row is created with the account, and clients
         // may update their own row but not insert one.
         try await mapped { try await client.from("user_settings").update(row).eq("user_id", value: me).execute() }
@@ -313,6 +333,10 @@ public final class SupabaseBackend: Backend, @unchecked Sendable {
         try await call("emergency_unlock", ["client_event_id": .string(clientEventID.uuidString)])
     }
 
+    public func endUnlockEarly(unlockID: UUID) async throws -> Unlock {
+        try await call("end_unlock_early", ["unlock_id": .string(unlockID.uuidString), "client_event_id": .string(UUID().uuidString)])
+    }
+
     public func syncQRUnlocks(_ events: [QRUnlockEvent]) async throws {
         guard !events.isEmpty else { return }
         try await call("sync_qr_unlocks", ["unlocks": .from(events)])
@@ -331,11 +355,14 @@ public final class SupabaseBackend: Backend, @unchecked Sendable {
         }
     }
 
-    public func lastEmergencyUnlock() async throws -> Date? {
+    public func emergencyStatus() async throws -> EmergencyAllowance {
         let me = try userID()
-        return try await mapped {
-            try rows(Unlock.self, try await client.from("unlocks").select().eq("user_id", value: me).eq("method", value: "emergency").order("started_at", ascending: false).limit(1).execute().data).first?.startedAt
+        let settings = try await fetchSettings()
+        // All of the person's emergency sessions: the window's start depends on the whole chain.
+        let sessions = try await mapped {
+            try rows(Unlock.self, try await client.from("unlocks").select().eq("user_id", value: me).eq("method", value: "emergency").order("started_at").execute().data)
         }
+        return EmergencyRules.status(allowance: settings.emergencyAllowanceMinutes, sessions: sessions, now: Date())
     }
 
     // MARK: Challenges and kudos

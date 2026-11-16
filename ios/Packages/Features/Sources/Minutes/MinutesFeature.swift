@@ -78,6 +78,7 @@ public final class MinutesModel {
         case .reset: L("Fresh start")
         case .expire: L("Expired")
         case .adminAdjust: L("Adjustment")
+        case .unlockRefund: L("Unlock ended early")
         }
     }
 

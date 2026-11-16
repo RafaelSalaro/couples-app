@@ -19,7 +19,7 @@ public struct OnboardingFlow: View {
                 switch model.step {
                 case .welcome: WelcomeStep(model: model)
                 case .signIn: SignInStep(model: model)
-                case .relationship: RelationshipStep(model: model)
+                case .name: NameStep(model: model)
                 case .invite: InviteStep(model: model)
                 case .notifications: NotificationsStep(model: model)
                 case .screenTime: ScreenTimeStep(model: model)
@@ -35,12 +35,13 @@ public struct OnboardingFlow: View {
         .onSky(sky)
         .motion(value: model.step)
         .onChange(of: model.app.session) { _, _ in model.sessionChanged() }
+        .onChange(of: model.app.isLoadingAccount) { _, loading in if !loading { model.sessionChanged() } }
     }
 
     /// Onboarding is one evening: it starts in daylight and ends at dusk, when protected time is ready.
     private var sky: SkyMoment {
         switch model.step {
-        case .welcome, .signIn, .relationship: .daylight
+        case .welcome, .signIn, .name: .daylight
         case .invite, .notifications, .screenTime, .chooseApps: .goldenHour
         case .protectedTime, .minutes, .ready: .dusk
         }
@@ -117,7 +118,12 @@ struct SignInStep: View {
     @FocusState private var emailFocused: Bool
 
     var body: some View {
-        StepScaffold(title: L("Sign in"), subtitle: L("No passwords. Use your Apple ID, or we'll email you a link.")) {
+        StepScaffold(
+            title: model.returning ? L("Welcome back") : L("Sign in"),
+            subtitle: model.returning
+                ? L("Sign in the way you did before. Everything is where you left it.")
+                : L("No passwords. Use your Apple ID, or we'll email you a link.")
+        ) {
             if let sent = model.magicLinkSentTo {
                 Card(tone: .sage) {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -161,6 +167,12 @@ struct SignInStep: View {
                 }
                 .disabled(!model.emailLooksValid)
                 .accessibilityIdentifier("signin.sendLink")
+                if !model.returning {
+                    // The same sign-in works for both; this only changes the wording (P29).
+                    Button(L("Already have an account? Sign in")) { model.returning = true }
+                        .buttonStyle(.dsQuiet)
+                        .accessibilityIdentifier("signin.returning")
+                }
             }
             MessageNote(message: model.message)
         } actions: {
@@ -169,30 +181,26 @@ struct SignInStep: View {
     }
 }
 
-struct RelationshipStep: View {
+/// "What should we call you?" — only when Sign in with Apple did not share a name (P27).
+struct NameStep: View {
     @Bindable var model: OnboardingModel
+    @FocusState private var focused: Bool
 
     var body: some View {
-        StepScaffold(title: L("Who are you pairing with?"), subtitle: L("You both see the same choice.")) {
-            // v1 offers only "Couple"; the screen exists so more types can be added later (decision P3).
-            ForEach(RelationshipType.availableAtLaunch, id: \.self) { type in
-                Button {
-                    model.relationship = type
-                } label: {
-                    Card(tone: model.relationship == type ? .hearth : .raised) {
-                        DSRow(L("Couple"), subtitle: L("Partners sharing everyday life"), systemImage: "heart") {
-                            Image(systemName: model.relationship == type ? "checkmark.circle.fill" : "circle")
-                                .foregroundStyle(Color.hearth)
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(model.relationship == type ? [.isSelected] : [])
-                .accessibilityIdentifier("relationship.couple")
-            }
+        StepScaffold(title: L("What should we call you?"), subtitle: L("This is the name your partner will see. You can change it later in Settings.")) {
+            TextField(L("First name"), text: $model.name)
+                .textContentType(.givenName)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled() // names are not words to correct
+                .submitLabel(.continue)
+                .focused($focused)
+                .onSubmit { Task { await model.saveName() } }
+                .dsField()
+                .accessibilityIdentifier("name.field")
+            MessageNote(message: model.message)
         } actions: {
-            Button(L("Continue")) { model.advance() }
-                .buttonStyle(.dsPrimary)
+            AsyncButton(L("Continue")) { await model.saveName() }
+                .disabled(!model.canSaveName)
                 .accessibilityIdentifier("onboarding.next")
         }
     }
@@ -335,6 +343,19 @@ struct MinutesStep: View {
                         }
                     }
                     .accessibilityIdentifier("minutes.dailyMax")
+                    Divider().overlay(Color.line)
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(L("Emergency minutes a week")).textRole(.body).foregroundStyle(Color.ink)
+                        Picker(L("Emergency minutes a week"), selection: $model.emergencyAllowance) {
+                            ForEach(EmergencyRules.allowanceChoices, id: \.self) { minutes in
+                                Text(verbatim: "\(minutes)").tag(minutes)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("minutes.emergency")
+                        Text(L("Always there if you really need your phone. Only the time you use is borrowed."))
+                            .textRole(.caption).foregroundStyle(Color.inkMuted)
+                    }
                 }
             }
             SkyText(L("Your starting minutes arrive when you and your partner pair."), role: .caption, muted: true)

@@ -43,7 +43,26 @@ final class AccessibilityUITests: XCTestCase {
         "5 more ideas, your own challenges and kudos": "13.0:1 (row title on the premium card)",
         "Pause the apps that pull you away, on a schedule you share. Unlock time together, never alone against the clock.":
             "5.3:1 (welcome text on the daylight sky)",
+        // 2026-11-15 (P27 name step, and findings the audit reported on unchanged screens while a
+        // sheet or step was still animating in; measured where the text sits in the screenshot):
+        "What should we call you?": "5.8:1 (largest text, daylight sky)",
+        "This is the name your partner will see. You can change it later in Settings.": "5.7:1 (6.3:1 at largest text)",
+        "When you get kudos or finish a challenge": "15.8:1 (ink on the card)",
+        "Not now": "9.4:1",
+        "Runs overnight, so late-night scrolling is paused too.": "6.3:1 (caption on the card)",
+        "Protected time is on until 9:00 AM.": "11.5:1",
+        "HOW MANY MINUTES?": "6.5:1 (section label on the sheet)",
+        "60 min of kudos left to give today.": "6.3:1",
+        "You made me laugh today": "15.8:1", "Thank you for today": "15.8:1",
+        "5 min": "13.8:1", "15 min": "15.8:1", "20 min": "15.8:1", "25 min": "7.7:1",
+        "NOTIFICATIONS": "5.8:1 (section label, largest text)",
     ]
+
+    /// Timeline times ("8:44 PM") change every run, so they cannot be listed by label above:
+    /// a time caption on paper, measured 5.9:1 (2026-11-15).
+    private static func isTimeCaption(_ label: String) -> Bool {
+        label.range(of: #"^\d{1,2}:\d{2}\s?[AP]M$"#, options: .regularExpression) != nil
+    }
 
     /// The frame of the floating place bar: content scrolling behind it is covered at rest
     /// and cannot be measured there; it is audited where it sits on screen when scrolled to.
@@ -68,7 +87,13 @@ final class AccessibilityUITests: XCTestCase {
                 if let element = issue.element, element.elementType == .keyboard { return true }
                 if let element = issue.element, !element.identifier.hasPrefix("place."),
                    let bar, element.frame.intersects(bar) { return true }
-                if issue.auditType == .contrast, let label = issue.element?.label, Self.measuredContrast[label] != nil { return true }
+                // Times are formatted with a narrow no-break space before AM/PM; the list uses a plain space.
+                if issue.auditType == .contrast, let label = issue.element?.label.replacingOccurrences(of: "\u{202F}", with: " "),
+                   Self.measuredContrast[label] != nil || Self.isTimeCaption(label) { return true }
+                // The protected-time step's only text outside the accessibility tree is drawn inside
+                // the system's compact time pickers, which VoiceOver reads as "Starts, 6:00 PM".
+                if issue.element == nil, screen.hasPrefix("Protected time setup"),
+                   issue.compactDescription == "Potentially inaccessible text" { return true }
                 // Some contrast findings arrive with no element at all, so they cannot be matched
                 // to the list above. They are logged, not failed: every text on the audited screens
                 // was measured from the screenshots (WP-14), and each run attaches the screenshots.
@@ -187,9 +212,6 @@ final class AccessibilityUITests: XCTestCase {
             app.waitFor("signin.apple")
             audit(app, "Sign in" + size)
             app.tap("signin.apple")
-            app.waitFor("relationship.couple")
-            audit(app, "Relationship" + size)
-            app.tap("onboarding.next")
             app.waitFor("pairing.invite")
             audit(app, "Invite" + size)
             app.tap("onboarding.next")
@@ -211,6 +233,22 @@ final class AccessibilityUITests: XCTestCase {
             app.tap("onboarding.next")
             app.waitFor("ready.line")
             audit(app, "Ready" + size)
+        }
+    }
+
+    /// The name step (P27) appears only when the sign-in gave no name, as with an email link.
+    @MainActor
+    func testNameStep() {
+        atBothSizes { extra, size in
+            let app = XCUIApplication.launched(scenario: "fresh", ["-partner", "silent"] + extra)
+            app.tap("onboarding.start")
+            let field = app.waitFor("signin.email")
+            field.tap()
+            field.typeText("sam@example.com")
+            app.tap("signin.sendLink")
+            app.tap("signin.demoLink")
+            app.waitFor("name.field")
+            audit(app, "Name" + size)
         }
     }
 

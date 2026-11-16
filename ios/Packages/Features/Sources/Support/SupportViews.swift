@@ -223,6 +223,13 @@ public enum ScheduleText {
     }
 
     /// A clock time for a moment ("6:00 PM"), in the given zone.
+    /// "Friday": when something renews, said as the day.
+    public static func weekday(_ date: Date, timeZone: TimeZone = .current, locale: Locale = .current) -> String {
+        var format = Date.FormatStyle.dateTime.weekday(.wide).locale(locale)
+        format.timeZone = timeZone
+        return date.formatted(format)
+    }
+
     public static func clock(_ date: Date, timeZone: TimeZone = .current, locale: Locale = .current) -> String {
         var style = Date.FormatStyle(date: .omitted, time: .shortened)
         style.locale = locale

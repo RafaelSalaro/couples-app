@@ -111,6 +111,7 @@ enum Composition {
 
         if options.scenario != .fresh {
             world.addPerson(id: me, name: "Rafa", email: "rafa@example.com")
+            world.seedOnboarded(me)
             flags.set("1", for: "onboarding.done.\(me.uuidString)")
             try? blocking.saveSelection(MockBlockingService.selection(ids: MockBlockingService.suggested))
             if let phase = options.phase {
